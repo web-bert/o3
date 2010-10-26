@@ -7,7 +7,8 @@ def set_options(opt):
 
 def configure(conf):  	
   conf.check_tool('compiler_cxx')
-  conf.check_tool('node_addon')
+  conf.check_tool('node_addon')   
+  conf.add_os_flags('LDFLAGS','LINKFLAGS')
   conf.env.append_value('CCFLAGS', ['-DDEBUG', '-g', '-O0'])
   conf.env.append_value('CXXFLAGS', ['-DDEBUG', '-g', '-O0'])
 
