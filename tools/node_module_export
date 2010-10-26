@@ -22,8 +22,8 @@ mkdir lib || true
 mkdir "lib/o3-$1" || true
 cp "../../modules/$1/index.js" "lib/o3-$1/index.js"
 cp -a "../../modules/$1/node/*" . || true
-cp -a "../../modules/$1/test"  .|| true
-cp -a "../../modules/$1/example" .|| true
+cp -a "../../modules/$1/test"  . || true
+cp -a "../../modules/$1/example" . || true
 cp "../../build/default/o3.node" "lib/o3-$1/o3-$2.node" 
 cp "../../modules/o3.js" "lib/o3-$1/o3.js"
 
