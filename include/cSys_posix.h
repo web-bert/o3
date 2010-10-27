@@ -25,6 +25,8 @@
 #include <sys/select.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #ifdef O3_NODE
 #include <v8.h>
 #endif
