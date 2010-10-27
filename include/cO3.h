@@ -682,6 +682,7 @@ error:
 
     o3_set siScr setOninstall(iCtx* ctx, iScr* oninstall)
     {
+#ifdef O3_PLUGIN
         if (!m_plugin)
 #ifdef O3_WIN32
             m_plugin = siFs(ctx->mgr()->factory("pluginDir")(0))->get(pluginName());
@@ -689,7 +690,10 @@ error:
 			m_plugin = siFs(ctx->mgr()->factory("pluginDir")(0))->get(O3_PLUGIN_NAME);
 #endif
 		return m_plugin->setOnchange(ctx, oninstall);
-    }
+#else // ! O3_PLUGIN
+		return siScr();
+#endif
+	}
 };
 
 }
