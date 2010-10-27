@@ -5,6 +5,8 @@
 #define O3_BASE_URL "#URL#"
 
 #define O3_UI_URL "#URL#"
+#define O3_REPO_URL "http://github.com/ajaxorg/o3-plugin-builds/raw/master/"
+
 
 #ifdef O3_WIN32
 #define O3_PLATFORM "win"

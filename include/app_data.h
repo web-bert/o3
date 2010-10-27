@@ -3,8 +3,8 @@
 #define O3_AJAX_DOMAIN "o3.ajax.org"
 
 #define O3_BASE_URL "http://o3.ajax.org"
-
 #define O3_UI_URL "http://o3.ajax.org"
+#define O3_REPO_URL "http://github.com/ajaxorg/o3-plugin-builds/raw/master/"
 
 #ifdef O3_WIN32
 #define O3_PLATFORM "win"
@@ -24,6 +24,10 @@
 
 #ifdef O3_LINUX
 #define O3_PLATFORM "linux"
+#define O3_PLUGIN_NAME
+#define O3_PLUGIN_UPDATER ""
+#define O3_PLUGIN_INSTALLER ""
+#define O3_PLUGIN_VERSION ""
 #endif
 
 #ifdef O3_POSIX
