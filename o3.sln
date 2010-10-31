@@ -295,6 +295,17 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "o3update", "hosts\o3update\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "signer", "hosts\signer\signer.vcproj", "{8E745FD3-4F20-4EB9-9F45-C86EED26DBC3}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "canvas", "canvas", "{A560576A-F03F-448E-AC10-742560981AEF}"
+	ProjectSection(SolutionItems) = preProject
+		modules\canvas\canvas.h = modules\canvas\canvas.h
+		modules\canvas\cCanvas.h = modules\canvas\cCanvas.h
+		modules\canvas\cCanvas_colors.h = modules\canvas\cCanvas_colors.h
+		modules\canvas\cCanvas_curves.h = modules\canvas\cCanvas_curves.h
+		modules\canvas\cCanvas_glue.h = modules\canvas\cCanvas_glue.h
+		modules\canvas\cCanvas_others.h = modules\canvas\cCanvas_others.h
+		modules\canvas\cCanvas_utils.h = modules\canvas\cCanvas_utils.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -348,5 +359,6 @@ Global
 		{DB2F3141-7810-49FA-AEC1-223F94C5C175} = {E190BAD3-A698-45AF-9B6C-95E03D776584}
 		{DC9D04B9-6E24-4A7E-97D7-65EB0CCDB82A} = {E190BAD3-A698-45AF-9B6C-95E03D776584}
 		{FB7D1463-CE62-4924-8A29-F4310CF44326} = {E190BAD3-A698-45AF-9B6C-95E03D776584}
+		{A560576A-F03F-448E-AC10-742560981AEF} = {E190BAD3-A698-45AF-9B6C-95E03D776584}
 	EndGlobalSection
 EndGlobal

@@ -34,7 +34,7 @@
 #include "process/process.h"
 //#include "test/test.h" 
 
-#include "image/image.h"
+#include "canvas/canvas.h"
 //#include "scanner/scan.h"
 //#include "barcode/barcode.h"
 
@@ -73,7 +73,7 @@ int main(int argc, char **argv) {
 	mgr->addExtTraits(cProcess::extTraits());
 	//mgr->addExtTraits(cTest::extTraits());
 
-	mgr->addExtTraits(cImage::extTraits());
+	mgr->addExtTraits(cCanvas::extTraits());
 	//mgr->addExtTraits(cBarcode::extTraits());
 	//mgr->addExtTraits(cScan::extTraits());
 
