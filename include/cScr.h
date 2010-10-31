@@ -122,7 +122,7 @@ struct cScr : cUnk, iScr {
              i != m_values.end(); ++i)
             if (i->key >= index)
                 return i->key;
-        return NOT_FOUND;
+        return -1;//NOT_FOUND; 
     }
 
     Str name(iCtx* ctx, int index)
@@ -180,7 +180,7 @@ struct cScr : cUnk, iScr {
             m_values[m_index] = Var(ctx);
             return m_indices[name] = m_index++;
         }
-        return NOT_FOUND;        
+        return -1;//NOT_FOUND;        
     }
 
     siEx invoke(iCtx* ctx, Access access, int index, int argc, const Var* argv,
