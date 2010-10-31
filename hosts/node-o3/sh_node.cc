@@ -23,7 +23,7 @@
 #include <fastxml/fastxml.h>
 
 //#include <socket/socket.h>
-// #include <image/image.h>
+#include <image/image.h>
 
 using namespace o3;
 using namespace v8;
@@ -39,7 +39,7 @@ init (Handle<Object> target)
   siMgr mgr = o3_new(cMgr)(); // will be referenced by cJs1
   mgr->addExtTraits(cFastXml::extTraits());
   mgr->addExtTraits(cXml::extTraits());
-  // mgr->addExtTraits(cImage1::extTraits());	
+  mgr->addExtTraits(cImage::extTraits());	
 
   iCtx* ctx = o3_new(cJs)(target, mgr, 0, 0, 0);
   ctx->addRef(); // will be released by a clenup callback in the cJs1
