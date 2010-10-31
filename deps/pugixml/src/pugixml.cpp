@@ -1847,7 +1847,7 @@ namespace
 		#define SCANWHILE(X)		{ while ((X)) ++s; }
 		#define ENDSEG()			{ ch = *s; *s = 0; ++s; }
 		#define THROW_ERROR(err, m)	error_offset = m, longjmp(error_handler, err)
-		#define CHECK_ERROR(err, m)	{ if (*s == 0) THROW_ERROR(err, m); }
+		#define CHECK_ERRORP(err, m)	{ if (*s == 0) THROW_ERROR(err, m); }
 		
 		xml_parser(const xml_allocator& alloc): alloc(alloc), error_offset(0)
 		{
@@ -1985,7 +1985,7 @@ namespace
 					{
 						// Scan for terminating '-->'.
 						SCANFOR(s[0] == '-' && s[1] == '-' && ENDSWITH(s[2], '>'));
-						CHECK_ERROR(status_bad_comment, s);
+						CHECK_ERRORP(status_bad_comment, s);
 
 						if (OPTSET(parse_comments))
 							*s = 0; // Zero-terminate this segment at the first terminating '-'.
@@ -2022,7 +2022,7 @@ namespace
 						{
 							// Scan for terminating ']]>'.
 							SCANFOR(s[0] == ']' && s[1] == ']' && ENDSWITH(s[2], '>'));
-							CHECK_ERROR(status_bad_cdata, s);
+							CHECK_ERRORP(status_bad_cdata, s);
 
 							*s++ = 0; // Zero-terminate this segment.
 						}
@@ -2033,7 +2033,7 @@ namespace
 					{
 						// Scan for terminating ']]>'.
 						SCANFOR(s[0] == ']' && s[1] == ']' && ENDSWITH(s[2], '>'));
-						CHECK_ERROR(status_bad_cdata, s);
+						CHECK_ERRORP(status_bad_cdata, s);
 
 						++s;
 					}
@@ -2074,7 +2074,7 @@ namespace
 			if (!IS_CHARTYPE(*s, ct_start_symbol)) THROW_ERROR(status_bad_pi, s);
 
 			SCANWHILE(IS_CHARTYPE(*s, ct_symbol));
-			CHECK_ERROR(status_bad_pi, s);
+			CHECK_ERRORP(status_bad_pi, s);
 
 			// determine node type; stricmp / strcasecmp is not portable
 			bool declaration = (target[0] | ' ') == 'x' && (target[1] | ' ') == 'm' && (target[2] | ' ') == 'l' && target + 3 == s;
@@ -2114,7 +2114,7 @@ namespace
 					char_t* value = s;
 
 					SCANFOR(s[0] == '?' && ENDSWITH(s[1], '>'));
-					CHECK_ERROR(status_bad_pi, s);
+					CHECK_ERRORP(status_bad_pi, s);
 
 					if (declaration)
 					{
@@ -2141,7 +2141,7 @@ namespace
 			{
 				// scan for tag end
 				SCANFOR(s[0] == '?' && ENDSWITH(s[1], '>'));
-				CHECK_ERROR(status_bad_pi, s);
+				CHECK_ERRORP(status_bad_pi, s);
 
 				s += (s[1] == '>' ? 2 : 1);
 			}
@@ -2195,15 +2195,15 @@ namespace
 									a->name = s; // Save the offset.
 
 									SCANWHILE(IS_CHARTYPE(*s, ct_symbol)); // Scan for a terminator.
-									CHECK_ERROR(status_bad_attribute, s);
+									CHECK_ERRORP(status_bad_attribute, s);
 
 									ENDSEG(); // Save char in 'ch', terminate & step over.
-									CHECK_ERROR(status_bad_attribute, s);
+									CHECK_ERRORP(status_bad_attribute, s);
 
 									if (IS_CHARTYPE(ch, ct_space))
 									{
 										SKIPWS(); // Eat any whitespace.
-										CHECK_ERROR(status_bad_attribute, s);
+										CHECK_ERRORP(status_bad_attribute, s);
 
 										ch = *s;
 										++s;
@@ -3472,6 +3472,7 @@ namespace pugi
 
 	xml_node xml_node::clone(bool deep)
 	{
+        o3_unused(deep);
 		// add a new node template
 		xml_node result = ownerDoc().append_child(type());
 

@@ -31,7 +31,7 @@
 #include "keyboard/keyboard.h"
 #include "mouse/mouse.h"
 
-#include "shared/HostIE.h"
+#include "tools_axhost.h"
 
 
 namespace o3 {
@@ -158,14 +158,14 @@ int WINAPI WinMain(HINSTANCE hi, HINSTANCE hp, LPSTR arg, int show)
     siCtx ctx = o3_new(cCtx)(mgr);        
 
     //mgr->addExtTraits(cO3::extTraits());
-    mgr->addExtTraits(cFs1::extTraits());
+    mgr->addExtTraits(cFs::extTraits());
     //mgr->addExtTraits(cHttp1::extTraits());
-    mgr->addExtTraits(cBlob1::extTraits());
+    mgr->addExtTraits(cBlob::extTraits());
     //mgr->addExtTraits(cXml_v1::extTraits());abrakadabra
-    mgr->addExtTraits(cWindow1::extTraits());
-    mgr->addExtTraits(cResource1::extTraits());
-    mgr->addExtTraits(cProtocol1::extTraits());
-    mgr->addExtTraits(cScreen1::extTraits());
+    mgr->addExtTraits(cWindow::extTraits());
+    mgr->addExtTraits(cResource::extTraits());
+    mgr->addExtTraits(cProtocol::extTraits());
+    mgr->addExtTraits(cScreen::extTraits());
 
 	ssb_setIE8mode("ssb.exe");
 

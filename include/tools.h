@@ -58,6 +58,8 @@ __inline int DoubleToInt(double d)
 
 }
 
+#define o3_unused(x)     ((void)x)
+
 #include "tools_atomic.h"
 #include "tools_chr.h"
 #include "tools_mem.h"

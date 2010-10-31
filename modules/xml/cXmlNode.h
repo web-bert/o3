@@ -163,13 +163,14 @@ namespace o3 {
 
             // Check if node is to be inserted is not a descendant of itself
             xmlNodePtr node = m_node;
-            do
+            do {
                 if (node == new_child2->m_node) {
                     if (ex)
                         *ex = o3_new(cEx)("Cannot insert node as descendant of itself");
                     return 0;
                 }
-            while (node = node->parent);
+                node = node->parent;
+            }while (node);
             
 			siXmlNode2 removed;
 			if (siXmlNode2 parent = new_child->parentNode(ctx)) {
@@ -259,13 +260,14 @@ namespace o3 {
 
             // Check if node is to be inserted is not a descendant of itself
             xmlNodePtr node = m_node;
-            do
+            do {
                 if (node == new_child2->m_node) {
                     if (ex)
                         *ex = o3_new(cEx)("Cannot append node as descendant of itself");
                     return 0;
                 }
-            while (node = node->parent);
+                node = node->parent;
+            } while (node);
 
 			siXmlNode2 removed;
 			if (siXmlNode2 parent = new_child->parentNode(ctx)) {

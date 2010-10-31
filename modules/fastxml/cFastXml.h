@@ -44,6 +44,7 @@ namespace o3 {
         
         o3_fun siXmlNode parseFromString(iCtx* ctx, const char* str, const char* contentType = "text/xml") 
 		{
+            o3_unused(ctx);
             o3_assert(str);
             o3_assert(contentType);
 			// create a new document

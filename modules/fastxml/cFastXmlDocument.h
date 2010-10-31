@@ -113,11 +113,13 @@ namespace o3 {
 
 		o3_fun bool setProperty(const Str& prop, const Str& val)
 		{
-			return true;
+            o3_unused(val), o3_unused(prop);
+            return true;
 		}
 
 		o3_fun siXmlNode importNode(iXmlNode* externalNode, bool deep)
 		{
+            o3_unused(deep);
 			if (!externalNode)
 				return siXmlNode();
 

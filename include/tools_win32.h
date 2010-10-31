@@ -1244,14 +1244,14 @@ struct iWindow : iUnk
 		mscom_end();
 
         //IDropTarget
-        HRESULT STDMETHODCALLTYPE DragEnter( IDataObject * pDataObject, DWORD grfKeyState, 
-            POINTL pt, DWORD * pdwEffect )
+        HRESULT STDMETHODCALLTYPE DragEnter( IDataObject * /*pDataObject*/, DWORD /*grfKeyState*/, 
+            POINTL /*pt*/, DWORD * pdwEffect )
         {
             *pdwEffect = DROPEFFECT_COPY;
             return NOERROR;
         }
 
-        HRESULT STDMETHODCALLTYPE DragOver( DWORD grfKeyState, POINTL pt, DWORD * pdwEffect )
+        HRESULT STDMETHODCALLTYPE DragOver( DWORD /*grfKeyState*/, POINTL /*pt*/, DWORD * pdwEffect )
         {
             *pdwEffect = DROPEFFECT_COPY;
             return S_OK;
@@ -1262,8 +1262,8 @@ struct iWindow : iUnk
             return E_NOTIMPL; 
         }
         
-        HRESULT STDMETHODCALLTYPE Drop( IDataObject * pDataObject, DWORD grfKeyState,
-            POINTL pt, DWORD * pdwEffect )
+        HRESULT STDMETHODCALLTYPE Drop( IDataObject * pDataObject, DWORD /*grfKeyState*/,
+            POINTL /*pt*/, DWORD * /*pdwEffect*/ )
         {
             WStr     file_names;
 

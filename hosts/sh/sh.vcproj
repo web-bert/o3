@@ -91,7 +91,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="call &quot;../../tools/win32/o3.exe&quot; sh_resources.js debug"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration

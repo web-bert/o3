@@ -38,16 +38,18 @@ namespace o3 {
 
         o3_glue_gen()
         
-        o3_fun siXmlNode selectSingleNode(const char* selection, iScr* ctxt = 0)
+        o3_fun siXmlNode selectSingleNode(const char* selection, iScr* ctx = 0)
 		{
+            o3_unused(ctx);
 			xpath_node selected = m_node.select_single_node(selection);
             if (selected.attribute())
 				return wrapXmlNode(ownerDocument(), selected.node());
 			return wrapXmlNode(ownerDocument(), selected.node(), selected.attribute());
         }
 
-        o3_fun siXmlNodeSet selectNodes(const char* selection, iScr* ctxt = 0)
+        o3_fun siXmlNodeSet selectNodes(const char* selection, iScr* ctx = 0)
 		{
+            o3_unused(ctx);
             o3_trace3 trace;
 			xpath_node_set selected = m_node.select_nodes(selection);
 			if (selected.size()>0)

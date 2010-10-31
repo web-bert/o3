@@ -59,6 +59,7 @@ namespace o3 {
 
         virtual o3_fun Str substringData(int offset, int count, siEx* ex) 
 		{
+            o3_unused(ex);
 			o3_trace3 trace;
 			if (offset + count > length() || offset < 0 || count < 0) {
 				//o3_set_ex("Invalid offset and/or count");                

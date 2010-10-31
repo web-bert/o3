@@ -726,7 +726,7 @@ namespace o3 {
 			return true;
 		}
 
-		virtual void logfv(const char* format, va_list ap)
+		virtual void logfv(const char* /*format*/, va_list /*ap*/)
 		{
 			//format;ap;
 			//vfprintf(stderr, format, ap);
@@ -825,7 +825,7 @@ namespace o3 {
         // reads in the header section of the resource and build up the file map
         bool readHeader()
         {
-            size_t name_len(0), start, size;
+            //size_t name_len(0), start;, size;
             Str name;
 
             m_stream->setPos(m_start_addr);                        

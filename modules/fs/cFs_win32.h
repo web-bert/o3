@@ -809,6 +809,7 @@ public:
 
         static siUnk installerDir(iCtx* ctx)
         {
+            o3_unused(ctx);
 			Str path = tmpPath();
 			path.resize(path.size()-1);
 			path.findAndReplaceAll("\\", "/");

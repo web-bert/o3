@@ -82,6 +82,7 @@ namespace o3 {
 
         virtual o3_get int length(iCtx* ctx) 
 		{
+            o3_unused(ctx);
             o3_trace3 trace;
 
 			int length = 0;

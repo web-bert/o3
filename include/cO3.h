@@ -241,6 +241,7 @@ struct cO3 : cScr {
 
 	o3_fun void exit(int status = 0)
 	{
+        status = status;
 //		status;
 //		o3_trace3 trace;
 //#ifdef O3_WIN32
@@ -277,7 +278,7 @@ struct cO3 : cScr {
 		return Str(O3_UI_URL) + "/settings.html";
 	}
 
-	o3_fun void require(iCtx* ctx, const char* module)
+	o3_fun void require(iCtx* /*ctx*/, const char* module)
 	{
 		m_to_approve.pushBack(module);
 	}
@@ -436,6 +437,7 @@ struct cO3 : cScr {
 	// unzip the downloaded module, validates it and put the dll in place
 	bool unpackModule(const Str& name, iStream* zipped, bool update=false ) 
 	{
+        o3_unused(name), o3_unused(zipped), o3_unused(update);
 		bool ret = false;
 #ifdef O3_PLUGIN
 		using namespace zip_tools;		
@@ -519,6 +521,7 @@ error:
 	// checks the signiture comes with the dll for validation
 	bool validateModule(iStream* data, Str sign_b64)
 	{
+        o3_unused(data);
 #ifdef O3_PLUGIN
 		using namespace Crypto;
 		if (!data || sign_b64.size()<128)
@@ -682,6 +685,7 @@ error:
 
     o3_set siScr setOninstall(iCtx* ctx, iScr* oninstall)
     {
+        o3_unused(ctx), o3_unused(oninstall);
 #ifdef O3_PLUGIN
         if (!m_plugin)
 #ifdef O3_WIN32
