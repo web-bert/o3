@@ -24,36 +24,37 @@
 
 #include <lib_png.h>
 #include <lib_agg.h>
+#include <lib_freetype.h>
 
 
 #ifndef __min
-    #define __min(X,Y) (((X)<(Y))?(X):(Y))
+#define __min(X,Y) (((X)<(Y))?(X):(Y))
 #endif
 
 #ifndef __max
-    #define __max(X,Y) (((X)>(Y))?(X):(Y))
+#define __max(X,Y) (((X)>(Y))?(X):(Y))
 #endif
-	
+
 //#define IMAGE_ALPHAMAP_ENABLED
 
 namespace o3 
 {
 
-	#include "cImage_CSS_colors.h"
+#include "cImage_CSS_colors.h"
 
 	const double curve_distance_epsilon                  = 1e-30;
-    const double curve_collinearity_epsilon              = 1e-30;
-    const double curve_angle_tolerance_epsilon           = 0.01;
+	const double curve_collinearity_epsilon              = 1e-30;
+	const double curve_angle_tolerance_epsilon           = 0.01;
 
-	
-// png(bpp[1,8,24,32]) // return blob image.saveJpg(fsnode/filename, compression)
-// jpg(compression) // return blob
-// image = image.load(fsnode/filename); // autoformat image = image.loadJpg(fsnode/filename); image = image.loadPng(fsnode/filename);
-	
-// vector canvas API
+
+	// png(bpp[1,8,24,32]) // return blob image.saveJpg(fsnode/filename, compression)
+	// jpg(compression) // return blob
+	// image = image.load(fsnode/filename); // autoformat image = image.loadJpg(fsnode/filename); image = image.loadPng(fsnode/filename);
+
+	// vector canvas API
 
 	// clip();
-// globalAlpha
+	// globalAlpha
 
 	__inline double calc_sq_distance(double x1, double y1, double x2, double y2)
 	{
@@ -99,10 +100,12 @@ namespace o3
 	}
 
 
-	struct cImage_Gradient: cScr 
+	struct cImage_CanvasGradient: cScr 
 	{
 		o3_begin_class(cScr)
 		o3_end_class()
+
+		o3_glue_gen();
 
 		enum Types
 		{
@@ -111,21 +114,228 @@ namespace o3
 			__Type_Count
 		};
 
+		o3_fun void addColorStop(double offset, const Str &color)
+		{
+			color;
+			offset;
+		};
+
 		int m_type;
 		V2<double> m_CP1;
 		V2<double> m_CP2;
 		tVec<unsigned int> m_colorstops;
 	};
 
+	struct cImage_CanvasPattern: cScr 
+	{
+		o3_begin_class(cScr)
+		o3_end_class()
+
+		o3_glue_gen();
+	};
+
+
+	struct cImage_TextMetrics: cScr 
+	{
+		o3_begin_class(cScr)
+		o3_end_class()
+		
+		o3_glue_gen();
+
+		o3_get double width(){return mWidth;};
+
+		double mWidth;
+	};
+
+	struct cImage_CanvasPixelArray: cScr 
+	{
+		o3_begin_class(cScr)
+		o3_end_class()
+		
+		o3_glue_gen();
+
+		tVec<unsigned char> mData;
+       
+		o3_fun bool __query__(int idx) 
+		{       
+			if (idx<0 || ((size_t)idx)>=mData.size())
+				return false;
+			return true;
+        } 
+        
+        o3_fun unsigned char __getter__(iCtx* ctx, int idx, siEx* ex = 0) 
+		{
+            o3_unused(ctx);
+            ex;
+            return item(idx);
+        }
+
+        unsigned char item(int index) 
+		{
+            o3_trace3 trace;
+			if (index<0 || ((size_t)index)>=mData.size())
+				return 0;
+			return mData[index];			
+        }
+        
+        virtual o3_get int length() 
+		{
+            return mData.size();           
+        }
+	};
+
+	struct cImage_ImageData: cScr
+	{
+		o3_begin_class(cScr)
+		o3_end_class()
+	
+		o3_glue_gen();
+
+		cImage_CanvasPixelArray mStorage;
+
+		o3_get unsigned long width()
+		{
+			return 0;
+		};
+
+		o3_get unsigned long height()
+		{
+			return 0;
+		};
+
+//		o3_get tSi<cImage_CanvasPixelArray> data();
+
+		o3_get siScr data()
+		{
+			return siScr(&mStorage);
+		}
+	};
+
+
+
+
+	struct cImage_CanvasRenderingContext2D
+	{
+		// interface taken from http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html
+
+		void save(); // push state on state stack
+		void restore(); // pop state stack and restore state
+
+		// transformations (default transform is the identity matrix)
+		void scale(double x, double y);
+		void rotate(double angle);
+		void translate(double x, double y);
+		void transform(double a, double b, double c, double d, double e, double f);
+		void setTransform(double a, double b, double c, double d, double e, double f);
+
+		// compositing
+		//attribute 
+		double globalAlpha; // (default 1.0)
+		//attribute 
+		Str globalCompositeOperation; // (default source-over)
+
+		// colors and styles
+		//attribute 
+		Str strokeStyle; // (default black)
+		//attribute 
+		Str fillStyle; // (default black)
+		
+		cImage_CanvasGradient createLinearGradient(double x0, double y0, double x1, double y1);
+		cImage_CanvasGradient createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1);
+		
+		// these calls need communication to a dom -> 
+		//CanvasPattern createPattern(HTMLImageElement image, const Str & repetition);
+		//CanvasPattern createPattern(HTMLCanvasElement image, const Str & repetition);
+		//CanvasPattern createPattern(HTMLVideoElement image, const Str &repetition);
+
+		// line caps/joins
+		//attribute 
+		double lineWidth; // (default 1)
+		//attribute 
+		Str lineCap; // "butt", "round", "square" (default "butt")
+		//attribute 
+		Str lineJoin; // "round", "bevel", "miter" (default "miter")
+		//attribute 
+		double miterLimit; // (default 10)
+
+		// shadows
+		//attribute 
+		double shadowOffsetX; // (default 0)
+		//attribute 
+		double shadowOffsetY; // (default 0)
+		//attribute 
+		double shadowBlur; // (default 0)
+		//attribute 
+		Str shadowColor; // (default transparent black)
+
+		// rects
+		void clearRect(double x, double y, double w, double h);
+		void fillRect(double x, double y, double w, double h);
+		void strokeRect(double x, double y, double w, double h);
+
+		// path API
+		void beginPath();
+		void closePath();
+		void moveTo(double x, double y);
+		void lineTo(double x, double y);
+		void quadraticCurveTo(double cpx, double cpy, double x, double y);
+		void bezierCurveTo(double cp1x, double cp1y, double cp2x, double cp2y, double x, double y);
+		void arcTo(double x1, double y1, double x2, double y2, double radius);
+		void rect(double x, double y, double w, double h);
+		void arc(double x, double y, double radius, double startAngle, double endAngle);
+		void arc(double x, double y, double radius, double startAngle, double endAngle, bool anticlockwise);
+
+		void fill();
+		void stroke();
+		void clip();
+		boolean isPointInPath(double x, double y);
+
+		// focus management
+		// needs communication with the dom
+		// boolean drawFocusRing(Element element, double xCaret, double yCaret, in optional boolean canDrawCustom);
+
+		// text
+		//attribute 
+		Str font; // (default 10px sans-serif)
+		//attribute 
+		Str textAlign; // "start", "end", "left", "right", "center" (default: "start")
+		//attribute 
+		Str textBaseline; // "top", "hanging", "middle", "alphabetic", "ideographic", "bottom" (default: "alphabetic")
+		
+		void fillText(const Str & text, double x, double y);
+		void fillText(const Str & text, double x, double y, double maxWidth);
+		void strokeText(const Str & text, double x, double y);
+		void strokeText(const Str & text, double x, double y, double maxWidth);
+		cImage_TextMetrics measureText(const Str & text);
+
+		// drawing images
+		// these calls need communication to a dom -> 
+		//void drawImage(in HTMLImageElement image, double dx, double dy, in optional double dw, double dh);
+		//void drawImage(in HTMLImageElement image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh);
+		//void drawImage(in HTMLCanvasElement image, double dx, double dy, in optional double dw, double dh);
+		//void drawImage(in HTMLCanvasElement image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh);
+		//void drawImage(in HTMLVideoElement image, double dx, double dy, in optional double dw, double dh);
+		//void drawImage(in HTMLVideoElement image, double sx, double sy, double sw, double sh, double dx, double dy, double dw, double dh);
+
+		// pixel manipulation
+		cImage_ImageData createImageData(double sw, double sh);
+		cImage_ImageData createImageData(cImage_ImageData *imagedata);
+		cImage_ImageData getImageData(double sx, double sy, double sw, double sh);
+		
+		void putImageData(cImage_ImageData *imagedata, double dx, double dy);
+		void putImageData(cImage_ImageData *imagedata, double dx, double dy, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight);
+	};
+
+
 	struct cImage : cScr, iImage
 	{
 		o3_begin_class(cScr)
-	        o3_add_iface(iImage)
-		o3_end_class()
+			o3_add_iface(iImage)
+			o3_end_class()
 
-		o3_glue_gen()
-		
-		Str m_mode;
+			o3_glue_gen()
+
+			Str m_mode;
 		int m_mode_int;
 		bool m_graphics_attached;
 
@@ -136,10 +346,10 @@ namespace o3
 		public:
 			tVec<V2<double> > m_path;
 		};
-		
+
 		tVec<Path> m_paths;
 		V2<double> m_lastpoint;
-		
+
 		class RenderState
 		{
 		public:
@@ -290,7 +500,7 @@ namespace o3
 			};
 			return 0;
 		};
-		
+
 		o3_fun void clear(int signed_color)
 		{
 			unsigned int color = (unsigned int) signed_color;
@@ -333,7 +543,7 @@ namespace o3
 				{
 					switch(m_mode_int)
 					{
-						
+
 					case Image::MODE_BW:
 						{
 							int shift = x&7;
@@ -362,7 +572,7 @@ namespace o3
 							{
 								unsigned char *dstchannels = (unsigned char *) pixeldest;
 								unsigned char inva = ~a;
-								
+
 								srcchannels[0]= (dstchannels[0]*inva + srcchannels[0]*a)>>8;
 								*pixeldest = srcchannels[0];
 							}
@@ -371,7 +581,7 @@ namespace o3
 					case Image::MODE_ARGB:
 						{
 							unsigned int *pixeldest = ((unsigned int *)(D)) + x;
-							
+
 							unsigned char *srcchannels = (unsigned char *) &color;
 							unsigned char a = srcchannels[3];
 							if (a == 255)
@@ -473,7 +683,7 @@ namespace o3
 
 			// I/O initialization using custom o3 methods
 			png_set_read_fn(png_ptr,(void*) stream.ptr(), (png_rw_ptr) &o3_read_data);
-			
+
 			// read entire image (high level)
 			png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_EXPAND, 0);
 
@@ -488,57 +698,57 @@ namespace o3
 
 			switch(color_type)
 			{ 
-				case PNG_COLOR_TYPE_RGB:
+			case PNG_COLOR_TYPE_RGB:
+				{
+					SetupMode(W,H, "argb");
+
+					//						int pos = 0;
+
+					// get color values
+					for(int i = 0; i < (int) m_h; i++)
 					{
-						SetupMode(W,H, "argb");
-
-//						int pos = 0;
-
-						// get color values
-						for(int i = 0; i < (int) m_h; i++)
+						unsigned char *D = getrowptr(i);
+						for(int j = 0; j < (int)(3 * m_w); j += 3)
 						{
-							unsigned char *D = getrowptr(i);
-							for(int j = 0; j < (int)(3 * m_w); j += 3)
-							{
-								*D++ = row_pointers[i][j + 2];	// blue
-								*D++ = row_pointers[i][j + 1];	// green
-								*D++ = row_pointers[i][j];		// red
-								*D++ = 0xff;						// alpha
-							}
+							*D++ = row_pointers[i][j + 2];	// blue
+							*D++ = row_pointers[i][j + 1];	// green
+							*D++ = row_pointers[i][j];		// red
+							*D++ = 0xff;						// alpha
 						}
+					}
 
-					};break;
-				case PNG_COLOR_TYPE_RGB_ALPHA:
-					{
-						SetupMode(W,H, "argb");
-					};break;
-					
-				case PNG_COLOR_TYPE_GRAY:
-					{
-						SetupMode(W,H, "gray");
-					};break;
-				case PNG_COLOR_TYPE_GRAY_ALPHA:
-					{
-						SetupMode(W,H, "argb");
-					};break;
+				};break;
+			case PNG_COLOR_TYPE_RGB_ALPHA:
+				{
+					SetupMode(W,H, "argb");
+				};break;
+
+			case PNG_COLOR_TYPE_GRAY:
+				{
+					SetupMode(W,H, "gray");
+				};break;
+			case PNG_COLOR_TYPE_GRAY_ALPHA:
+				{
+					SetupMode(W,H, "argb");
+				};break;
 				break;
 
-				default:
-					png_destroy_read_struct(&png_ptr, &info_ptr, 0);
-					cEx::fmt(ex,"PNG unsupported color type.");
-					return file;
+			default:
+				png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+				cEx::fmt(ex,"PNG unsupported color type.");
+				return file;
 			}
 
 			png_destroy_read_struct(&png_ptr, &info_ptr, 0);			
 			return file;
 		};
-		
+
 		o3_fun int savePng(iFs* file, siEx* ex = 0)
 		{
 			using namespace png;
 			png_structp png_ptr;
 			png_infop info_ptr;
-			
+
 			if (m_w==0 ||m_h == 0)
 			{
 				cEx::fmt(ex,"[write_png_file] image must have both width and height >0 before something can be written!");			
@@ -566,13 +776,13 @@ namespace o3
 			}
 
 			info_ptr = png_create_info_struct(png_ptr);
-			
+
 			if (!info_ptr)
 			{
 				cEx::fmt(ex,"[write_png_file] png_create_info_struct failed");
 				return 0; 
 			}
-			
+
 			if (setjmp(png_jmpbuf(png_ptr)))
 			{
 				cEx::fmt(ex,"[write_png_file] Error during init_io");
@@ -594,7 +804,7 @@ namespace o3
 			int bitdepth = 8;
 			switch (m_mode_int )
 			{
-			
+
 			case Image::MODE_BW: 
 				color_type = PNG_COLOR_TYPE_GRAY; 
 				bitdepth = 1;
@@ -607,7 +817,7 @@ namespace o3
 				break;
 			}
 			// TODO! add 1bit save
-			
+
 			png_set_IHDR(png_ptr, info_ptr, m_w, m_h,
 				bitdepth, color_type, PNG_INTERLACE_NONE,
 				PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
@@ -624,7 +834,7 @@ namespace o3
 			tVec<png_bytep> row_pointers(m_h);
 			switch (m_mode_int)
 			{
-				case Image::MODE_ARGB:
+			case Image::MODE_ARGB:
 				{
 					tVec <unsigned int> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
@@ -646,7 +856,7 @@ namespace o3
 					};
 				}
 				break;
-				case Image::MODE_RGB:
+			case Image::MODE_RGB:
 				{
 					tVec <unsigned int> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
@@ -664,7 +874,7 @@ namespace o3
 					};
 				}
 				break;
-				case Image::MODE_GRAY:
+			case Image::MODE_GRAY:
 				{
 					tVec <unsigned char> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
@@ -674,7 +884,7 @@ namespace o3
 					};
 				}
 				break;
-				case Image::MODE_BW:
+			case Image::MODE_BW:
 				{
 					tVec <unsigned int> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
@@ -701,22 +911,22 @@ namespace o3
 			png_destroy_write_struct(&png_ptr,&info_ptr);
 
 			/* cleanup heap allocation */
-			
+
 			return 1;
 		};
-	
+
 		void Ensure32BitSurface()
 		{
 			if (m_mode_int != Image::MODE_ARGB)
 			{
-// TODO -- convert existing bitmap to 32 bit and remember old mode. 
+				// TODO -- convert existing bitmap to 32 bit and remember old mode. 
 			};
 
 			if (!m_graphics_attached && m_mode_int == Image::MODE_ARGB) 
 			{
 				m_graphics.attach((unsigned char *)m_mem.ptr(), m_w, m_h, m_stride*4);
-// TODO -- check different pixel alignments
-//				m_graphics.viewport(0,0,m_w, m_h, 0,0,m_w, m_h, agg::Agg2D::ViewportOption::XMidYMid);
+				// TODO -- check different pixel alignments
+				//				m_graphics.viewport(0,0,m_w, m_h, 0,0,m_w, m_h, agg::Agg2D::ViewportOption::XMidYMid);
 				RestoreStateToGraphicsObject();
 				m_graphics_attached = true;
 			};
@@ -791,24 +1001,24 @@ namespace o3
 				ystep = -1;
 			};
 
-			 for (int x=x0;x<x1;x++)
-			 {
-				 if (steep)
-				 {
-					 setPixel(y,x, color);
-				 }
-				 else 
-				 {
-					 setPixel(x,y, color);
-				 }
-				 error = error - deltay;
-				 if( error < 0) 
-				 {
-					 y = y + ystep;
-					 error = error + deltax;
-				 }
+			for (int x=x0;x<x1;x++)
+			{
+				if (steep)
+				{
+					setPixel(y,x, color);
+				}
+				else 
+				{
+					setPixel(x,y, color);
+				}
+				error = error - deltay;
+				if( error < 0) 
+				{
+					y = y + ystep;
+					error = error + deltax;
+				}
 
-			 }
+			}
 		};
 
 		o3_fun int decodeColor(const Str &style)
@@ -862,7 +1072,7 @@ namespace o3
 								(unsigned char)((digits[2]<<4)+ digits[3]),
 								(unsigned char)((digits[4]<<4)+ digits[5])
 							};
-							
+
 							return 0xff000000 + (Res[0]<<16) + (Res[1]<<8) + Res[2];
 						};
 					}
@@ -879,7 +1089,7 @@ namespace o3
 					};
 
 					return 0xff000000;					
-					
+
 				}
 				unsigned int color = 0;
 				unsigned int index = 0;
@@ -921,12 +1131,12 @@ namespace o3
 					};
 				}
 				unsigned int masked = color&0xff000000;
-				
+
 				if (masked == 0xff000000)
 				{
 					return color;
 				};
-				
+
 				int totalchannels;
 
 				double AlphaRes=0;
@@ -943,8 +1153,8 @@ namespace o3
 
 				int Res[3]={0,0,0};
 				int current = 0;
-				
-//				int val = 0;
+
+				//				int val = 0;
 				bool afterdot = false;
 				int digitsafterdot = 0;
 				char *d = (char * ) (style.ptr());
@@ -970,7 +1180,7 @@ namespace o3
 						{
 							current ++;
 							if (current == totalchannels)break;
-							
+
 						}
 						if (current == 3 && *d == '.')
 						{
@@ -1028,12 +1238,12 @@ namespace o3
 			V2<double> p2(xx+ww,yy);
 			V2<double> p3(xx+ww,yy+hh);
 			V2<double> p4(xx,yy+hh);
-			
+
 			p1  = m_currentrenderstate->Transformation.Multiply(p1);
 			p2  = m_currentrenderstate->Transformation.Multiply(p2);
 			p3  = m_currentrenderstate->Transformation.Multiply(p3);
 			p4  = m_currentrenderstate->Transformation.Multiply(p4);
-			
+
 			m_graphics.moveTo(p1.x,p1.y);
 			m_graphics.lineTo(p2.x,p2.y);
 			m_graphics.lineTo(p3.x,p3.y);
@@ -1061,12 +1271,12 @@ namespace o3
 			V2<double> p2(xx+ww,yy);
 			V2<double> p3(xx+ww,yy+hh);
 			V2<double> p4(xx,yy+hh);
-			
+
 			p1  = m_currentrenderstate->Transformation.Multiply(p1);
 			p2  = m_currentrenderstate->Transformation.Multiply(p2);
 			p3  = m_currentrenderstate->Transformation.Multiply(p3);
 			p4  = m_currentrenderstate->Transformation.Multiply(p4);
-			
+
 			m_graphics.moveTo(p1.x,p1.y);
 			m_graphics.lineTo(p2.x,p2.y);
 			m_graphics.lineTo(p3.x,p3.y);
@@ -1086,12 +1296,12 @@ namespace o3
 			V2<double> p2(xx+ww,yy);
 			V2<double> p3(xx+ww,yy+hh);
 			V2<double> p4(xx,yy+hh);
-			
+
 			p1  = m_currentrenderstate->Transformation.Multiply(p1);
 			p2  = m_currentrenderstate->Transformation.Multiply(p2);
 			p3  = m_currentrenderstate->Transformation.Multiply(p3);
 			p4  = m_currentrenderstate->Transformation.Multiply(p4);
-			
+
 			m_graphics.moveTo(p1.x,p1.y);
 			m_graphics.lineTo(p2.x,p2.y);
 			m_graphics.lineTo(p3.x,p3.y);
@@ -1143,7 +1353,7 @@ namespace o3
 			m_lastpoint.x = x;
 			m_lastpoint.y = y;
 		};
-		
+
 		o3_fun void closePath()
 		{
 			if (m_paths.size() == 0) return;
@@ -1167,7 +1377,7 @@ namespace o3
 			Ensure32BitSurface();
 			m_graphics.resetPath();
 
-//			TransformCurrentPath();
+			//			TransformCurrentPath();
 
 			for (size_t i =0 ;i<m_paths.size();i++)
 			{
@@ -1181,7 +1391,7 @@ namespace o3
 						Cur.x = m_paths[i].m_path[j].x;
 						Cur.y = m_paths[i].m_path[j].y;
 						m_graphics.lineTo(Cur.x, Cur.y);
-//						line(Prev.x, Prev.y, Cur.x, Cur.y, color);
+						//						line(Prev.x, Prev.y, Cur.x, Cur.y, color);
 						Prev.x = Cur.x;
 						Prev.y = Cur.y;
 					};
@@ -1199,9 +1409,9 @@ namespace o3
 			Ensure32BitSurface();
 			m_graphics.resetPath();
 			m_graphics.lineWidth(m_currentrenderstate->StrokeWidth);
-//			m_graphics.line(0,0,m_w, m_h);
+			//			m_graphics.line(0,0,m_w, m_h);
 
-//			TransformCurrentPath();
+			//			TransformCurrentPath();
 
 			for (size_t i =0 ;i<m_paths.size();i++)
 			{
@@ -1215,14 +1425,14 @@ namespace o3
 						Cur.x = m_paths[i].m_path[j].x;
 						Cur.y = m_paths[i].m_path[j].y;
 						m_graphics.lineTo(Cur.x, Cur.y);
-//						line(Prev.x, Prev.y, Cur.x, Cur.y, color);
+						//						line(Prev.x, Prev.y, Cur.x, Cur.y, color);
 						Prev.x = Cur.x;
 						Prev.y = Cur.y;
 					};
 				};
 			};
 			m_graphics.drawPath(agg::Agg2D::StrokeOnly);
-//			m_paths.clear();
+			//			m_paths.clear();
 		};
 
 		enum curve_recursion_limit_e { curve_recursion_limit = 32 };
@@ -1230,41 +1440,41 @@ namespace o3
 		class QuadraticCurveGen
 		{
 		public:
-			
+
 
 			QuadraticCurveGen() : 
-				m_approximation_scale(1.0),
-				m_angle_tolerance(0.0),
-				m_count(0)
-			{
-			}
+			  m_approximation_scale(1.0),
+				  m_angle_tolerance(0.0),
+				  m_count(0)
+			  {
+			  }
 
-			QuadraticCurveGen(double x1, double y1, double x2, double y2, double x3, double y3) :
-				m_approximation_scale(1.0),
-				m_angle_tolerance(0.0),
-				m_count(0)
-			{ 
-				init(x1, y1, x2, y2, x3, y3);
-			}
+			  QuadraticCurveGen(double x1, double y1, double x2, double y2, double x3, double y3) :
+			  m_approximation_scale(1.0),
+				  m_angle_tolerance(0.0),
+				  m_count(0)
+			  { 
+				  init(x1, y1, x2, y2, x3, y3);
+			  }
 
-			
-			void init(double x1, double y1, double x2, double y2, double x3, double y3)
-			{
-				m_points.clear();
-				m_distance_tolerance_square = 0.5 / m_approximation_scale;
-				m_distance_tolerance_square *= m_distance_tolerance_square;
-				bezier(x1, y1, x2, y2, x3, y3);
-				m_count = 0;
-			};
 
-			unsigned vertex(double* x, double* y)
-			{
-				if(m_count >= m_points.size()) return agg::agg::path_cmd_stop;
-				V2<double> &p = m_points[m_count++];
-				*x = p.x;
-				*y = p.y;
-				return (m_count == 1) ? agg::agg::path_cmd_move_to : agg::agg::path_cmd_line_to;
-			}
+			  void init(double x1, double y1, double x2, double y2, double x3, double y3)
+			  {
+				  m_points.clear();
+				  m_distance_tolerance_square = 0.5 / m_approximation_scale;
+				  m_distance_tolerance_square *= m_distance_tolerance_square;
+				  bezier(x1, y1, x2, y2, x3, y3);
+				  m_count = 0;
+			  };
+
+			  unsigned vertex(double* x, double* y)
+			  {
+				  if(m_count >= m_points.size()) return agg::agg::path_cmd_stop;
+				  V2<double> &p = m_points[m_count++];
+				  *x = p.x;
+				  *y = p.y;
+				  return (m_count == 1) ? agg::agg::path_cmd_move_to : agg::agg::path_cmd_line_to;
+			  }
 
 		private:
 			void recursive_bezier(double x1, double y1, double x2, double y2, double x3, double y3,unsigned level)
@@ -1331,7 +1541,7 @@ namespace o3
 							// We can leave just two endpoints
 							return;
 						}
-							 if(d <= 0) d = calc_sq_distance(x2, y2, x1, y1);
+						if(d <= 0) d = calc_sq_distance(x2, y2, x1, y1);
 						else if(d >= 1) d = calc_sq_distance(x2, y2, x3, y3);
 						else            d = calc_sq_distance(x2, y2, x1 + d*dx, y1 + d*dy);
 					}
@@ -1366,7 +1576,7 @@ namespace o3
 
 			V2<double> target(x0,y0);
 			V2<double> cp(cp1x,cp1y);
-			
+
 			target = TransformPoint(target);
 			cp = TransformPoint(cp);
 			QuadraticCurveGen Gen(m_lastpoint.x,m_lastpoint.y, cp.x,cp.y, target.x, target.y);
@@ -1378,7 +1588,7 @@ namespace o3
 				m_paths[m_paths.size()-1].m_path.push(m_lastpoint);
 			};
 
-				
+
 			while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
 			{
 				V2<double> point(x,y);
@@ -1388,17 +1598,17 @@ namespace o3
 			m_lastpoint = target;
 
 		};
-		
+
 
 		class BezierCurveGen
 		{
 		public:
 
 			BezierCurveGen(double x1, double y1, 
-					   double x2, double y2, 
-					   double x3, double y3,
-					   double x4, double y4) :
-				m_approximation_scale(1.0),
+				double x2, double y2, 
+				double x3, double y3,
+				double x4, double y4) :
+			m_approximation_scale(1.0),
 				m_angle_tolerance(0.0),
 				m_cusp_limit(0.0),
 				m_count(0)
@@ -1407,9 +1617,9 @@ namespace o3
 			}
 
 			void init(double x1, double y1, 
-					  double x2, double y2, 
-					  double x3, double y3,
-					  double x4, double y4)
+				double x2, double y2, 
+				double x3, double y3,
+				double x4, double y4)
 			{
 				m_points.clear();
 				m_distance_tolerance_square = 0.5 / m_approximation_scale;
@@ -1429,10 +1639,10 @@ namespace o3
 
 		private:
 			void recursive_bezier(double x1, double y1, 
-											  double x2, double y2, 
-											  double x3, double y3, 
-											  double x4, double y4,
-											  unsigned level)
+				double x2, double y2, 
+				double x3, double y3, 
+				double x4, double y4,
+				unsigned level)
 			{
 				if(level > curve_recursion_limit) 
 				{
@@ -1465,7 +1675,7 @@ namespace o3
 				double da1, da2, k;
 
 				switch((int(d2 > curve_collinearity_epsilon) << 1) +
-						int(d3 > curve_collinearity_epsilon))
+					int(d3 > curve_collinearity_epsilon))
 				{
 				case 0:
 					// All collinear OR p1==p4
@@ -1491,11 +1701,11 @@ namespace o3
 							// We can leave just two endpoints
 							return;
 						}
-							 if(d2 <= 0) d2 = calc_sq_distance(x2, y2, x1, y1);
+						if(d2 <= 0) d2 = calc_sq_distance(x2, y2, x1, y1);
 						else if(d2 >= 1) d2 = calc_sq_distance(x2, y2, x4, y4);
 						else             d2 = calc_sq_distance(x2, y2, x1 + d2*dx, y1 + d2*dy);
 
-							 if(d3 <= 0) d3 = calc_sq_distance(x3, y3, x1, y1);
+						if(d3 <= 0) d3 = calc_sq_distance(x3, y3, x1, y1);
 						else if(d3 >= 1) d3 = calc_sq_distance(x3, y3, x4, y4);
 						else             d3 = calc_sq_distance(x3, y3, x1 + d3*dx, y1 + d3*dy);
 					}
@@ -1641,9 +1851,9 @@ namespace o3
 
 			//------------------------------------------------------------------------
 			void bezier(double x1, double y1, 
-									double x2, double y2, 
-									double x3, double y3, 
-									double x4, double y4)
+				double x2, double y2, 
+				double x3, double y3, 
+				double x4, double y4)
 			{
 				// m_points.push(V2<double>(x1, y1)); first point skipped in "curve to"
 				recursive_bezier(x1, y1, x2, y2, x3, y3, x4, y4, 0);
@@ -1664,7 +1874,7 @@ namespace o3
 			V2<double> target(x0,y0);
 			V2<double> cp1(cp1x,cp1y);
 			V2<double> cp2(cp2x,cp2y);
-			
+
 			target = TransformPoint(target);
 			cp1 = TransformPoint(cp1);
 			cp2 = TransformPoint(cp2);
@@ -1685,7 +1895,7 @@ namespace o3
 				V2<double> point(x,y);
 				m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
 			}
-			
+
 
 			m_lastpoint = target;
 		}
@@ -1714,16 +1924,16 @@ namespace o3
 
 		o3_fun void save()
 		{
-//			RenderState *PreviousState = m_currentrenderstate;
+			//			RenderState *PreviousState = m_currentrenderstate;
 			RenderState RS = *m_currentrenderstate;
 			m_renderstates.push(RS);
 			m_currentrenderstate = &m_renderstates[m_renderstates.size()-1];
-//			for (size_t i = 0;i<PreviousState->ClippingPaths.size();i++)
-//			{
-//				m_currentrenderstate->ClippingPaths.push(PreviousState->ClippingPaths[i]);
-//			}
+			//			for (size_t i = 0;i<PreviousState->ClippingPaths.size();i++)
+			//			{
+			//				m_currentrenderstate->ClippingPaths.push(PreviousState->ClippingPaths[i]);
+			//			}
 		};
-		
+
 		void RestoreStateToGraphicsObject()
 		{
 			m_graphics.clipBox(m_currentrenderstate->ClipTopLeft.x,
@@ -1736,7 +1946,7 @@ namespace o3
 			unsigned char *fc = (unsigned char *)&m_currentrenderstate->FillColor;
 			m_graphics.fillColor(fc[2], fc[1], fc[0], fc[3]);
 		};
-		
+
 		o3_fun void restore()
 		{
 			if (m_renderstates.size()>1) 
@@ -1765,7 +1975,7 @@ namespace o3
 		o3_fun void transform(double m11, double m12, double m21, double m22, double dx, double dy)
 		{
 			M33<double> trans;
-			
+
 			trans.M[0][0] = m11;
 			trans.M[0][1] = m12;
 			trans.M[1][0] = m21;
@@ -1802,7 +2012,7 @@ namespace o3
 				double rx, double ry, 
 				double a1, double a2, 
 				bool ccw=true):
-				
+
 			m_x(x), m_y(y), m_rx(rx), m_ry(ry), m_scale(1.0)
 			{
 				normalize(a1, a2, ccw);
@@ -1874,7 +2084,7 @@ namespace o3
 
 		o3_fun void arc(double x0, double y0, double radius, double startAngle, double endAngle, bool anticlockwise)
 		{
-			
+
 			ArcGen Gen(x0,y0,radius,radius, startAngle, endAngle, (anticlockwise)?true:false);
 			double x, y;
 
@@ -1893,7 +2103,7 @@ namespace o3
 				V2<double> point(x,y);
 				m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
 			}
-			
+
 			int lastpathsize = m_paths[m_paths.size()-1].m_path.size();
 			if (lastpathsize >0)
 			{
@@ -1910,8 +2120,8 @@ namespace o3
 		{
 			double x2=0,y2=0,x1=m_w,y1=m_h;
 			// calculate extends, set 2d clipping rect for now
-			
-			
+
+
 			if (m_paths.size() == 0)
 			{
 				m_currentrenderstate->ClippingEnabled = false;
@@ -1923,7 +2133,7 @@ namespace o3
 				AttachAlpha();
 				m_graphics.EnableAlphaMask( true ) ;
 
-				
+
 				agg::agg::rasterizer_scanline_aa<> m_ras;
 
 				typedef agg::agg::renderer_base<agg::agg::pixfmt_gray8> ren_base;
@@ -1950,10 +2160,10 @@ namespace o3
 							y1 = __min(p.y, y1);
 							y2 = __max(p.y, y2);
 #ifdef IMAGE_ALPHAMAP_ENABLED
-						path.move_to(p.x,p.y);
+							path.move_to(p.x,p.y);
 #endif
 						}
-						
+
 						for (size_t j = 0 ;j <pathlen ;j++)
 						{
 							V2<double> &p = m_paths[i].m_path[j];
@@ -1968,7 +2178,7 @@ namespace o3
 #ifdef IMAGE_ALPHAMAP_ENABLED
 						path.close_polygon();
 #endif
-							
+
 					};
 				};
 #ifdef IMAGE_ALPHAMAP_ENABLED
