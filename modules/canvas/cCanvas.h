@@ -24,7 +24,7 @@
 
 #include <lib_png.h>
 #include <lib_agg.h>
-//#include <lib_freetype.h>
+#include <lib_freetype.h>
 
 #include "cCanvas_colors.h"
 #include "cCanvas_utils.h"
@@ -159,13 +159,13 @@ namespace o3
 			m_graphics_attached = false;
 		};
 
-		static o3_ext("cO3") o3_fun siScr image()
+		static o3_ext("cO3") o3_fun siScr canvas()
 		{
 			o3_trace3 trace;
 			return o3_new(cCanvas)();
 		}
 
-		static o3_ext("cO3") o3_fun siScr image(size_t w, size_t h, const char* mode = "argb" )
+		static o3_ext("cO3") o3_fun siScr canvas(size_t w, size_t h, const char* mode = "argb" )
 		{
 			return o3_new(cCanvas)(w,h,mode);
 		}

@@ -13,6 +13,7 @@ namespace o3
 		typedef unsigned int uInt ;
 		typedef unsigned char  Byte;  /* 8 bits */
 		typedef Byte Bytef;
+
 #ifdef O3_WIN32
 		#define png_snprintf _snprintf   /* Added to v 1.2.19 */
 		#define png_snprintf2 _snprintf

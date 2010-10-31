@@ -17,15 +17,16 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_LIST_H
-#include FT_OUTLINE_H
-#include FT_INTERNAL_VALIDATE_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_RFORK_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H    /* for SFNT_Load_Table_Func */
+//#include <ft2build.h>
+
+#include "../../include/freetype/ftlist.h" //FT_LIST_H
+#include "../../include/freetype/ftoutln.h" //FT_OUTLINE_H
+#include "../../include/freetype/internal/ftvalid.h" //FT_INTERNAL_VALIDATE_H
+//#include FT_INTERNAL_OBJECTS_H
+//#include FT_INTERNAL_DEBUG_H
+#include "../../include/freetype/internal/ftrfork.h" //FT_INTERNAL_RFORK_H
+#include "../../include/freetype/internal/ftstream.h" //FT_INTERNAL_STREAM_H
+#include "../../include/freetype/internal/sfnt.h" //FT_INTERNAL_SFNT_H    /* for SFNT_Load_Table_Func */
 #include FT_TRUETYPE_TABLES_H
 #include FT_TRUETYPE_TAGS_H
 #include FT_TRUETYPE_IDS_H

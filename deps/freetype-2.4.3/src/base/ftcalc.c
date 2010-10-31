@@ -35,9 +35,9 @@
 //#include <ft2build.h>
 //#include FT_GLYPH_H
 
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_OBJECTS_H
+#include "../../include/freetype/internal/ftcalc.h" //FT_INTERNAL_CALC_H
+#include "../../include/freetype/internal/ftdebug.h" //FT_INTERNAL_DEBUG_H
+#include "../../include/freetype/internal/ftobjs.h" //FT_INTERNAL_OBJECTS_H
 
 #ifdef FT_MULFIX_INLINED
 #undef FT_MulFix
