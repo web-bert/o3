@@ -66,10 +66,10 @@
   */
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_INTERNAL_STREAM_H
+//#include <ft2build.h>
+#include "../../include/freetype/freetype.h" //FT_FREETYPE_H
+#include "../../include/freetype/tttags.h" //FT_TRUETYPE_TAGS_H
+#include "../../include/freetype/internal/ftstream.h"// FT_INTERNAL_STREAM_H
 #include "ftbase.h"
 
   /* This is for Mac OS X.  Without redefinition, OS_INLINE */
