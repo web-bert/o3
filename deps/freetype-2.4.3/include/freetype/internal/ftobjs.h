@@ -38,7 +38,7 @@
 //#include FT_INTERNAL_PIC_H
 
 #ifdef FT_CONFIG_OPTION_INCREMENTAL
-#include "ftincrem.h"
+#include "../ftincrem.h"
 #endif
 
 

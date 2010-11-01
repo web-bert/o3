@@ -19,11 +19,11 @@
 #include <v8.h>
 #include <o3.h>
 #include <js/js.h>
-#include <xml/xml.h>
-#include <fastxml/fastxml.h>
+//#include <xml/xml.h>
+//#include <fastxml/fastxml.h>
 
 //#include <socket/socket.h>
-#include <image/image.h>
+#include <canvas/canvas.h>
 
 using namespace o3;
 using namespace v8;
@@ -37,9 +37,9 @@ init (Handle<Object> target)
   
   g_sys = new cSys();
   siMgr mgr = o3_new(cMgr)(); // will be referenced by cJs1
-  mgr->addExtTraits(cFastXml::extTraits());
-  mgr->addExtTraits(cXml::extTraits());
-  mgr->addExtTraits(cImage::extTraits());	
+  //mgr->addExtTraits(cFastXml::extTraits());
+  //mgr->addExtTraits(cXml::extTraits());
+  mgr->addExtTraits(cCanvas::extTraits());	
 
   iCtx* ctx = o3_new(cJs)(target, mgr, 0, 0, 0);
   ctx->addRef(); // will be released by a clenup callback in the cJs1

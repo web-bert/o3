@@ -364,7 +364,7 @@ typedef ptrdiff_t  FT_PtrDist;
     int  band_size;
     int  band_shoot;
 
-    ft_jmp_buf  jump_buffer;
+    jmp_buf  jump_buffer;
 
     void*       buffer;
     long        buffer_size;

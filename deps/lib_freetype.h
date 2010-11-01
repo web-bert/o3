@@ -1,6 +1,18 @@
 
 #ifndef O3_FREETYPE
 #define O3_FREETYPE
+
+
+// standard includes have been pulled out of namespace to prevent collission of globals!
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <setjmp.h>
+#include <stdarg.h>
+#include <string.h>
+#include <limits.h>
+
+
 namespace o3
 {
 	namespace freetype

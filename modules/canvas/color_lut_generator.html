@@ -58,7 +58,7 @@
 				o[l++] = '\t{';
 				var t = arr[i];
 				for(var j=0;j<26;j++){
-					if(t[j]) o[l++] = t[j], o[l++] = ",";
+					if(t[j]) o[l++] = '0x'+parseInt(t[j]).toString(16), o[l++] = ",";
 					else o[l++] = "0",o[l++] = ",";
 				}
 				l--;o[l++] = '},\n';

@@ -207,7 +207,7 @@ namespace o3
 		void fill();
 		void stroke();
 		void clip();
-		boolean isPointInPath(double x, double y);
+		bool isPointInPath(double x, double y);
 
 		// focus management
 		// needs communication with the dom

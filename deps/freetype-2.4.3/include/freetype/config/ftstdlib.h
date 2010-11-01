@@ -33,7 +33,7 @@
 #define __FTSTDLIB_H__
 
 
-#include <stddef.h>
+
 
 #define ft_ptrdiff_t  ptrdiff_t
 
@@ -57,7 +57,6 @@
   /**********************************************************************/
 
 
-#include <limits.h>
 
 #define FT_CHAR_BIT   CHAR_BIT
 #define FT_INT_MAX    INT_MAX
@@ -73,7 +72,6 @@
   /**********************************************************************/
 
 
-#include <string.h>
 
 #define ft_memchr   memchr
 #define ft_memcmp   memcmp
@@ -97,7 +95,7 @@
   /**********************************************************************/
 
 
-#include <stdio.h>
+
 
 #define FT_FILE     FILE
 #define ft_fclose   fclose
@@ -115,7 +113,6 @@
   /**********************************************************************/
 
 
-#include <stdlib.h>
 
 #define ft_qsort  qsort
 
@@ -151,8 +148,6 @@
   /**********************************************************************/
 
 
-#include <setjmp.h>
-
 #define ft_jmp_buf     jmp_buf  /* note: this cannot be a typedef since */
                                 /*       jmp_buf is defined as a macro  */
                                 /*       on certain platforms           */
@@ -164,7 +159,7 @@
   /* the following is only used for debugging purposes, i.e., if */
   /* FT_DEBUG_LEVEL_ERROR or FT_DEBUG_LEVEL_TRACE are defined    */
 
-#include <stdarg.h>
+
 
 
 #endif /* __FTSTDLIB_H__ */
