@@ -98,8 +98,7 @@
 
 #ifdef _STANDALONE_
 
-
-  /* define this to dump debugging information */
+/* define this to dump debugging information */
 /* #define FT_DEBUG_LEVEL_TRACE */
 
 
@@ -364,7 +363,7 @@ typedef ptrdiff_t  FT_PtrDist;
     int  band_size;
     int  band_shoot;
 
-    jmp_buf  jump_buffer;
+    ft_jmp_buf  jump_buffer;
 
     void*       buffer;
     long        buffer_size;
