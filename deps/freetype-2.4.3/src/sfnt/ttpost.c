@@ -25,9 +25,9 @@
   /*************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_STREAM_H
+//#include FT_TRUETYPE_TAGS_H
 #include "ttpost.h"
 
 #include "sferrors.h"
@@ -49,7 +49,7 @@
 #ifdef FT_CONFIG_OPTION_POSTSCRIPT_NAMES
 
 
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+//#include FT_SERVICE_POSTSCRIPT_CMAPS_H
 
 #define MAC_NAME( x )  ( (FT_String*)psnames->macintosh_name( x ) )
 

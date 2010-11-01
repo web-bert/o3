@@ -16,9 +16,9 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_TRIGONOMETRY_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_OBJECTS_H
+//#include FT_TRIGONOMETRY_H
 
 
   /* the following is 0.2715717684432231 * 2^30 */

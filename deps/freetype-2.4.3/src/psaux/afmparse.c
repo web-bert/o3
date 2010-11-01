@@ -15,9 +15,9 @@
 /*                                                                         */
 /***************************************************************************/
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+//#include <ft2build.h>
+//#include FT_FREETYPE_H
+//#include FT_INTERNAL_POSTSCRIPT_AUX_H
 
 #include "afmparse.h"
 #include "psconv.h"

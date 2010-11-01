@@ -21,9 +21,9 @@
 #include "pfrgload.h"
 #include "pfrcmap.h"
 #include "pfrsbit.h"
-#include FT_OUTLINE_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_TRUETYPE_IDS_H 
+//#include FT_OUTLINE_H
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_TRUETYPE_IDS_H 
 
 #include "pfrerror.h"
 

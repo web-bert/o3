@@ -27,16 +27,16 @@
 #include "../../include/freetype/internal/ftrfork.h" //FT_INTERNAL_RFORK_H
 #include "../../include/freetype/internal/ftstream.h" //FT_INTERNAL_STREAM_H
 #include "../../include/freetype/internal/sfnt.h" //FT_INTERNAL_SFNT_H    /* for SFNT_Load_Table_Func */
-#include FT_TRUETYPE_TABLES_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_TRUETYPE_IDS_H
+#include "../../include/freetype/tttables.h"//FT_TRUETYPE_TABLES_H
+#include "../../include/freetype/tttags.h"//FT_TRUETYPE_TAGS_H
+#include "../../include/freetype/ttnameid.h"//FT_TRUETYPE_IDS_H
 
-#include FT_SERVICE_SFNT_H
-#include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_GLYPH_DICT_H
-#include FT_SERVICE_TT_CMAP_H
-#include FT_SERVICE_KERNING_H
-#include FT_SERVICE_TRUETYPE_ENGINE_H
+#include "../../include/freetype/internal/services/svsfnt.h" //FT_SERVICE_SFNT_H
+#include "../../include/freetype/internal/services/svpostnm.h" // FT_SERVICE_POSTSCRIPT_NAME_H
+#include "../../include/freetype/internal/services/svgldict.h" // FT_SERVICE_GLYPH_DICT_H
+#include "../../include/freetype/internal/services/svttcmap.h" // FT_SERVICE_TT_CMAP_H
+#include "../../include/freetype/internal/services/svkern.h" // FT_SERVICE_KERNING_H
+#include "../../include/freetype/internal/services/svtteng.h" // FT_SERVICE_TRUETYPE_ENGINE_H
 
 #ifdef FT_CONFIG_OPTION_MAC_FONTS
 #include "ftbase.h"

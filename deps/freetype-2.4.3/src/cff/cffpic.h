@@ -22,7 +22,7 @@
   
 FT_BEGIN_HEADER
 
-#include FT_INTERNAL_PIC_H
+//#include FT_INTERNAL_PIC_H
 
 #ifndef FT_CONFIG_OPTION_PIC
 #define FT_CFF_SERVICE_PS_INFO_GET         cff_service_ps_info
@@ -37,12 +37,12 @@ FT_BEGIN_HEADER
 
 #else /* FT_CONFIG_OPTION_PIC */
 
-#include FT_SERVICE_GLYPH_DICT_H
+//#include FT_SERVICE_GLYPH_DICT_H
 #include "cffparse.h"
-#include FT_SERVICE_POSTSCRIPT_INFO_H
-#include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_TT_CMAP_H
-#include FT_SERVICE_CID_H
+//#include FT_SERVICE_POSTSCRIPT_INFO_H
+//#include FT_SERVICE_POSTSCRIPT_NAME_H
+//#include FT_SERVICE_TT_CMAP_H
+//#include FT_SERVICE_CID_H
 
   typedef struct CffModulePIC_
   {

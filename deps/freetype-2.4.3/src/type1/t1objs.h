@@ -20,10 +20,10 @@
 #define __T1OBJS_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_CONFIG_CONFIG_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_OBJECTS_H
+//#include FT_CONFIG_CONFIG_H
+//#include FT_INTERNAL_TYPE1_TYPES_H
 
 
 FT_BEGIN_HEADER

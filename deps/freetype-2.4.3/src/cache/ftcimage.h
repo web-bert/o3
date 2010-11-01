@@ -36,8 +36,8 @@
 #define __FTCIMAGE_H__
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
+//#include <ft2build.h>
+//#include FT_CACHE_H
 #include "ftcglyph.h"
 
 FT_BEGIN_HEADER

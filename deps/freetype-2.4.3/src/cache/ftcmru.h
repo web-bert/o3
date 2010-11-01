@@ -44,8 +44,8 @@
 #define __FTCMRU_H__
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+//#include <ft2build.h>
+//#include FT_FREETYPE_H
 
 #ifdef FREETYPE_H
 #error "freetype.h of FreeType 1 has been loaded!"

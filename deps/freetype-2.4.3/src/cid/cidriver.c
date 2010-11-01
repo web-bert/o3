@@ -16,17 +16,17 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
+//#include <ft2build.h>
 #include "cidriver.h"
 #include "cidgload.h"
-#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_DEBUG_H
 
 #include "ciderrs.h"
 
-#include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_XFREE86_NAME_H
-#include FT_SERVICE_POSTSCRIPT_INFO_H
-#include FT_SERVICE_CID_H
+//#include FT_SERVICE_POSTSCRIPT_NAME_H
+//#include FT_SERVICE_XFREE86_NAME_H
+//#include FT_SERVICE_POSTSCRIPT_INFO_H
+#include "../../include/freetype/internal/services/svcid.h"//FT_SERVICE_CID_H
 
 
   /*************************************************************************/

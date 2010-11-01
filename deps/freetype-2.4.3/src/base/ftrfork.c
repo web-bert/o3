@@ -24,10 +24,10 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_RFORK_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_STREAM_H
+//#include FT_INTERNAL_RFORK_H
 
 
 #undef  FT_COMPONENT

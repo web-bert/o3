@@ -24,16 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-#include <ft2build.h>
+//#include <ft2build.h>
 
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_BDF_H
-#include FT_TRUETYPE_IDS_H 
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_STREAM_H
+//#include FT_INTERNAL_OBJECTS_H
+//#include FT_BDF_H
+//#include FT_TRUETYPE_IDS_H 
 
-#include FT_SERVICE_BDF_H
-#include FT_SERVICE_XFREE86_NAME_H
+//#include FT_SERVICE_BDF_H
+//#include FT_SERVICE_XFREE86_NAME_H
 
 #include "bdf.h"
 #include "bdfdrivr.h"

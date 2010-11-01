@@ -16,10 +16,10 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
+//#include <ft2build.h>
+//#include FT_CACHE_H
 #include "ftcglyph.h"
-#include FT_ERRORS_H
+//#include FT_ERRORS_H
 
 #include "ftccback.h"
 #include "ftcerror.h"

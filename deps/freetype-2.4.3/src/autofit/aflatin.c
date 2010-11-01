@@ -16,8 +16,8 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_ADVANCES_H
+//#include <ft2build.h>
+//#include FT_ADVANCES_H
 
 #include "aflatin.h"
 #include "aferrors.h"

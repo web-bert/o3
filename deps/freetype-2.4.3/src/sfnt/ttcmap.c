@@ -16,13 +16,13 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_DEBUG_H
 
 #include "sferrors.h"           /* must come before FT_INTERNAL_VALIDATE_H */
 
-#include FT_INTERNAL_VALIDATE_H
-#include FT_INTERNAL_STREAM_H
+//#include FT_INTERNAL_VALIDATE_H
+//#include FT_INTERNAL_STREAM_H
 #include "ttload.h"
 #include "ttcmap.h"
 #include "sfntpic.h"

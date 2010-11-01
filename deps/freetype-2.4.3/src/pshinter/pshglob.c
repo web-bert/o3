@@ -17,9 +17,9 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_OBJECTS_H
+//#include <ft2build.h>
+//#include FT_FREETYPE_H
+//#include FT_INTERNAL_OBJECTS_H
 #include "pshglob.h"
 
 #ifdef DEBUG_HINTER

@@ -198,6 +198,8 @@ namespace o3
 			return 0;
 		};
 
+
+
 		o3_get unsigned long height()
 		{
 			return 0;

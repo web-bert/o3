@@ -17,12 +17,12 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_TYPE1_TABLES_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_OBJECTS_H
+//#include FT_INTERNAL_STREAM_H
+//#include FT_TRUETYPE_TAGS_H
+//#include FT_TYPE1_TABLES_H
 
 #include "cffload.h"
 #include "cffparse.h"

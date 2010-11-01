@@ -17,11 +17,11 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_CALC_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
-#include FT_OUTLINE_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_CALC_H
+//#include FT_INTERNAL_DEBUG_H
+#include "../../include/freetype/internal/pshints.h"//FT_INTERNAL_POSTSCRIPT_HINTS_H
+//#include FT_OUTLINE_H
 
 #include "t1decode.h"
 #include "psobjs.h"

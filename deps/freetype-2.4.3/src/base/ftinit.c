@@ -37,11 +37,11 @@
   /*************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_CONFIG_CONFIG_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_MODULE_H
+//#include <ft2build.h>
+//#include FT_CONFIG_CONFIG_H
+//#include FT_INTERNAL_OBJECTS_H
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_MODULE_H
 #include "basepic.h"
 
 
@@ -64,7 +64,7 @@
 #endif
 
 
-#include FT_CONFIG_MODULES_H
+#include "../../include/freetype/config/ftmodule.h"//FT_CONFIG_MODULES_H
 
 
 #undef  FT_USE_MODULE
@@ -73,7 +73,7 @@
   static
   const FT_Module_Class*  const ft_default_modules[] =
   {
-#include FT_CONFIG_MODULES_H
+#include "../../include/freetype/config/ftmodule.h"//FT_CONFIG_MODULES_H
     0
   };
 

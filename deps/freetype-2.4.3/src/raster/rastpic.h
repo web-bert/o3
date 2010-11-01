@@ -22,7 +22,7 @@
   
 FT_BEGIN_HEADER
 
-#include FT_INTERNAL_PIC_H
+//#include FT_INTERNAL_PIC_H
 
 #ifndef FT_CONFIG_OPTION_PIC
 #define FT_STANDARD_RASTER_GET     ft_standard_raster

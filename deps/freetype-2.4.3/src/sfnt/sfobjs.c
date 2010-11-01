@@ -16,17 +16,17 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
+//#include <ft2build.h>
 #include "sfobjs.h"
 #include "ttload.h"
 #include "ttcmap.h"
 #include "ttkern.h"
-#include FT_INTERNAL_SFNT_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_TRUETYPE_IDS_H
-#include FT_TRUETYPE_TAGS_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_SFNT_NAMES_H
+//#include FT_INTERNAL_SFNT_H
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_TRUETYPE_IDS_H
+//#include FT_TRUETYPE_TAGS_H
+//#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+//#include FT_SFNT_NAMES_H
 #include "sferrors.h"
 
 #ifdef TT_CONFIG_OPTION_BDF

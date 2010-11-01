@@ -22,7 +22,7 @@
 
 #include "pshrec.h"
 #include "pshglob.h"
-#include FT_TRIGONOMETRY_H
+//#include FT_TRIGONOMETRY_H
 
 
 FT_BEGIN_HEADER

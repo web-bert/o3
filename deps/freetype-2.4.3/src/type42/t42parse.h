@@ -20,7 +20,7 @@
 
 
 #include "t42objs.h"
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
+//#include FT_INTERNAL_POSTSCRIPT_AUX_H
 
 
 FT_BEGIN_HEADER

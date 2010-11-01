@@ -20,12 +20,12 @@
 #define __CFFOBJS_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_OBJECTS_H
 #include "cfftypes.h"
-#include FT_INTERNAL_TRUETYPE_TYPES_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
+//#include FT_INTERNAL_TRUETYPE_TYPES_H
+//#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+//#include FT_INTERNAL_POSTSCRIPT_HINTS_H
 
 
 FT_BEGIN_HEADER

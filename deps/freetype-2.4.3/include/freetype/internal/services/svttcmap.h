@@ -24,8 +24,8 @@
 #ifndef __SVTTCMAP_H__
 #define __SVTTCMAP_H__
 
-#include FT_INTERNAL_SERVICE_H
-#include FT_TRUETYPE_TABLES_H
+//#include FT_INTERNAL_SERVICE_H
+//#include FT_TRUETYPE_TABLES_H
 
 
 FT_BEGIN_HEADER

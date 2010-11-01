@@ -21,8 +21,8 @@
 #ifndef __FT_ZOPEN_H__
 #define __FT_ZOPEN_H__
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
+//#include <ft2build.h>
+//#include FT_FREETYPE_H
 
 
   /*

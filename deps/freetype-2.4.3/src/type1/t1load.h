@@ -20,10 +20,10 @@
 #define __T1LOAD_H__
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_POSTSCRIPT_AUX_H
-#include FT_MULTIPLE_MASTERS_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_STREAM_H
+//#include FT_INTERNAL_POSTSCRIPT_AUX_H
+//#include FT_MULTIPLE_MASTERS_H
 
 #include "t1parse.h"
 

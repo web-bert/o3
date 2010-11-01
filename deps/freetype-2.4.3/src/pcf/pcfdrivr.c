@@ -25,16 +25,16 @@ THE SOFTWARE.
 */
 
 
-#include <ft2build.h>
+//#include <ft2build.h>
 
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_GZIP_H
-#include FT_LZW_H
-#include FT_ERRORS_H
-#include FT_BDF_H
-#include FT_TRUETYPE_IDS_H 
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_STREAM_H
+//#include FT_INTERNAL_OBJECTS_H
+#include "../../include/freetype/ftgzip.h" //FT_GZIP_H
+#include "../../include/freetype/ftlzw.h" //FT_LZW_H
+#include "../../include/freetype/fterrors.h"//FT_ERRORS_H
+#include "../../include/freetype/ftbdf.h" //FT_BDF_H
+//#include FT_TRUETYPE_IDS_H 
 
 #include "pcf.h"
 #include "pcfdrivr.h"
@@ -46,8 +46,8 @@ THE SOFTWARE.
 #undef  FT_COMPONENT
 #define FT_COMPONENT  trace_pcfread
 
-#include FT_SERVICE_BDF_H
-#include FT_SERVICE_XFREE86_NAME_H
+#include "../../include/freetype/internal/services/svbdf.h" //FT_SERVICE_BDF_H
+//#include FT_SERVICE_XFREE86_NAME_H
 
 
   /*************************************************************************/

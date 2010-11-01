@@ -19,8 +19,8 @@
 #ifndef __SVPFR_H__
 #define __SVPFR_H__
 
-#include FT_PFR_H
-#include FT_INTERNAL_SERVICE_H
+#include "../../ftpfr.h"//FT_PFR_H
+//#include FT_INTERNAL_SERVICE_H
 
 
 FT_BEGIN_HEADER

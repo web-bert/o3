@@ -16,11 +16,11 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_CONFIG_CONFIG_H
-#include FT_MULTIPLE_MASTERS_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_CONFIG_CONFIG_H
+//#include FT_MULTIPLE_MASTERS_H
+//#include FT_INTERNAL_TYPE1_TYPES_H
 
 #include "cidload.h"
 
@@ -147,7 +147,7 @@
 
 
   FT_CALLBACK_DEF( FT_Error )
-  parse_font_matrix( CID_Face     face,
+  cidload_parse_font_matrix( CID_Face     face,
                      CID_Parser*  parser )
   {
     FT_Matrix*    matrix;
@@ -268,7 +268,7 @@
 #include "cidtoken.h"
 
     T1_FIELD_CALLBACK( "FDArray",         parse_fd_array, 0 )
-    T1_FIELD_CALLBACK( "FontMatrix",      parse_font_matrix, 0 )
+    T1_FIELD_CALLBACK( "FontMatrix",      cidload_parse_font_matrix, 0 )
     T1_FIELD_CALLBACK( "ExpansionFactor", parse_expansion_factor, 0 )
 
     { 0, T1_FIELD_LOCATION_CID_INFO, T1_FIELD_TYPE_NONE, 0, 0, 0, 0, 0, 0 }

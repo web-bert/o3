@@ -25,9 +25,9 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_SERVICE_GX_VALIDATE_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_OBJECTS_H
+#include "../../include/freetype/internal/services/svgxval.h"//FT_SERVICE_GX_VALIDATE_H
 
 
   /* documentation is in ftgxval.h */

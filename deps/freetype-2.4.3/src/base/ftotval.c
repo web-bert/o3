@@ -15,10 +15,10 @@
 /*                                                                         */
 /***************************************************************************/
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_SERVICE_OPENTYPE_VALIDATE_H
-#include FT_OPENTYPE_VALIDATE_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_OBJECTS_H
+#include "../../include/freetype/internal/services/svotval.h"//FT_SERVICE_OPENTYPE_VALIDATE_H
+//#include FT_OPENTYPE_VALIDATE_H
 
 
   /* documentation is in ftotval.h */

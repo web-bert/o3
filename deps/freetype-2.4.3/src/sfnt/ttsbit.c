@@ -16,10 +16,10 @@
 /*                                                                         */
 /***************************************************************************/
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_STREAM_H
+//#include FT_TRUETYPE_TAGS_H
 
   /*
    *  Alas, the memory-optimized sbit loader can't be used when implementing
@@ -31,10 +31,10 @@
 
 #else /* FT_CONFIG_OPTION_OLD_INTERNALS */
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_TRUETYPE_TAGS_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_STREAM_H
+//#include FT_TRUETYPE_TAGS_H
 #include "ttsbit.h"
 
 #include "sferrors.h"

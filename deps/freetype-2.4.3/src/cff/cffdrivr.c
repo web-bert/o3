@@ -17,15 +17,15 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_SFNT_H
-#include FT_SERVICE_CID_H
-#include FT_SERVICE_POSTSCRIPT_INFO_H
-#include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_TT_CMAP_H
+//#include <ft2build.h>
+//#include FT_FREETYPE_H
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_STREAM_H
+//#include FT_INTERNAL_SFNT_H
+//#include FT_SERVICE_CID_H
+//#include FT_SERVICE_POSTSCRIPT_INFO_H
+//#include FT_SERVICE_POSTSCRIPT_NAME_H
+//#include FT_SERVICE_TT_CMAP_H
 
 #include "cffdrivr.h"
 #include "cffgload.h"
@@ -36,8 +36,8 @@
 #include "cfferrs.h"
 #include "cffpic.h"
 
-#include FT_SERVICE_XFREE86_NAME_H
-#include FT_SERVICE_GLYPH_DICT_H
+//#include FT_SERVICE_XFREE86_NAME_H
+//#include FT_SERVICE_GLYPH_DICT_H
 
 
   /*************************************************************************/
@@ -126,7 +126,7 @@
   /*************************************************************************/
   /*                                                                       */
   /* <Function>                                                            */
-  /*    Load_Glyph                                                         */
+  /*    cffdrivr_Load_Glyph                                                         */
   /*                                                                       */
   /* <Description>                                                         */
   /*    A driver method used to load a glyph within a given glyph slot.    */
@@ -150,7 +150,7 @@
   /*    FreeType error code.  0 means success.                             */
   /*                                                                       */
   FT_CALLBACK_DEF( FT_Error )
-  Load_Glyph( FT_GlyphSlot  cffslot,        /* CFF_GlyphSlot */
+  cffdrivr_Load_Glyph( FT_GlyphSlot  cffslot,        /* CFF_GlyphSlot */
               FT_Size       cffsize,        /* CFF_Size      */
               FT_UInt       glyph_index,
               FT_Int32      load_flags )
@@ -204,7 +204,7 @@
 
     for ( nn = 0; nn < count; nn++ )
     {
-      error = Load_Glyph( slot, face->size, start + nn, flags );
+      error = cffdrivr_Load_Glyph( slot, face->size, start + nn, flags );
       if ( error )
         break;
 
@@ -656,7 +656,7 @@
     ft_stub_set_char_sizes, /* FT_CONFIG_OPTION_OLD_INTERNALS */
     ft_stub_set_pixel_sizes, /* FT_CONFIG_OPTION_OLD_INTERNALS */
 
-    Load_Glyph,
+    cffdrivr_Load_Glyph,
 
     cff_get_kerning,
     0,                      /* FT_Face_AttachFunc      */

@@ -1,5 +1,7 @@
 #ifndef O3_LIBAGG
 #define O3_LIBAGG
+#include "lib_freetype.h"
+
 namespace o3
 {
 	namespace agg
@@ -38,6 +40,9 @@ namespace o3
 		#include "libagg-2.4/src/agg_vpgen_clip_polygon.cpp"
 		#include "libagg-2.4/src/agg_vpgen_clip_polyline.cpp"
 		#include "libagg-2.4/src/agg_vpgen_segmentator.cpp"
+
+		#include "libagg-2.4/font_freetype/agg_font_freetype.cpp"
+
 #ifdef WINDOWS
 		#include "libagg-2.4/font_win32_tt/agg_font_win32_tt.cpp"
 #endif

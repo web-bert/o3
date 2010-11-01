@@ -16,10 +16,10 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_SFNT_H
-#include FT_INTERNAL_OBJECTS_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_SFNT_H
+//#include FT_INTERNAL_OBJECTS_H
 
 #include "sfdriver.h"
 #include "ttload.h"
@@ -38,17 +38,17 @@
 
 #ifdef TT_CONFIG_OPTION_BDF
 #include "ttbdf.h"
-#include FT_SERVICE_BDF_H
+//#include FT_SERVICE_BDF_H
 #endif
 
 #include "ttcmap.h"
 #include "ttkern.h"
 #include "ttmtx.h"
 
-#include FT_SERVICE_GLYPH_DICT_H
-#include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_SFNT_H
-#include FT_SERVICE_TT_CMAP_H
+//#include FT_SERVICE_GLYPH_DICT_H
+//#include FT_SERVICE_POSTSCRIPT_NAME_H
+//#include FT_SERVICE_SFNT_H
+//#include FT_SERVICE_TT_CMAP_H
 
   /*************************************************************************/
   /*                                                                       */

@@ -17,10 +17,10 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_CALC_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_OBJECTS_H
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_CALC_H
 #include "pshalgo.h"
 
 #include "pshnterr.h"

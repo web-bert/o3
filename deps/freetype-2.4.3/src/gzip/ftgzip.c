@@ -20,22 +20,22 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_MEMORY_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_GZIP_H
-#include FT_CONFIG_STANDARD_LIBRARY_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_MEMORY_H
+//#include FT_INTERNAL_STREAM_H
+//#include FT_INTERNAL_DEBUG_H
+#include "../../include/freetype/ftgzip.h"//FT_GZIP_H
+//#include FT_CONFIG_STANDARD_LIBRARY_H
 
 
-#include FT_MODULE_ERRORS_H
+//#include FT_MODULE_ERRORS_H
 
 #undef __FTERRORS_H__
 
 #define FT_ERR_PREFIX  Gzip_Err_
 #define FT_ERR_BASE    FT_Mod_Err_Gzip
 
-#include FT_ERRORS_H
+#include "../../include/freetype/fterrors.h"//FT_ERRORS_H
 
 
 #ifdef FT_CONFIG_OPTION_USE_ZLIB
@@ -46,7 +46,7 @@
 
 #ifdef FT_CONFIG_OPTION_SYSTEM_ZLIB
 
-#include <zlib.h>
+//#include <zlib.h>
 
 #else /* !FT_CONFIG_OPTION_SYSTEM_ZLIB */
 
@@ -62,7 +62,7 @@
 #define MY_ZCALLOC /* prevent all zcalloc() & zfree() in zutils.c */
 #endif
 
-#include "zlib.h"
+//#include "zlib.h"
 
 #undef  SLOW
 #define SLOW  1  /* we can't use asm-optimized sources here! */
@@ -70,21 +70,21 @@
   /* Urgh.  `inflate_mask' must not be declared twice -- C++ doesn't like
      this.  We temporarily disable it and load all necessary header files. */
 #define NO_INFLATE_MASK
-#include "zutil.h"
-#include "inftrees.h"
-#include "infblock.h"
-#include "infcodes.h"
-#include "infutil.h"
+//#include "zutil.h"
+//#include "inftrees.h"
+//#include "infblock.h"
+//#include "infcodes.h"
+//#include "infutil.h"
 #undef  NO_INFLATE_MASK
 
   /* infutil.c must be included before infcodes.c */
-#include "zutil.c"
-#include "inftrees.c"
-#include "infutil.c"
-#include "infcodes.c"
-#include "infblock.c"
-#include "inflate.c"
-#include "adler32.c"
+//#include "zutil.c"
+//#include "inftrees.c"
+//#include "infutil.c"
+//#include "infcodes.c"
+//#include "infblock.c"
+//#include "inflate.c"
+//#include "adler32.c"
 
 #endif /* !FT_CONFIG_OPTION_SYSTEM_ZLIB */
 
@@ -158,7 +158,7 @@
     FT_Stream  source;         /* parent/source stream        */
     FT_Stream  stream;         /* embedding stream            */
     FT_Memory  memory;         /* memory allocator            */
-    z_stream   zstream;        /* zlib input stream           */
+	::o3::ZLib::z_stream   zstream;        /* zlib input stream           */
 
     FT_ULong   start;          /* starting position, after .gz header */
     FT_Byte    input[FT_GZIP_BUFFER_SIZE];   /* input read buffer  */
@@ -260,7 +260,7 @@
                      FT_Stream    stream,
                      FT_Stream    source )
   {
-    z_stream*  zstream = &zip->zstream;
+	::o3::ZLib::z_stream*  zstream = &zip->zstream;
     FT_Error   error   = Gzip_Err_Ok;
 
 
@@ -284,14 +284,14 @@
     }
 
     /* initialize zlib -- there is no zlib header in the compressed stream */
-    zstream->zalloc = (alloc_func)ft_gzip_alloc;
-    zstream->zfree  = (free_func) ft_gzip_free;
+	zstream->zalloc = (::o3::ZLib::alloc_func)ft_gzip_alloc;
+    zstream->zfree  = (::o3::ZLib::free_func) ft_gzip_free;
     zstream->opaque = stream->memory;
 
     zstream->avail_in = 0;
     zstream->next_in  = zip->buffer;
 
-    if ( inflateInit2( zstream, -MAX_WBITS ) != Z_OK ||
+    if ( inflateInit2( zstream, -::o3::ZLib::MAX_WBITS ) != ::o3::ZLib::Z_OK ||
          zstream->next_in == NULL                     )
       error = Gzip_Err_Invalid_File_Format;
 
@@ -303,7 +303,7 @@
   static void
   ft_gzip_file_done( FT_GZipFile  zip )
   {
-    z_stream*  zstream = &zip->zstream;
+    ::o3::ZLib::z_stream*  zstream = &zip->zstream;
 
 
     inflateEnd( zstream );
@@ -332,7 +332,7 @@
 
     if ( !FT_STREAM_SEEK( zip->start ) )
     {
-      z_stream*  zstream = &zip->zstream;
+      ::o3::ZLib::z_stream*  zstream = &zip->zstream;
 
 
       inflateReset( zstream );
@@ -354,7 +354,7 @@
   static FT_Error
   ft_gzip_file_fill_input( FT_GZipFile  zip )
   {
-    z_stream*  zstream = &zip->zstream;
+    ::o3::ZLib::z_stream*  zstream = &zip->zstream;
     FT_Stream  stream  = zip->source;
     FT_ULong   size;
 
@@ -389,7 +389,7 @@
   static FT_Error
   ft_gzip_file_fill_output( FT_GZipFile  zip )
   {
-    z_stream*  zstream = &zip->zstream;
+    ::o3::ZLib::z_stream*  zstream = &zip->zstream;
     FT_Error   error   = Gzip_Err_Ok;
 
 
@@ -409,16 +409,16 @@
           break;
       }
 
-      err = inflate( zstream, Z_NO_FLUSH );
+      err = inflate( zstream, ::o3::ZLib::Z_NO_FLUSH );
 
-      if ( err == Z_STREAM_END )
+      if ( err == ::o3::ZLib::Z_STREAM_END )
       {
         zip->limit = zstream->next_out;
         if ( zip->limit == zip->cursor )
           error = Gzip_Err_Invalid_Stream_Operation;
         break;
       }
-      else if ( err != Z_OK )
+      else if ( err != ::o3::ZLib::Z_OK )
       {
         error = Gzip_Err_Invalid_Stream_Operation;
         break;

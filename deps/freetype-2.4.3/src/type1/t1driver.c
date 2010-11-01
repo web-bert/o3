@@ -16,7 +16,7 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
+//#include <ft2build.h>
 #include "t1driver.h"
 #include "t1gload.h"
 #include "t1load.h"
@@ -27,16 +27,16 @@
 #include "t1afm.h"
 #endif
 
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_STREAM_H
 
-#include FT_SERVICE_MULTIPLE_MASTERS_H
-#include FT_SERVICE_GLYPH_DICT_H
-#include FT_SERVICE_XFREE86_NAME_H
-#include FT_SERVICE_POSTSCRIPT_NAME_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_SERVICE_POSTSCRIPT_INFO_H
-#include FT_SERVICE_KERNING_H
+//#include FT_SERVICE_MULTIPLE_MASTERS_H
+//#include FT_SERVICE_GLYPH_DICT_H
+//#include FT_SERVICE_XFREE86_NAME_H
+//#include FT_SERVICE_POSTSCRIPT_NAME_H
+//#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+//#include FT_SERVICE_POSTSCRIPT_INFO_H
+//#include FT_SERVICE_KERNING_H
 
 
   /*************************************************************************/
@@ -54,7 +54,7 @@
   */
 
   static FT_Error
-  t1_get_glyph_name( T1_Face     face,
+  local_t1_get_glyph_name( T1_Face     face,
                      FT_UInt     glyph_index,
                      FT_Pointer  buffer,
                      FT_UInt     buffer_max )
@@ -87,7 +87,7 @@
 
   static const FT_Service_GlyphDictRec  t1_service_glyph_dict =
   {
-    (FT_GlyphDict_GetNameFunc)  t1_get_glyph_name,
+    (FT_GlyphDict_GetNameFunc)  local_t1_get_glyph_name,
     (FT_GlyphDict_NameIndexFunc)t1_get_name_index
   };
 

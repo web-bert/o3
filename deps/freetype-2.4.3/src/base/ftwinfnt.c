@@ -16,10 +16,10 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_WINFONTS_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_SERVICE_WINFNT_H
+//#include <ft2build.h>
+#include "../../include/freetype/ftwinfnt.h" //FT_WINFONTS_H
+//#include FT_INTERNAL_OBJECTS_H
+#include "../../include/freetype/internal/services/svwinfnt.h" //FT_SERVICE_WINFNT_H
 
 
   /* documentation is in ftwinfnt.h */

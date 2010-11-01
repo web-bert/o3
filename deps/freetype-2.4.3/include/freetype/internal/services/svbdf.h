@@ -19,8 +19,8 @@
 #ifndef __SVBDF_H__
 #define __SVBDF_H__
 
-#include FT_BDF_H
-#include FT_INTERNAL_SERVICE_H
+//#include FT_BDF_H
+//#include FT_INTERNAL_SERVICE_H
 
 
 FT_BEGIN_HEADER

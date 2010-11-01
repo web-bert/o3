@@ -16,12 +16,12 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_CACHE_H
+//#include <ft2build.h>
+//#include FT_CACHE_H
 #include "ftcsbits.h"
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DEBUG_H
-#include FT_ERRORS_H
+//#include FT_INTERNAL_OBJECTS_H
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_ERRORS_H
 
 #include "ftccback.h"
 #include "ftcerror.h"

@@ -16,9 +16,9 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_OBJECTS_H
+//#include FT_SERVICE_POSTSCRIPT_CMAPS_H
 
 #include "psmodule.h"
 #include "pstables.h"

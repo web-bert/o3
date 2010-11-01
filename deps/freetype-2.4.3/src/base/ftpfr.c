@@ -15,9 +15,9 @@
 /*                                                                         */
 /***************************************************************************/
 
-#include <ft2build.h>
-#include FT_INTERNAL_OBJECTS_H
-#include FT_SERVICE_PFR_H
+//#include <ft2build.h>
+//#include FT_INTERNAL_OBJECTS_H
+#include "../../include/freetype/internal/services/svpfr.h" //FT_SERVICE_PFR_H
 
 
   /* check the format */

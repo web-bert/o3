@@ -16,10 +16,10 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_XFREE86_H
-#include FT_INTERNAL_OBJECTS_H
-#include FT_SERVICE_XFREE86_NAME_H
+//#include <ft2build.h>
+#include "../../include/freetype/ftxf86.h" //FT_XFREE86_H
+//#include FT_INTERNAL_OBJECTS_H
+#include "../../include/freetype/internal/services/svxf86nm.h" //FT_SERVICE_XFREE86_NAME_H
 
 
   /* documentation is in ftxf86.h */

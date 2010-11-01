@@ -25,7 +25,7 @@
 #ifndef __SFERRORS_H__
 #define __SFERRORS_H__
 
-#include FT_MODULE_ERRORS_H
+//#include FT_MODULE_ERRORS_H
 
 #undef __FTERRORS_H__
 
@@ -34,7 +34,7 @@
 
 #define FT_KEEP_ERR_PREFIX
 
-#include FT_ERRORS_H
+#include "../../include/freetype/fterrors.h"//FT_ERRORS_H
 
 #endif /* __SFERRORS_H__ */
 

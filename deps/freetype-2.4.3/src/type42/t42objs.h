@@ -18,15 +18,15 @@
 #ifndef __T42OBJS_H__
 #define __T42OBJS_H__
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_TYPE1_TABLES_H
-#include FT_INTERNAL_TYPE1_TYPES_H
+//#include <ft2build.h>
+//#include FT_FREETYPE_H
+//#include FT_TYPE1_TABLES_H
+//#include FT_INTERNAL_TYPE1_TYPES_H
 #include "t42types.h"
-#include FT_INTERNAL_OBJECTS_H
-#include FT_INTERNAL_DRIVER_H
-#include FT_SERVICE_POSTSCRIPT_CMAPS_H
-#include FT_INTERNAL_POSTSCRIPT_HINTS_H
+//#include FT_INTERNAL_OBJECTS_H
+//#include FT_INTERNAL_DRIVER_H
+//#include FT_SERVICE_POSTSCRIPT_CMAPS_H
+//#include FT_INTERNAL_POSTSCRIPT_HINTS_H
 
 
 FT_BEGIN_HEADER

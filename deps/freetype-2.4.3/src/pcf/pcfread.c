@@ -26,11 +26,11 @@ THE SOFTWARE.
 */
 
 
-#include <ft2build.h>
+//#include <ft2build.h>
 
-#include FT_INTERNAL_DEBUG_H
-#include FT_INTERNAL_STREAM_H
-#include FT_INTERNAL_OBJECTS_H
+//#include FT_INTERNAL_DEBUG_H
+//#include FT_INTERNAL_STREAM_H
+//#include FT_INTERNAL_OBJECTS_H
 
 #include "pcf.h"
 #include "pcfread.h"

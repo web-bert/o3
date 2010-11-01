@@ -16,9 +16,9 @@
 /***************************************************************************/
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_INTERNAL_OBJECTS_H
+//#include <ft2build.h>
+//#include FT_FREETYPE_H
+//#include FT_INTERNAL_OBJECTS_H
 #include "ftspic.h"
 
 #ifdef FT_CONFIG_OPTION_PIC
