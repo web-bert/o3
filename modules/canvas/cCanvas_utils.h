@@ -39,6 +39,17 @@ namespace o3
 		}
 	}
 
+	void o3_read_data_bufstream(png::png_structp png_ptr,
+		png::png_bytep data, png::png_size_t length) 
+	{
+		cBufStream *stream = (cBufStream *) png_ptr->io_ptr;
+		if ( !stream || length != 
+			stream->read((void*) data, (size_t) length )) 
+		{				
+			png::png_error(png_ptr, "PNG file read failed.");
+		}
+	}
+
 	void o3_write_data(png::png_structp png_ptr,
 		png::png_bytep data, png::png_size_t length)
 	{

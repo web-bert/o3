@@ -472,6 +472,104 @@ o3_fun void clear(int signed_color)
 		};
 #pragma endregion ImageAPI_and_iImage
 #pragma region PNG_load_and_save
+
+		o3_set Buf src(const Buf &data, siEx *ex = 0)
+		{
+			using namespace png;			
+			// create read struct
+			png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
+
+			// check pointer
+			if (png_ptr == 0)
+			{
+				cEx::fmt(ex,"Creating PNG read struct failed."); 
+				return data;
+			}
+
+			// create info struct
+			png_infop info_ptr = png_create_info_struct(png_ptr);
+
+			// check pointer
+			if (info_ptr == 0)
+			{
+				png_destroy_read_struct(&png_ptr, 0, 0);
+				cEx::fmt(ex,"Creating PNG info struct failed."); 
+				return data;
+			}
+
+			// set error handling
+			if (setjmp(png_jmpbuf(png_ptr)))
+			{
+				png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+				cEx::fmt(ex,"Setting up PNG error handling failed."); 				
+				return data;
+			}
+
+			// I/O initialization using custom o3 methods
+			
+			cBufStream stream(*(Buf*)(&data));
+
+			png_set_read_fn(png_ptr,(void*) &stream, (png_rw_ptr) &o3_read_data_bufstream);
+
+			// read entire image (high level)
+			png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_EXPAND, 0);
+
+			// convert the png bytes to BGRA			
+			int W = png_get_image_width(png_ptr, info_ptr);
+			int H = png_get_image_height(png_ptr, info_ptr);
+
+			// get color information
+			int color_type = png_get_color_type(png_ptr, info_ptr);
+
+			png_bytep* row_pointers = png_get_rows(png_ptr, info_ptr);
+
+			switch(color_type)
+			{ 
+			case PNG_COLOR_TYPE_RGB:
+				{
+					SetupMode(W,H, "argb");
+
+					//						int pos = 0;
+
+					// get color values
+					for(int i = 0; i < (int) m_h; i++)
+					{
+						unsigned char *D = getrowptr(i);
+						for(int j = 0; j < (int)(3 * m_w); j += 3)
+						{
+							*D++ = row_pointers[i][j + 2];	// blue
+							*D++ = row_pointers[i][j + 1];	// green
+							*D++ = row_pointers[i][j];		// red
+							*D++ = 0xff;						// alpha
+						}
+					}
+
+				};break;
+			case PNG_COLOR_TYPE_RGB_ALPHA:
+				{
+					SetupMode(W,H, "argb");
+				};break;
+
+			case PNG_COLOR_TYPE_GRAY:
+				{
+					SetupMode(W,H, "gray");
+				};break;
+			case PNG_COLOR_TYPE_GRAY_ALPHA:
+				{
+					SetupMode(W,H, "argb");
+				};break;
+				break;
+
+			default:
+				png_destroy_read_struct(&png_ptr, &info_ptr, 0);
+				cEx::fmt(ex,"PNG unsupported color type.");
+				return data;
+			}
+
+			png_destroy_read_struct(&png_ptr, &info_ptr, 0);			
+			return data;
+		};
+
 		o3_set siFs src(iFs* file, siEx* ex=0)
 		{
 			using namespace png;			
@@ -943,7 +1041,8 @@ o3_fun void clear(int signed_color)
 
 		o3_set void fontFamily(const Str &fontstring)
 		{
-			fontstring;	
+			fontstring;
+			
 		};
 
 		o3_set void fontSize(const Str &fontstring)
@@ -990,11 +1089,25 @@ o3_fun void clear(int signed_color)
 
 #pragma region TextFunctions
 		
-		void fillText(const Str & text, double x, double y);
-		void fillText(const Str & text, double x, double y, double maxWidth);
-		void strokeText(const Str & text, double x, double y);
-		void strokeText(const Str & text, double x, double y, double maxWidth);
-		cImage_TextMetrics measureText(const Str & text);
+		o3_fun void fillText(const Str & text, double x, double y)
+		{
+		};
+		
+		o3_fun void fillText(const Str & text, double x, double y, double maxWidth)
+		{
+		};
+
+		o3_fun void strokeText(const Str & text, double x, double y)
+		{
+		};
+
+		o3_fun void strokeText(const Str & text, double x, double y, double maxWidth)
+		{
+		};
+
+		o3_fun siScr measureText(const Str & text) //cImage_TextMetrics 
+		{
+		};
 
 #pragma endregion TextFunctions
 
