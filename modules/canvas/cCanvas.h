@@ -851,7 +851,7 @@ o3_fun void clear(int signed_color)
 
 
 
-		o3_fun int pngBuffer(siEx* ex = 0)
+		o3_fun Buf pngBuffer(siEx* ex = 0)
 		{
 			Buf data;
 			using namespace png;
@@ -861,7 +861,7 @@ o3_fun void clear(int signed_color)
 			if (m_w==0 ||m_h == 0)
 			{
 				cEx::fmt(ex,"[write_png_file] image must have both width and height >0 before something can be written!");			
-				return 0;
+				return data;
 			}
 
 			/* initialize stuff */
@@ -870,7 +870,7 @@ o3_fun void clear(int signed_color)
 			if (!png_ptr)
 			{
 				cEx::fmt(ex,"[write_png_file] png_create_write_struct failed");
-				return 0;
+				return data;
 			}
 
 			info_ptr = png_create_info_struct(png_ptr);
@@ -878,18 +878,18 @@ o3_fun void clear(int signed_color)
 			if (!info_ptr)
 			{
 				cEx::fmt(ex,"[write_png_file] png_create_info_struct failed");
-				return 0; 
+				return data; 
 			}
 
 			if (setjmp(png_jmpbuf(png_ptr)))
 			{
 				cEx::fmt(ex,"[write_png_file] Error during init_io");
-				return 0;
+				return data;
 			}
 			
-			cBufStream stream(*(Buf*)&data);
+			
 
-			png_set_write_fn(png_ptr,(void*)&stream, 
+			png_set_write_fn(png_ptr,(void*)&data, 
 				(png_rw_ptr) &o3_write_data_bufstream, (png_flush_ptr) &o3_flush_data_bufstream);
 
 
@@ -897,7 +897,7 @@ o3_fun void clear(int signed_color)
 			if (setjmp(png_jmpbuf(png_ptr)))
 			{
 				cEx::fmt(ex,"[write_png_file] Error during writing header");
-				return 0;
+				return data;
 			};
 
 			int color_type = 0;
@@ -928,7 +928,7 @@ o3_fun void clear(int signed_color)
 			{
 				png_destroy_write_struct(&png_ptr,0);
 				cEx::fmt(ex,"[write_png_file] Error during writing bytes");
-				return 0;
+				return data;
 			};
 
 			tVec<png_bytep> row_pointers(m_h);
@@ -1004,7 +1004,7 @@ o3_fun void clear(int signed_color)
 			{
 				png_destroy_write_struct(&png_ptr,&info_ptr);
 				cEx::fmt(ex,"[write_png_file] Error during end of write");
-				return 0;
+				return data;
 			};
 
 			png_write_end(png_ptr, NULL);
@@ -1012,7 +1012,7 @@ o3_fun void clear(int signed_color)
 
 			/* cleanup heap allocation */
 
-			return 1;
+			return data;
 		};
 
 #pragma endregion PNG_load_and_save
