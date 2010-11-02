@@ -849,6 +849,171 @@ o3_fun void clear(int signed_color)
 			return 1;
 		};
 
+
+
+		o3_fun int savePng(const Buf &data, siEx* ex = 0)
+		{
+			using namespace png;
+			png_structp png_ptr;
+			png_infop info_ptr;
+
+			if (m_w==0 ||m_h == 0)
+			{
+				cEx::fmt(ex,"[write_png_file] image must have both width and height >0 before something can be written!");			
+				return 0;
+			}
+
+			/* initialize stuff */
+			png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+
+			if (!png_ptr)
+			{
+				cEx::fmt(ex,"[write_png_file] png_create_write_struct failed");
+				return 0;
+			}
+
+			info_ptr = png_create_info_struct(png_ptr);
+
+			if (!info_ptr)
+			{
+				cEx::fmt(ex,"[write_png_file] png_create_info_struct failed");
+				return 0; 
+			}
+
+			if (setjmp(png_jmpbuf(png_ptr)))
+			{
+				cEx::fmt(ex,"[write_png_file] Error during init_io");
+				return 0;
+			}
+			
+			cBufStream stream(*(Buf*)&data);
+
+			png_set_write_fn(png_ptr,(void*)&stream, 
+				(png_rw_ptr) &o3_write_data_bufstream, (png_flush_ptr) &o3_flush_data_bufstream);
+
+
+			/* write header */
+			if (setjmp(png_jmpbuf(png_ptr)))
+			{
+				cEx::fmt(ex,"[write_png_file] Error during writing header");
+				return 0;
+			};
+
+			int color_type = 0;
+			int bitdepth = 8;
+			switch (m_mode_int )
+			{
+
+			case Image::MODE_BW: 
+				color_type = PNG_COLOR_TYPE_GRAY; 
+				bitdepth = 1;
+				break;
+			case Image::MODE_GRAY: 
+				color_type = PNG_COLOR_TYPE_GRAY; 
+				break;
+			default: 
+				color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+				break;
+			}
+			// TODO! add 1bit save
+
+			png_set_IHDR(png_ptr, info_ptr, m_w, m_h,
+				bitdepth, color_type, PNG_INTERLACE_NONE,
+				PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
+
+			png_write_info(png_ptr, info_ptr);
+
+			if (setjmp(png_jmpbuf(png_ptr)))
+			{
+				png_destroy_write_struct(&png_ptr,0);
+				cEx::fmt(ex,"[write_png_file] Error during writing bytes");
+				return 0;
+			};
+
+			tVec<png_bytep> row_pointers(m_h);
+			switch (m_mode_int)
+			{
+			case Image::MODE_ARGB:
+				{
+					tVec <unsigned int> row(m_w);
+					for (size_t y = 0;y<m_h;y++)
+					{
+						unsigned int *D = (unsigned int *)_getRowPtr(y);
+						for (size_t i =0 ;i<m_w;i++)
+						{
+							unsigned int const pixel = *D++;
+							unsigned int shuffled = ((pixel >> 24)&0x255) + ((pixel << 8)&0xffffff00);
+							row[i] = shuffled;
+
+							unsigned char *c = (unsigned char*)&row[i];
+							c[0] = (unsigned char)(pixel>>16);
+							c[1] = (unsigned char)(pixel>>8);
+							c[2] = (unsigned char)(pixel);
+							c[3] = (unsigned char)(pixel>>24);
+						}
+						png_write_row(png_ptr, (png_bytep)row.ptr());
+					};
+				}
+				break;
+			case Image::MODE_RGB:
+				{
+					tVec <unsigned int> row(m_w);
+					for (size_t y = 0;y<m_h;y++)
+					{
+						unsigned char *D = (unsigned char *)_getRowPtr(y);
+						for (size_t i =0 ;i<m_w;i++)
+						{
+							unsigned char R = *D++;
+							unsigned char G = *D++;
+							unsigned char B = *D++;
+							unsigned int const pixel = (R << 24) + (G << 16) + (B << 8) + 0xff ;
+							row[i] = pixel;
+						}
+						png_write_row(png_ptr, (png_bytep)row.ptr());
+					};
+				}
+				break;
+			case Image::MODE_GRAY:
+				{
+					tVec <unsigned char> row(m_w);
+					for (size_t y = 0;y<m_h;y++)
+					{
+						unsigned char *D = (unsigned char *)_getRowPtr(y);
+						png_write_row(png_ptr, D);
+					};
+				}
+				break;
+			case Image::MODE_BW:
+				{
+					tVec <unsigned int> row(m_w);
+					for (size_t y = 0;y<m_h;y++)
+					{
+						unsigned char *D = (unsigned char *)_getRowPtr(y);
+						png_write_row(png_ptr, D);
+					};
+				}
+				break;
+
+			};
+
+			//png_write_image(png_ptr, row_pointers.ptr());
+
+
+			if (setjmp(png_jmpbuf(png_ptr)))
+			{
+				png_destroy_write_struct(&png_ptr,&info_ptr);
+				cEx::fmt(ex,"[write_png_file] Error during end of write");
+				return 0;
+			};
+
+			png_write_end(png_ptr, NULL);
+			png_destroy_write_struct(&png_ptr,&info_ptr);
+
+			/* cleanup heap allocation */
+
+			return 1;
+		};
+
 #pragma endregion PNG_load_and_save
 
 
