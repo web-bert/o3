@@ -190,7 +190,7 @@ struct cFsBase : cScr, iFs {
         return open("a") ? true : false;
     }
 
-    virtual o3_get Buf blob()
+    virtual o3_get Buf buffer()
     {
         o3_trace3 trace;
         siStream stream = open("r");
@@ -198,7 +198,7 @@ struct cFsBase : cScr, iFs {
         return stream ? Buf(stream.ptr()) : Buf();
     }
 
-    virtual o3_set Buf setBlob(const Buf& buf)
+    virtual o3_set Buf setBuffer(const Buf& buf)
     {
         o3_trace3 trace;
         siStream stream = open("w");
@@ -210,7 +210,7 @@ struct cFsBase : cScr, iFs {
     }
 
 	// writing from stream to stream by chunks
-    virtual o3_set siStream setBlob(iStream* stream, siEx* ex=0)
+    virtual o3_set siStream setBuffer(iStream* stream, siEx* ex=0)
     {		
         o3_trace3 trace;
 		static const size_t CHUNK = 4096;
