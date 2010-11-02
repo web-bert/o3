@@ -35,6 +35,7 @@
 //#include "test/test.h" 
 
 #include "canvas/canvas.h"
+#include "pdf/pdf.h"
 //#include "scanner/scan.h"
 //#include "barcode/barcode.h"
 

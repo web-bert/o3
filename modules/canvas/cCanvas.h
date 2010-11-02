@@ -36,25 +36,34 @@ namespace o3
 {
 	struct cCanvas : cScr, iImage
 	{
+#pragma region O3_SCR
+		
 		o3_begin_class(cScr)
 		    o3_add_iface(iImage)
 		o3_end_class()
 
 		o3_glue_gen()
 
-		Str m_mode;
-		int m_mode_int;
-		bool m_graphics_attached;
+		static o3_ext("cO3") o3_fun siScr canvas()
+		{
+			o3_trace3 trace;
+			return o3_new(cCanvas)();
+		}
 
-		agg::Agg2D m_graphics;
+		static o3_ext("cO3") o3_fun siScr canvas(size_t w, size_t h, const char* mode = "argb" )
+		{
+			return o3_new(cCanvas)(w,h,mode);
+		}
 
+#pragma endregion O3_SCR
+
+
+#pragma region LocalClassDefitions
 		struct Path 
 		{
 			tVec<V2<double> > m_path;
 		};
 
-		tVec<Path> m_paths;
-		V2<double> m_lastpoint;
 
 		struct RenderState
 		{
@@ -63,6 +72,17 @@ namespace o3
 			unsigned int StrokeColor;
 			double StrokeWidth;
 
+	/*
+		// css 1.0 based font properties:
+			Str FontFamily; // Serif, [Sans-serif], Monospace, fontfilenames
+			Str FontSize; // xx-small x-small small medium large x-large xx-large smaller larger length %
+			Str FontStyle; // [normal] italic oblique
+			Str FontVariant; // [normal] small-caps
+			Str FontWeight; // [normal] bold bolder lighter 100 200 300 400 500 600 700 800 900			
+			Str TextDirectionality; // [LTR], RTL -> needs to be dealt with because of align = start/end
+			Str TextBaseline; // top hanging middle [alphabetic] ideographic bottom
+		*/		
+			
 			int FillStyle;
 			M33<double> Transformation;
 			bool ClippingEnabled;
@@ -73,7 +93,16 @@ namespace o3
 			// todo -> add clipping path!
 			double miterLimit;
 		};
+#pragma endregion LocalClassDefitions
+		
+		Str m_mode;
+		int m_mode_int;
+		bool m_graphics_attached;
 
+		agg::Agg2D m_graphics;
+
+		tVec<Path> m_paths;
+		V2<double> m_lastpoint;
 		tVec<RenderState> m_renderstates;
 		RenderState *m_currentrenderstate;
 
@@ -82,7 +111,7 @@ namespace o3
 		int    m_bitdepth;
 		Buf	   m_mem;
 		Buf	   m_alphamem;
-
+#pragma region ObjectLifeCycleManagement
 		cCanvas()
 		{
 			m_w = m_h = m_stride = 0;
@@ -92,6 +121,11 @@ namespace o3
 			m_mode = Str("argb");
 			SetupRenderState();
 			Ensure32BitSurface();
+		};
+
+		cCanvas(size_t w, size_t h, const Str &mode)
+		{
+			SetupMode(w,h,mode);
 		};
 
 		void SetupMode(size_t w, size_t h, const Str &mode)
@@ -138,12 +172,6 @@ namespace o3
 			};
 		};
 
-		cCanvas(size_t w, size_t h, const Str &mode)
-		{
-			SetupMode(w,h,mode);
-
-		};
-
 		void SetupBuffer()
 		{	
 			size_t newsize = 0;
@@ -160,23 +188,41 @@ namespace o3
 			m_graphics_attached = false;
 		};
 
-		static o3_ext("cO3") o3_fun siScr canvas()
+		void Ensure32BitSurface()
 		{
-			o3_trace3 trace;
-			return o3_new(cCanvas)();
-		}
+			if (m_mode_int != Image::MODE_ARGB)
+			{
+				// TODO -- convert existing bitmap to 32 bit and remember old mode. 
+			};
 
-		static o3_ext("cO3") o3_fun siScr canvas(size_t w, size_t h, const char* mode = "argb" )
+			if (!m_graphics_attached && m_mode_int == Image::MODE_ARGB) 
+			{
+				m_graphics.attach((unsigned char *)m_mem.ptr(), m_w, m_h, m_stride*4);
+				// TODO -- check different pixel alignments
+				//				m_graphics.viewport(0,0,m_w, m_h, 0,0,m_w, m_h, agg::Agg2D::ViewportOption::XMidYMid);
+				RestoreStateToGraphicsObject();
+				m_graphics_attached = true;
+			};
+		};
+
+		void AttachAlpha()
 		{
-			return o3_new(cCanvas)(w,h,mode);
-		}
+			if (m_alphamem.size() < m_stride*m_h)
+			{
+				m_alphamem.resize(m_stride*m_h);
+				m_alphamem.set<unsigned char>(0, 0, m_alphamem.size());
+			};
+			m_graphics.attachalpha((unsigned char *)m_alphamem.ptr(), m_w, m_h, m_stride);
+		};
+
+#pragma endregion ObjectLifeCycleManagement
 
         // -------------------------------------------------------
         // 
         // Image API
         //
         // -------------------------------------------------------
- 
+#pragma region ImageAPI_and_iImage
         o3_get Str mode(){return m_mode;}
 
 		o3_get size_t x(){return m_w;}
@@ -211,7 +257,7 @@ namespace o3
 			return 0;
 		};
 
-		o3_fun void clear(int signed_color)
+o3_fun void clear(int signed_color)
 		{
 			unsigned int color = (unsigned int) signed_color;
 			switch(m_mode_int)
@@ -241,12 +287,7 @@ namespace o3
 				};
 				break;
 			};
-		};
-        
-        o3_fun int decodeColor(const Str &style){
-            return o3::decodeColor(style);
-        }
-
+		};        
 		o3_fun void setPixel(size_t x, size_t y, int signed_color)
 		{
 			unsigned int color = (unsigned int) signed_color;
@@ -351,6 +392,86 @@ namespace o3
 			return 0;
 		};
 
+		o3_fun void rect(int x, int y, int w, int h, int signed_color)    // !ALLMODES!
+		{
+			unsigned int color = (unsigned int) signed_color;
+			switch (m_mode_int)
+			{
+			case Image::MODE_ARGB:
+				{
+					int x1 = __max(0,x);
+					int x2 = __min(x+w, (int)m_w);
+					int actualw = x2-x1;
+					if (actualw <= 0 ) return;
+					int y1 = __max(0, y);
+					int y2 = __min(y+h, (int)m_h);
+					for (int sy = y1;sy<y2;sy++)
+					{
+						unsigned char *S = _getRowPtr(sy);
+						m_mem.set<unsigned int>((int)(S-(unsigned char*)m_mem.ptr())+x1*sizeof(unsigned int), color, actualw*sizeof(unsigned int));
+					};
+				};
+				break;
+			default:
+				for (int sy = y;sy<y+h;sy++)
+				{
+					for (int sx = x;sx<x+w;sx++)
+					{
+						setPixel(sx,sy,color);
+					};
+				};
+			}
+		};
+
+		o3_fun void line(int x0,int y0,int x1,int y1,int signed_color)    // !ALLMODES!
+		{
+			unsigned int color = (unsigned int) signed_color;
+			bool steep = (abs(y1 - y0) > abs(x1 - x0));
+			if (steep)
+			{			 
+				swap(x0, y0);
+				swap(x1, y1);
+			}
+			if (x0 > x1)
+			{
+				swap(x0, x1);
+				swap(y0, y1);
+			}
+			int deltax = x1 - x0;
+			int deltay = abs(y1 - y0);
+			int error = deltax / 2;
+			int ystep;
+			int y = y0;
+			if (y0 < y1) 
+			{
+				ystep = 1;
+			}
+			else 
+			{
+				ystep = -1;
+			};
+
+			for (int x=x0;x<x1;x++)
+			{
+				if (steep)
+				{
+					setPixel(y,x, color);
+				}
+				else 
+				{
+					setPixel(x,y, color);
+				}
+				error = error - deltay;
+				if( error < 0) 
+				{
+					y = y + ystep;
+					error = error + deltax;
+				}
+
+			}
+		};
+#pragma endregion ImageAPI_and_iImage
+#pragma region PNG_load_and_save
 		o3_set siFs src(iFs* file, siEx* ex=0)
 		{
 			using namespace png;			
@@ -456,6 +577,7 @@ namespace o3
 			png_destroy_read_struct(&png_ptr, &info_ptr, 0);			
 			return file;
 		};
+
 
 		o3_fun int savePng(iFs* file, siEx* ex = 0)
 		{
@@ -629,119 +751,145 @@ namespace o3
 			return 1;
 		};
 
-		void Ensure32BitSurface()
-		{
-			if (m_mode_int != Image::MODE_ARGB)
-			{
-				// TODO -- convert existing bitmap to 32 bit and remember old mode. 
-			};
+#pragma endregion PNG_load_and_save
 
-			if (!m_graphics_attached && m_mode_int == Image::MODE_ARGB) 
-			{
-				m_graphics.attach((unsigned char *)m_mem.ptr(), m_w, m_h, m_stride*4);
-				// TODO -- check different pixel alignments
-				//				m_graphics.viewport(0,0,m_w, m_h, 0,0,m_w, m_h, agg::Agg2D::ViewportOption::XMidYMid);
-				RestoreStateToGraphicsObject();
-				m_graphics_attached = true;
-			};
-		};
 
-		void AttachAlpha()
-		{
-			if (m_alphamem.size() < m_stride*m_h)
-			{
-				m_alphamem.resize(m_stride*m_h);
-				m_alphamem.set<unsigned char>(0, 0, m_alphamem.size());
-			};
-			m_graphics.attachalpha((unsigned char *)m_alphamem.ptr(), m_w, m_h, m_stride);
-		};
 
-		o3_fun void rect(int x, int y, int w, int h, int signed_color)    // !ALLMODES!
-		{
-			unsigned int color = (unsigned int) signed_color;
-			switch (m_mode_int)
-			{
-			case Image::MODE_ARGB:
-				{
-					int x1 = __max(0,x);
-					int x2 = __min(x+w, (int)m_w);
-					int actualw = x2-x1;
-					if (actualw <= 0 ) return;
-					int y1 = __max(0, y);
-					int y2 = __min(y+h, (int)m_h);
-					for (int sy = y1;sy<y2;sy++)
-					{
-						unsigned char *S = _getRowPtr(sy);
-						m_mem.set<unsigned int>((int)(S-(unsigned char*)m_mem.ptr())+x1*sizeof(unsigned int), color, actualw*sizeof(unsigned int));
-					};
-				};
-				break;
-			default:
-				for (int sy = y;sy<y+h;sy++)
-				{
-					for (int sx = x;sx<x+w;sx++)
-					{
-						setPixel(sx,sy,color);
-					};
-				};
-			}
-		};
-
-		o3_fun void line(int x0,int y0,int x1,int y1,int signed_color)    // !ALLMODES!
-		{
-			unsigned int color = (unsigned int) signed_color;
-			bool steep = (abs(y1 - y0) > abs(x1 - x0));
-			if (steep)
-			{			 
-				swap(x0, y0);
-				swap(x1, y1);
-			}
-			if (x0 > x1)
-			{
-				swap(x0, x1);
-				swap(y0, y1);
-			}
-			int deltax = x1 - x0;
-			int deltay = abs(y1 - y0);
-			int error = deltax / 2;
-			int ystep;
-			int y = y0;
-			if (y0 < y1) 
-			{
-				ystep = 1;
-			}
-			else 
-			{
-				ystep = -1;
-			};
-
-			for (int x=x0;x<x1;x++)
-			{
-				if (steep)
-				{
-					setPixel(y,x, color);
-				}
-				else 
-				{
-					setPixel(x,y, color);
-				}
-				error = error - deltay;
-				if( error < 0) 
-				{
-					y = y + ystep;
-					error = error + deltax;
-				}
-
-			}
-		};
-        
         // -------------------------------------------------------
         // 
         // W3C Canvas API
         //
         // -------------------------------------------------------
+#pragma region CSS_HELPERS
+
+		o3_fun int decodeColor(const Str &style)
+		{
+			return o3::decodeColor(style);
+        };
+
+		enum
+		{
+			CSSUnit_pixel,
+			CSSUnit_percentage,
+			CSSUnit_inch,
+			CSSUnit_cm,
+			CSSUnit_mm,
+			CSSUnit_em, // 1em = current fontsize
+			CSSUnit_ex, // 1ex = the x-height of a font (x-height is usually about half the font-size)
+			CSSUnit_point, // 1pt = 1/72 inch
+			CSSUnit_pica // 1pc = 12pt = 12/72 inch
+		};
+		
+		double GetCurrentFontHeight()
+		{
+			// TODO! read renderstate
+			return 10.0;
+		};
+
+		double CSSUnitToPixel(double inamount, int unittype, double DPI = 72.0)
+		{
+
+			switch (unittype)
+			{
+				case CSSUnit_pixel: return inamount;
+				case CSSUnit_percentage: return (inamount*GetCurrentFontHeight()*0.01); 
+				case CSSUnit_inch: return inamount * DPI;
+				case CSSUnit_cm: return inamount * (DPI/2.54);
+				case CSSUnit_mm: return inamount * (DPI/25.4);
+
+				case CSSUnit_em: return GetCurrentFontHeight() * inamount;
+				case CSSUnit_ex: return GetCurrentFontHeight()/2 * inamount;
+				case CSSUnit_point: return inamount * (DPI/72.0);
+				case CSSUnit_pica: return inamount * ((12*DPI)/72.0);
+			};
+			return inamount;
+		};
+#pragma endregion CSS_HELPERS
 
 
+#pragma region CanvasProperties
+
+#pragma region CanvasEnums
+		// enums are ordered so that the top enum is the default value.
+		enum
+		{
+			// [start], end, left, right, center
+			TextAlign_start = 0,
+			TextAlign_end,
+			TextAlign_left,
+			TextAlign_right,
+			TextAlign_center
+		};
+
+		enum
+		{
+			 // [normal], italic, oblique
+			FontStyle_normal = 0,
+			FontStyle_italic,
+			FontStyle_oblique
+		};
+
+		enum
+		{
+			// top, hanging, middle, [alphabetic], ideographic, bottom 
+			TextBaseline_alphabetic = 0,
+			TextBaseline_top,
+			TextBaseline_hanging,
+			TextBaseline_middle,
+			TextBaseline_ideographic,
+			TextBaseline_bottom
+		};
+		
+		enum
+		{
+			// [LTR], RTL 
+			TextDirectionality_ltr = 0,
+			TextDirectionality_rtl 
+		};
+		
+		enum
+		{
+			FontSize_normal = 0, // default 10pt!
+			FontSize_xx_small,
+			FontSize_x_small,
+			FontSize_small,
+			FontSize_medium,
+			FontSize_large,
+			FontSize_x_large,
+			FontSize_xx_large,
+			FontSize_smaller,
+			FontSize_larger,
+			FontSize_absolute_size, // number is an absolute unit to be converted
+			FontSize_relative_size // relative to 10pt
+		};
+
+
+		enum
+		{
+			FontVariant_normal = 0,
+			FontVariant_small_caps
+		};
+
+		enum
+		{
+			FontWeight_normal = 0,
+			FontWeight_bold,
+			FontWeight_bolder,
+			FontWeight_lighter,
+			FontWeight_100,
+			FontWeight_200,
+			FontWeight_300,
+			FontWeight_400,
+			FontWeight_500,
+			FontWeight_600,
+			FontWeight_700,
+			FontWeight_800,
+			FontWeight_900
+		};
+
+
+
+#pragma endregion CanvasEnums
 		o3_set void fillStyle(const Str &style)
 		{
 			m_currentrenderstate->FillColor = decodeColor(style);
@@ -764,6 +912,91 @@ namespace o3
 		{
 			m_currentrenderstate->StrokeWidth = Width;
 		};
+
+		o3_set void lineCap(const Str &cap)
+		{
+			cap;
+		};
+
+		o3_set void lineJoin(const Str &join)
+		{
+			join;
+		};
+
+		o3_set void miterLimit(double limit)
+		{
+			limit;
+		};
+
+#pragma region TextProperties
+
+		/*
+		// css 1.0 based font properties:
+			Str FontFamily; // Serif, [Sans-serif], Monospace, fontfilenames
+			Str FontSize; // xx-small x-small small medium large x-large xx-large smaller larger length %
+			Str FontStyle; // [normal] italic oblique
+			Str FontVariant; // [normal] small-caps
+			Str FontWeight; // [normal] bold bolder lighter 100 200 300 400 500 600 700 800 900			
+			Str TextDirectionality; // [LTR], RTL -> needs to be dealt with because of align = start/end
+			Str TextBaseline; // top hanging middle [alphabetic] ideographic bottom
+		*/
+
+		o3_set void fontFamily(const Str &fontstring)
+		{
+			fontstring;	
+		};
+
+		o3_set void fontSize(const Str &fontstring)
+		{
+			fontstring;	
+		};
+
+		o3_set void fontStyle(const Str &fontstring)
+		{
+			fontstring;	
+		};
+
+		o3_set void fontVariant(const Str &fontstring)
+		{
+			fontstring;	
+		};
+
+		o3_set void fontWeight(const Str &fontstring)
+		{
+			fontstring;	
+		};
+
+		o3_set void textDirectionality(const Str &fontstring)// [LTR] RTL
+		{
+			fontstring;	
+		};
+
+		o3_set void textAlign(const Str &newAlign) // ["start"], "end", "left", "right", "center"
+		{
+			newAlign;	
+		};
+		
+		o3_set void textBaseline(const Str &newBaseline) // "top", "hanging", "middle", ["alphabetic"], "ideographic", "bottom"
+		{
+			newBaseline;	
+		};
+
+#pragma endregion TextProperties
+
+#pragma endregion CanvasProperties
+	
+
+#pragma region CanvasFunctions
+
+#pragma region TextFunctions
+		
+		void fillText(const Str & text, double x, double y);
+		void fillText(const Str & text, double x, double y, double maxWidth);
+		void strokeText(const Str & text, double x, double y);
+		void strokeText(const Str & text, double x, double y, double maxWidth);
+		cImage_TextMetrics measureText(const Str & text);
+
+#pragma endregion TextFunctions
 
 		o3_fun void clearRect(double xx, double yy, double ww, double hh)
 		{
@@ -851,48 +1084,9 @@ namespace o3
 			m_graphics.drawPath(agg::Agg2D::StrokeOnly);
 		};
 
-		void SetupRenderState()
-		{
-			RenderState RS;
-			RS.ClipTopLeft.x = 0;
-			RS.ClipTopLeft.y = 0;
-			RS.ClipBottomRight.x = m_w;
-			RS.ClipBottomRight.y = m_h;
 
-			RS.ClearColor = 0xffffffff;
-			RS.StrokeWidth = 1;
-			RS.ClippingEnabled = false;
-
-			m_renderstates.push(RS);
-			m_currentrenderstate = &m_renderstates[m_renderstates.size()-1];
-
-			strokeStyle("black");
-			fillStyle("black");
-
-		};
-
-		o3_fun void moveTo(double x, double y)
-		{
-			m_paths.push(Path());
-			V2<double> point(x,y);
-			point = TransformPoint(point);
-			m_paths[m_paths.size()-1].m_path.push(point);
-			m_lastpoint = point;
-		}
-
-		o3_fun void lineTo(double x, double y)
-		{
-			if (m_paths.size() == 0)
-			{
-				m_paths.push(Path());
-				m_paths[m_paths.size()-1].m_path.push(m_lastpoint);
-			};
-			V2<double> point(x,y);
-			m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
-			m_lastpoint.x = x;
-			m_lastpoint.y = y;
-		};
-
+		
+		
 		o3_fun void closePath()
 		{
 			if (m_paths.size() == 0) return;
@@ -910,6 +1104,7 @@ namespace o3
 		{
 			m_paths.clear();
 		}
+
 
 		o3_fun void fill()
 		{
@@ -974,6 +1169,65 @@ namespace o3
 			//			m_paths.clear();
 		};
 
+#pragma region Path_Generating_Functions
+		o3_fun void moveTo(double x, double y)
+		{
+			m_paths.push(Path());
+			V2<double> point(x,y);
+			point = TransformPoint(point);
+			m_paths[m_paths.size()-1].m_path.push(point);
+			m_lastpoint = point;
+		}
+
+		o3_fun void lineTo(double x, double y)
+		{
+			if (m_paths.size() == 0)
+			{
+				m_paths.push(Path());
+				m_paths[m_paths.size()-1].m_path.push(m_lastpoint);
+			};
+			V2<double> point(x,y);
+			m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+			m_lastpoint.x = x;
+			m_lastpoint.y = y;
+		};
+
+
+		o3_fun void arc(double x0, double y0, double radius, double startAngle, double endAngle, bool anticlockwise)
+		{
+
+			ArcGen Gen(x0,y0,radius,radius, startAngle, endAngle, (anticlockwise)?true:false);
+			double x, y;
+
+			if (m_paths.size() == 0)
+			{
+				m_paths.push(Path());
+			};
+
+			if (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+			{
+				moveTo(x,y);
+			};
+
+			while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+			{
+				V2<double> point(x,y);
+				m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+			}
+
+			int lastpathsize = m_paths[m_paths.size()-1].m_path.size();
+			if (lastpathsize >0)
+			{
+				m_lastpoint = m_paths[m_paths.size()-1].m_path[lastpathsize-1];
+			}
+			else
+			{
+				m_paths[m_paths.size()-1].m_path.push(m_lastpoint);
+			}
+
+		}
+
+		
 		o3_fun void quadraticCurveTo(double cp1x, double cp1y, double x0, double y0)
 		{
 
@@ -1012,7 +1266,6 @@ namespace o3
 			cp1 = TransformPoint(cp1);
 			cp2 = TransformPoint(cp2);
 
-
 			BezierCurveGen Gen(m_lastpoint.x,m_lastpoint.y, cp1.x, cp1.y, cp2.x, cp2.y, target.x, target.y);
 			double x, y;
 
@@ -1022,49 +1275,36 @@ namespace o3
 				m_paths[m_paths.size()-1].m_path.push(m_lastpoint);
 			};
 
-
 			while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
 			{
 				V2<double> point(x,y);
 				m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
 			}
 
-
 			m_lastpoint = target;
 		}
 
 
-		o3_fun void translate(double _x, double _y)
+#pragma endregion Path_Generating_Functions
+#pragma region RenderState_Management
+		void SetupRenderState()
 		{
-			M33<double> TransMat;
-			TransMat.setTranslation(_x, _y);
-			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(TransMat);
-		};
+			RenderState RS;
+			RS.ClipTopLeft.x = 0;
+			RS.ClipTopLeft.y = 0;
+			RS.ClipBottomRight.x = m_w;
+			RS.ClipBottomRight.y = m_h;
 
-		o3_fun void rotate(double _angle)
-		{
-			M33<double> RotMat;
-			RotMat.setRotation(_angle);//(_angle*pi*2.0f)/360.0f);
-			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(RotMat);
-		};
+			RS.ClearColor = 0xffffffff;
+			RS.StrokeWidth = 1;
+			RS.ClippingEnabled = false;
 
-		o3_fun void scale(double xscale, double yscale)
-		{
-			M33<double> ScaleMat;
-			ScaleMat.setScale(xscale, yscale);
-			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(ScaleMat);
-		};
-
-		o3_fun void save()
-		{
-			//			RenderState *PreviousState = m_currentrenderstate;
-			RenderState RS = *m_currentrenderstate;
 			m_renderstates.push(RS);
 			m_currentrenderstate = &m_renderstates[m_renderstates.size()-1];
-			//			for (size_t i = 0;i<PreviousState->ClippingPaths.size();i++)
-			//			{
-			//				m_currentrenderstate->ClippingPaths.push(PreviousState->ClippingPaths[i]);
-			//			}
+
+			strokeStyle("black");
+			fillStyle("black");
+
 		};
 
 		void RestoreStateToGraphicsObject()
@@ -1080,6 +1320,18 @@ namespace o3
 			m_graphics.fillColor(fc[2], fc[1], fc[0], fc[3]);
 		};
 
+		o3_fun void save()
+		{
+			//			RenderState *PreviousState = m_currentrenderstate;
+			RenderState RS = *m_currentrenderstate;
+			m_renderstates.push(RS);
+			m_currentrenderstate = &m_renderstates[m_renderstates.size()-1];
+			//			for (size_t i = 0;i<PreviousState->ClippingPaths.size();i++)
+			//			{
+			//				m_currentrenderstate->ClippingPaths.push(PreviousState->ClippingPaths[i]);
+			//			}
+		};
+
 		o3_fun void restore()
 		{
 			if (m_renderstates.size()>1) 
@@ -1091,6 +1343,10 @@ namespace o3
 			};
 		};
 
+#pragma endregion RenderState_Management
+#pragma region Transformation_Matrix_Related
+		
+		
 		o3_fun void setTransform(double m11, double m12, double m21, double m22, double dx, double dy)
 		{
 			m_currentrenderstate->Transformation.M[0][0] = m11;
@@ -1122,61 +1378,38 @@ namespace o3
 
 			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(trans);
 		};
-
-		o3_set void lineCap(const Str &cap)
+		o3_fun void translate(double _x, double _y)
 		{
-			cap;
+			M33<double> TransMat;
+			TransMat.setTranslation(_x, _y);
+			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(TransMat);
 		};
 
-		o3_set void lineJoin(const Str &join)
+		o3_fun void rotate(double _angle)
 		{
-			join;
+			M33<double> RotMat;
+			RotMat.setRotation(_angle);//(_angle*pi*2.0f)/360.0f);
+			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(RotMat);
 		};
 
-		o3_set void miterLimit(double limit)
+		o3_fun void scale(double xscale, double yscale)
 		{
-			limit;
+			M33<double> ScaleMat;
+			ScaleMat.setScale(xscale, yscale);
+			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(ScaleMat);
 		};
+
 
 		V2<double> TransformPoint(V2<double> &p)
 		{
 			return m_currentrenderstate->Transformation.Multiply(p);
 		}
 
-		o3_fun void arc(double x0, double y0, double radius, double startAngle, double endAngle, bool anticlockwise)
-		{
+#pragma endregion Transformation_Matrix_Related
 
-			ArcGen Gen(x0,y0,radius,radius, startAngle, endAngle, (anticlockwise)?true:false);
-			double x, y;
 
-			if (m_paths.size() == 0)
-			{
-				m_paths.push(Path());
-			};
 
-			if (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
-			{
-				moveTo(x,y);
-			};
-
-			while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
-			{
-				V2<double> point(x,y);
-				m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
-			}
-
-			int lastpathsize = m_paths[m_paths.size()-1].m_path.size();
-			if (lastpathsize >0)
-			{
-				m_lastpoint = m_paths[m_paths.size()-1].m_path[lastpathsize-1];
-			}
-			else
-			{
-				m_paths[m_paths.size()-1].m_path.push(m_lastpoint);
-			}
-
-		}
-
+		
 		o3_fun void clip()
 		{
 			double x2=0,y2=0,x1=m_w,y1=m_h;
@@ -1254,6 +1487,8 @@ namespace o3
 			m_currentrenderstate->ClipTopLeft.y = y1;
 			m_graphics.clipBox(x1,y1, x2,y2);
 		}
+
+#pragma endregion CanvasFunctions
 	};
 
 	void CopyAlphaMaskToVisible()
