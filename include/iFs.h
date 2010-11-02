@@ -85,11 +85,11 @@ struct iFs : iUnk {
 
 	virtual siStream open(const char* mode, siEx* ex = 0) = 0;
 
-	virtual Buf blob() = 0;
+	virtual Buf buffer() = 0;
 
-	virtual Buf setBlob(const Buf& buf) = 0;
+	virtual Buf setBuffer(const Buf& buf) = 0;
 
-	virtual siStream setBlob(iStream* stream, siEx* ex) = 0;
+	virtual siStream setBuffer(iStream* stream, siEx* ex) = 0;
 
 	virtual Str data() = 0;
 

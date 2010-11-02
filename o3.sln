@@ -141,10 +141,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "barcode", "barcode", "{94EA
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "blob", "blob", "{105022F9-C1ED-4C91-B23F-796EB57C1590}"
-	ProjectSection(SolutionItems) = preProject
-		modules\blob\blob.h = modules\blob\blob.h
-		modules\blob\cBlob.h = modules\blob\cBlob.h
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "console", "console", "{796EF190-D884-4ACE-920B-FDA78CB93F02}"
 	ProjectSection(SolutionItems) = preProject
