@@ -152,7 +152,7 @@ struct cFsBase : cScr, iFs {
             if (to->isDir())
                 to1 = to->get(name()).ptr();
             // copy by chunks
-			to1->setBlob(open("r", ex), ex);
+			to1->setBuffer(open("r", ex), ex);
 		    break;
         default:
             return 0;
@@ -243,7 +243,7 @@ struct cFsBase : cScr, iFs {
     {
         o3_trace3 trace;
 
-        return blob();
+        return buffer();
     }
 
     virtual o3_set Str setData(const Str& str)
@@ -253,7 +253,7 @@ struct cFsBase : cScr, iFs {
 
         if (buf.size() > 0)
             buf.resize(buf.size() - sizeof(char));
-        return setBlob(buf);
+        return setBuffer(buf);
     }
 
     virtual o3_get siScr onchange()

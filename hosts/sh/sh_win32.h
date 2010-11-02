@@ -18,11 +18,11 @@
 
 #include <js/js.h>
 //#include <test/proto_v1.h>
+
 #include "fastxml/fastxml.h"
 #include "xml/xml.h"
 #include "socket/socket.h"
 #include "fs/fs.h"
-#include "blob/blob.h"
 #include "console/console.h"
 #include "http/http.h"
 #include "process/process.h"
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
     //mgr->addExtTraits(cCanvas1::extTraits());
     mgr->addExtTraits(cFs::extTraits());
     mgr->addExtTraits(cHttp::extTraits());
-    mgr->addExtTraits(cBlob::extTraits());
+//    mgr->addExtTraits(cBlob::extTraits());
     mgr->addExtTraits(cConsole::extTraits());
     mgr->addExtTraits(cFastXml::extTraits());
     //mgr->addExtTraits(cJs1::extTraits());

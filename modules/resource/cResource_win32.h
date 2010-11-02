@@ -74,7 +74,7 @@ struct cResource : cScr
 			return false;
 
 		Buf data = ((cSys*) g_sys)->resource(path);
-		to->setBlob(data);
+		to->setBuffer(data);
 		return (data.size() > 0);
 	}
 

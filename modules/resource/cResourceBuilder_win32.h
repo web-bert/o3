@@ -107,7 +107,7 @@ struct cResourceBuilder : cScr
             siFs fs = (*it).val;
             if (!fs) 
                 return; //ex here
-            next_file = fs.ptr()->blob();
+            next_file = fs.ptr()->buffer();
             //if (ex && *ex)
             //    return;
 
@@ -177,7 +177,7 @@ struct cResourceBuilder : cScr
         stream->read(original.ptr(), pos);
         stream->close();
         //siEx ex;
-        file.ptr()->setBlob(original);
+        file.ptr()->setBuffer(original);
         return true; //ex == 0;
     }
 
