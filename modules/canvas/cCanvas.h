@@ -1272,6 +1272,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun siScr measureText(const Str & text) //cImage_TextMetrics 
 		{
+			return 0;
 		};
 
 #pragma endregion TextFunctions
