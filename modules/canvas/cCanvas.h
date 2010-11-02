@@ -677,7 +677,7 @@ o3_fun void clear(int signed_color)
 		};
 
 
-		o3_fun int savePng(iFs* file, siEx* ex = 0)
+		o3_fun int savePng_FS(iFs* file, siEx* ex = 0)
 		{
 			using namespace png;
 			png_structp png_ptr;
@@ -851,8 +851,9 @@ o3_fun void clear(int signed_color)
 
 
 
-		o3_fun int savePng(const Buf &data, siEx* ex = 0)
+		o3_fun int pngBuffer(siEx* ex = 0)
 		{
+			Buf data;
 			using namespace png;
 			png_structp png_ptr;
 			png_infop info_ptr;
