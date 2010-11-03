@@ -472,9 +472,116 @@ o3_fun void clear(int signed_color)
 			}
 		};
 #pragma endregion ImageAPI_and_iImage
-#pragma region PNG_load_and_save
 
 		o3_set Buf src(const Buf &data, siEx *ex = 0)
+		{
+			return srcPNG(data, ex);
+		};
+#pragma region JPG_load_and_save
+
+#pragma endregion JPG_load_and_save
+		o3_set Buf srcJPG(const Buf &data)
+		{
+
+			using namespace jpg;						
+			struct jpeg_decompress_struct cinfo;
+			struct jpeg_error_mgr jerr;
+			unsigned char *image;
+
+			/*Initialize, open the JPEG and query the parameters */
+			cinfo.err = jpeg_std_error(&jerr);
+			jpeg_create_decompress(&cinfo);
+			jpeg_stdio_src(&cinfo, stdin);
+			jpeg_read_header(&cinfo, TRUE);
+			jpeg_start_decompress(&cinfo);
+
+			/* allocate data and read the image as RGBRGBRGBRGB */
+
+			SetupMode(cinfo.output_width,cinfo.output_height, "argb");
+			
+			unsigned char *imagerow = new unsigned char[cinfo.output_width * 3];
+			for(int i=0; i < cinfo.output_height; i++)
+			{
+				unsigned char * ptr = image;
+				jpeg_read_scanlines(&cinfo, &ptr, 1);
+				unsigned char *D = getrowptr(i);
+				for(int j = 0; j < (int)(3 * m_w); j += 3)
+				{
+					*D++ = imagerow[j + 2];	// blue
+					*D++ = imagerow[j + 1];	// green
+					*D++ = imagerow[j];		// red
+					*D++ = 0xff;						// alpha
+				}
+				
+			}
+			delete [] imagerow;
+
+
+			
+			return data;
+
+		}
+
+		o3_fun Buf jpgBuffer()
+		{
+			Buf Output;
+			using namespace jpg;
+			
+			struct jpeg_compress_struct cinfo = {0};
+			struct jpeg_error_mgr jerr;
+			JSAMPROW row_ptr[1];
+			int row_stride;
+
+			unsigned char *outbuffer = NULL;
+			unsigned long outlen = 0;
+
+			cinfo.err = jpeg_std_error(&jerr);
+			jpeg_create_compress(&cinfo);
+			jpeg_mem_dest(&cinfo, &outbuffer, &outlen);
+
+			cinfo.image_width = m_w;
+			cinfo.image_height = m_h;
+			cinfo.input_components = 3;
+			cinfo.in_color_space = JCS_RGB;
+
+			jpeg_set_defaults(&cinfo);
+			jpeg_start_compress(&cinfo, TRUE);
+			//row_stride = m_w*3;
+			
+			unsigned char *imagerow = new unsigned char[m_w * 3];
+
+			while (cinfo.next_scanline < cinfo.image_height) 
+			{
+				unsigned char *D = getrowptr(cinfo.next_scanline);
+				unsigned long index = 0;
+				unsigned long index2 = 0;
+
+				for (unsigned int i = 0;i<m_w;i++)
+				{
+					imagerow[index + 0] = D[index2 + 0];
+					imagerow[index + 1] = D[index2 + 1];
+					imagerow[index + 2] = D[index2 + 2];
+					index += 3;
+					index2 += 4;
+				};
+				row_ptr[0] = imagerow;
+				jpeg_write_scanlines(&cinfo, row_ptr, 1);
+			}
+			delete [] imagerow;
+			jpeg_finish_compress(&cinfo);
+			jpeg_destroy_compress(&cinfo);
+
+			if (outbuffer)
+			{
+				Output.insert(0, outbuffer, outlen);
+				free(outbuffer);
+			};
+			return Output;
+		};
+#pragma region PNG_load_and_save
+
+		
+		o3_set Buf srcPNG(const Buf &data, siEx *ex = 0)
 		{
 			using namespace png;			
 			// create read struct
