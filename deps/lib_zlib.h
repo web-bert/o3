@@ -13,7 +13,7 @@
 namespace o3 {
     namespace ZLib {
 #ifdef O3_LINUX
-        typedef unsigned int ptrint_t;
+        typedef unsigned long ptrint_t;
 #endif
 
 #ifdef O3_APPLE

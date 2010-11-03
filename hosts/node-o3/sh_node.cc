@@ -20,8 +20,8 @@
 #include <o3.h>
 #include <js/js.h>
 #include <buffer/buffer.h>
-//#include <xml/xml.h>
-//#include <fastxml/fastxml.h>
+#include <xml/xml.h>
+#include <fastxml/fastxml.h>
 
 //#include <socket/socket.h>
 #include <canvas/canvas.h>
@@ -38,8 +38,8 @@ init (Handle<Object> target)
   
   g_sys = new cSys();
   siMgr mgr = o3_new(cMgr)(); // will be referenced by cJs1
-  //mgr->addExtTraits(cFastXml::extTraits());
-  //mgr->addExtTraits(cXml::extTraits());
+  mgr->addExtTraits(cFastXml::extTraits());
+  mgr->addExtTraits(cXml::extTraits());
   mgr->addExtTraits(cCanvas::extTraits());	
   mgr->addExtTraits(cBuffer::extTraits());    
 

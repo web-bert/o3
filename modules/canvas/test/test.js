@@ -16,11 +16,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-var canvasFactory = require('../index.js')
+var canvasFactory = require('../lib/o3-canvas')
 
 function drawtocontext(ctx)
 {
-	
+	ctx.clearRect(0,0,300,300);
     ctx.fillStyle = "rgb(200,0,0)";
     ctx.fillRect (10, 10, 55, 50);
 
@@ -51,7 +51,6 @@ function drawtocontext(ctx)
 	ctx.quadraticCurveTo(125,100,125,62.5);  
 	ctx.quadraticCurveTo(125,25,75,25);  
 	ctx.stroke();  
-	
 
 }
 /*
@@ -63,17 +62,32 @@ function draw()
 }
 */
   
+var ctx = canvasFactory(50,50, "argb");
 
+drawtocontext(ctx);
+var buf = ctx.pngBuffer();
+var check =
+"iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAADCUlEQVRoge3YXUhTYRzH8e/Z\n"+
+"JuhSybfcJjqSEqM0TKcxEl/Li4UUgRF0EUGtqyBvgqiuhF68TmgVKN4UUlKSECa6K71IrJSw\n"+
+"SWhEmiLVZpSKuS7EF9JtZ9t5o/xd7pz9z/PhnOc8z/8Ifr/fzz8QndoDkCpbEK1lC6K1bEG0\n"+
+"lv8L0tbWRktLi9xjiSqCmJXd4XDQ2dnJHaBQgUFFElF3xGazYcLEZQwMyD2iCCN6jliwUEaN\n"+
+"ZjFhTXYzZs1iwn5raRUT0etXi5iI1xGtYaJaELWEiXpl1wpGki2KFjCS7bXUxki6aVQTI/nu\n"+
+"Vy2MLNt4NTCy9SNKY2RtrJTEyN4hKoVRpNWVG2MwgkGGuptmDfOCWyxG3WnqDJCSB+nFEJus\n"+
+"IASkwRiMkF4E6Tb4OQWfXoJvTGEIrGEu0cNhKjBjFvW/Hck+qg8OU5L3gcERK/db8/g8nbR6\n"+
+"XHEILGOsnKcLV0iM1TKDo/Q1u61fcL/K5XrTCbyzxg3nqQIBSCAnKEYQ/NTYhzhiH6LDXcCD\n"+
+"9nLmFwIPVzUIBMbEG+c4e9yNMXaeBtcxvnq3hayl+pfGNUwPk0yyK2uKa852JqaTaGw+KgoB\n"+
+"Kt+RlSSQw07hHPn2Jpx2gdan5bz1ZIVVQxOQGP0id+t6SDSmUuT6Tq43RuS7bC2qP1oA9TWP\n"+
+"0Ql+LjRfQed1rj5m4UR1SG1BHyXZI1x9cobF3/oNc0ZsJIWMMcYoo6LP35sxzsXqduofOvkx\n"+
+"F7f6eyQYSSEePLhxi7p4SryPxpMuGjpOMz5j2nA8XIykkDTSMGGim+6gFzfol7hdd49ng3Z6\n"+
+"R/IDnhcORvI5YsFCFVVBMbUVA/h+GXH1OkLWE4uRrWcPhDHGLlBWOMKN56dY8gui6onByNqz\n"+
+"b4YpPfCeodFMpn3bw6oXCiN7z74eo9cvUVkyTFf/vojqBcMo0rOvYLL3DDLzLZGPE6kR1wuE\n"+
+"UaxnrxaqqLa/4VFfRtT1NsMotrIfyhQwx8Zx0zMc9vZjs/yNUQxSWfyO3v79VPiXH7NZPFHX\n"+
+"XI/5A+jeGX9yxrCoAAAAAElFTkSuQmCC"
 
-var http = require('http');
-http.createServer(function (req, res) {
-  var ctx = canvasFactory(300,300, "argb");
-  drawtocontext(ctx);
-  var buf = ctx.pngBuffer();
-  res.writeHead(200, {'Content-Type': 'text/html'});
-  res.end('<img alt="Embedded Image" src="data:image/png;base64,'+buf.toBase64()+'">');
-}).listen(8124, "127.0.0.1");
-console.log('Server running at http://127.0.0.1:8124/');
-
-
+if(check != buf.toBase64()){
+	console.log("TEST FAILED");
+	process.exit(-1)
+}
+console.log("TEST SUCCEEDED");
+	
 
