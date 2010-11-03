@@ -558,9 +558,9 @@ o3_fun void clear(int signed_color)
 
 				for (unsigned int i = 0;i<m_w;i++)
 				{
-					imagerow[index + 0] = D[index2 + 0];
+					imagerow[index + 2] = D[index2 + 0];
 					imagerow[index + 1] = D[index2 + 1];
-					imagerow[index + 2] = D[index2 + 2];
+					imagerow[index + 0] = D[index2 + 2];
 					index += 3;
 					index2 += 4;
 				};
