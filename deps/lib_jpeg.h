@@ -6,8 +6,8 @@ namespace o3
 	{
 #pragma warning( push)
 #pragma warning( disable : 4244)
-#pragma warning( disable : 4100)
-#pragma warning( disable : 4005)
+//#pragma warning( disable : 4100)
+//#pragma warning( disable : 4005)
 //#include "jpeg-8b\ansi2knr.c"
 //#include "jpeg-8b\cdjpeg.c"
 //#include "jpeg-8b\cjpeg.c"

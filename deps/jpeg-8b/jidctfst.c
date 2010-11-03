@@ -74,6 +74,7 @@
  */
 
 #if BITS_IN_JSAMPLE == 8
+#undef CONST_BITS  
 #define CONST_BITS  8
 #define PASS1_BITS  2
 #else
@@ -91,6 +92,7 @@
 #if CONST_BITS == 8
 #define FIX_1_082392200  ((INT32)  277)		/* FIX(1.082392200) */
 #define FIX_1_414213562  ((INT32)  362)		/* FIX(1.414213562) */
+#undef FIX_1_847759065  
 #define FIX_1_847759065  ((INT32)  473)		/* FIX(1.847759065) */
 #define FIX_2_613125930  ((INT32)  669)		/* FIX(2.613125930) */
 #else
@@ -115,7 +117,7 @@
 /* Multiply a DCTELEM variable by an INT32 constant, and immediately
  * descale to yield a DCTELEM result.
  */
-
+#undef MULTIPLY
 #define MULTIPLY(var,const)  ((DCTELEM) DESCALE((var) * (const), CONST_BITS))
 
 
@@ -126,6 +128,7 @@
  */
 
 #if BITS_IN_JSAMPLE == 8
+#undef DEQUANTIZE
 #define DEQUANTIZE(coef,quantval)  (((IFAST_MULT_TYPE) (coef)) * (quantval))
 #else
 #define DEQUANTIZE(coef,quantval)  \

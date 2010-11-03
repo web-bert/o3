@@ -98,6 +98,7 @@
  */
 
 #if BITS_IN_JSAMPLE == 8
+#undef CONST_BITS
 #define CONST_BITS  13
 #define PASS1_BITS  2
 #else
@@ -120,6 +121,7 @@
 #define FIX_0_899976223  ((INT32)  7373)	/* FIX(0.899976223) */
 #define FIX_1_175875602  ((INT32)  9633)	/* FIX(1.175875602) */
 #define FIX_1_501321110  ((INT32)  12299)	/* FIX(1.501321110) */
+#undef FIX_1_847759065  
 #define FIX_1_847759065  ((INT32)  15137)	/* FIX(1.847759065) */
 #define FIX_1_961570560  ((INT32)  16069)	/* FIX(1.961570560) */
 #define FIX_2_053119869  ((INT32)  16819)	/* FIX(2.053119869) */
@@ -149,6 +151,7 @@
  */
 
 #if BITS_IN_JSAMPLE == 8
+#undef MULTIPLY
 #define MULTIPLY(var,const)  MULTIPLY16C16(var,const)
 #else
 #define MULTIPLY(var,const)  ((var) * (const))
@@ -159,7 +162,7 @@
  * entry; produce an int result.  In this module, both inputs and result
  * are 16 bits or less, so either int or short multiply will work.
  */
-
+#undef DEQUANTIZE
 #define DEQUANTIZE(coef,quantval)  (((ISLOW_MULT_TYPE) (coef)) * (quantval))
 
 

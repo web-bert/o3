@@ -52,7 +52,7 @@ function drawtocontext(ctx)
 		
 		var color = Math.floor(200+Math.random()*55);
 		
-		ctx.fillStyle = "rgb(255,255,"+color+",0.1)";
+		ctx.fillStyle = "rgba(255,255,"+color+",0.4)";
 		
 		ctx.translate(50+Math.random()*200, Math.random()*200);
 		var sx = Math.random()+ 0.5;

@@ -111,6 +111,7 @@
 #if CONST_BITS == 13
 #define FIX_0_298631336  ((INT32)  2446)	/* FIX(0.298631336) */
 #define FIX_0_390180644  ((INT32)  3196)	/* FIX(0.390180644) */
+#undef FIX_0_541196100  
 #define FIX_0_541196100  ((INT32)  4433)	/* FIX(0.541196100) */
 #define FIX_0_765366865  ((INT32)  6270)	/* FIX(0.765366865) */
 #define FIX_0_899976223  ((INT32)  7373)	/* FIX(0.899976223) */
@@ -145,6 +146,7 @@
  */
 
 #if BITS_IN_JSAMPLE == 8
+#undef MULTIPLY
 #define MULTIPLY(var,const)  MULTIPLY16C16(var,const)
 #else
 #define MULTIPLY(var,const)  ((var) * (const))
