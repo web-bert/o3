@@ -16,7 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-var canvasFactory = require('../index.js')
+var canvasFactory = require('../lib/o3-canvas')
 
 function drawtocontext(ctx)
 {
