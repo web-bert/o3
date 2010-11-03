@@ -26,6 +26,7 @@
 #include <lib_agg.h>
 #include <lib_freetype.h>
 #include <lib_png.h>
+#include <lib_jpeg.h>
 
 #include "cCanvas_colors.h"
 #include "cCanvas_utils.h"

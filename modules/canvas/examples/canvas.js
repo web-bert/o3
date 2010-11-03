@@ -20,6 +20,7 @@ var canvasFactory = require('../index.js')
 
 function drawtocontext(ctx)
 {
+	
     ctx.fillStyle = "rgb(200,0,0)";
     ctx.fillRect (10, 10, 55, 50);
 
@@ -50,6 +51,7 @@ function drawtocontext(ctx)
 	ctx.quadraticCurveTo(125,100,125,62.5);  
 	ctx.quadraticCurveTo(125,25,75,25);  
 	ctx.stroke();  
+	
 
 }
 /*
@@ -61,11 +63,11 @@ function draw()
 }
 */
   
-var ctx = canvasFactory(300,300, "argb");
 
 
 var http = require('http');
 http.createServer(function (req, res) {
+  var ctx = canvasFactory(300,300, "argb");
   drawtocontext(ctx);
   var buf = ctx.pngBuffer();
   res.writeHead(200, {'Content-Type': 'text/html'});
