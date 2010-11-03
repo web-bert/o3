@@ -227,7 +227,8 @@ decompress_onepass (j_decompress_ptr cinfo, JSAMPIMAGE output_buf)
 METHODDEF(int)
 dummy_consume_data (j_decompress_ptr cinfo)
 {
-  return JPEG_SUSPENDED;	/* Always indicate nothing was done */
+	cinfo;
+	return JPEG_SUSPENDED;	/* Always indicate nothing was done */
 }
 
 

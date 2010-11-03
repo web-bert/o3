@@ -271,6 +271,8 @@ jctrans_start_pass_coef (j_compress_ptr cinfo, J_BUF_MODE pass_mode)
 METHODDEF(boolean)
 jctrans_compress_output (j_compress_ptr cinfo, JSAMPIMAGE input_buf)
 {
+	input_buf;
+
   jctrans_my_coef_ptr coef = (jctrans_my_coef_ptr) cinfo->coef;
   JDIMENSION MCU_col_num;	/* index of current MCU within row */
   JDIMENSION last_MCU_col = cinfo->MCUs_per_row - 1;

@@ -485,9 +485,7 @@ o3_fun void clear(int signed_color)
 
 			using namespace jpg;						
 			struct jpeg_decompress_struct cinfo;
-			struct jpeg_error_mgr jerr;
-			unsigned char *image;
-
+			struct jpeg_error_mgr jerr;			
 			/*Initialize, open the JPEG and query the parameters */
 			cinfo.err = jpeg_std_error(&jerr);
 			jpeg_create_decompress(&cinfo);
@@ -500,9 +498,9 @@ o3_fun void clear(int signed_color)
 			SetupMode(cinfo.output_width,cinfo.output_height, "argb");
 			
 			unsigned char *imagerow = new unsigned char[cinfo.output_width * 3];
-			for(int i=0; i < cinfo.output_height; i++)
+			for(unsigned int i=0; i < cinfo.output_height; i++)
 			{
-				unsigned char * ptr = image;
+				unsigned char * ptr = imagerow;
 				jpeg_read_scanlines(&cinfo, &ptr, 1);
 				unsigned char *D = getrowptr(i);
 				for(int j = 0; j < (int)(3 * m_w); j += 3)
@@ -530,7 +528,6 @@ o3_fun void clear(int signed_color)
 			struct jpeg_compress_struct cinfo = {0};
 			struct jpeg_error_mgr jerr;
 			JSAMPROW row_ptr[1];
-			int row_stride;
 
 			unsigned char *outbuffer = NULL;
 			unsigned long outlen = 0;
@@ -1365,22 +1362,27 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void fillText(const Str & text, double x, double y)
 		{
+			x;y;text;
 		};
 		
 		o3_fun void fillText(const Str & text, double x, double y, double maxWidth)
 		{
+			x;y;text;maxWidth;
 		};
 
 		o3_fun void strokeText(const Str & text, double x, double y)
 		{
+			x;y;text;
 		};
 
 		o3_fun void strokeText(const Str & text, double x, double y, double maxWidth)
 		{
+			x;y;text;maxWidth;
 		};
 
 		o3_fun siScr measureText(const Str & text) //cImage_TextMetrics 
 		{
+			text;
 			return 0;
 		};
 
