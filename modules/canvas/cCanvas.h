@@ -73,16 +73,25 @@ namespace o3
 			unsigned int StrokeColor;
 			double StrokeWidth;
 
-	/*
+	
 		// css 1.0 based font properties:
 			Str FontFamily; // Serif, [Sans-serif], Monospace, fontfilenames
-			Str FontSize; // xx-small x-small small medium large x-large xx-large smaller larger length %
-			Str FontStyle; // [normal] italic oblique
-			Str FontVariant; // [normal] small-caps
-			Str FontWeight; // [normal] bold bolder lighter 100 200 300 400 500 600 700 800 900			
+
+			Str FontSizeText; // xx-small x-small small medium large x-large xx-large smaller larger length %
+			Str FontStyleText; // [normal] italic oblique
+			Str FontVariantText; // [normal] small-caps
+			Str FontWeightText; // [normal] bold bolder lighter 100 200 300 400 500 600 700 800 900			
+
+			bool ItalicFont;
+			bool BoldFont;
+
+			double FontSize;
+			int FontStyle;
+			int FontVariant;
+			int FontWeight;
 			Str TextDirectionality; // [LTR], RTL -> needs to be dealt with because of align = start/end
 			Str TextBaseline; // top hanging middle [alphabetic] ideographic bottom
-		*/		
+				
 			
 			int FillStyle;
 			M33<double> Transformation;
@@ -105,7 +114,9 @@ namespace o3
 		tVec<Path> m_paths;
 		V2<double> m_lastpoint;
 		tVec<RenderState> m_renderstates;
-		RenderState *m_currentrenderstate;
+		RenderState *m_currentrenderstate;		
+		
+		RenderState mReferenceState;
 
 		size_t m_w, m_h, m_stride;
 		int    m_bytesperpixel;
@@ -1312,43 +1323,53 @@ o3_fun void clear(int signed_color)
 
 		o3_set void fontFamily(const Str &fontstring)
 		{
-			fontstring;
+			m_currentrenderstate->FontFamily = fontstring;
+			UpdateFontState();
 			
 		};
 
 		o3_set void fontSize(const Str &fontstring)
 		{
-			fontstring;	
+			mReferenceState.FontSizeText = fontstring;
+			// check units!
+			m_currentrenderstate->FontSize = fontstring.toDouble();
+			UpdateFontState();
 		};
 
 		o3_set void fontStyle(const Str &fontstring)
 		{
 			fontstring;	
+			UpdateFontState();
 		};
 
 		o3_set void fontVariant(const Str &fontstring)
 		{
 			fontstring;	
+			UpdateFontState();
 		};
 
 		o3_set void fontWeight(const Str &fontstring)
 		{
 			fontstring;	
+			UpdateFontState();
 		};
 
 		o3_set void textDirectionality(const Str &fontstring)// [LTR] RTL
 		{
 			fontstring;	
+			UpdateFontState();
 		};
 
 		o3_set void textAlign(const Str &newAlign) // ["start"], "end", "left", "right", "center"
 		{
 			newAlign;	
+			UpdateFontState();
 		};
 		
 		o3_set void textBaseline(const Str &newBaseline) // "top", "hanging", "middle", ["alphabetic"], "ideographic", "bottom"
 		{
 			newBaseline;	
+			UpdateFontState();
 		};
 
 #pragma endregion TextProperties
@@ -1362,28 +1383,42 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void fillText(const Str & text, double x, double y)
 		{
-			x;y;text;
+			unsigned int color =  m_currentrenderstate->FillColor;
+			unsigned char *c = (unsigned char *)&color;
+			m_graphics.fillColor(c[2], c[1], c[0], c[3]);
+			m_graphics.text(x,y,text.ptr(),agg::Agg2D::FillOnly);
 		};
 		
 		o3_fun void fillText(const Str & text, double x, double y, double maxWidth)
 		{
-			x;y;text;maxWidth;
+			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
+			unsigned int color =  m_currentrenderstate->FillColor;
+			unsigned char *c = (unsigned char *)&color;
+			m_graphics.fillColor(c[2], c[1], c[0], c[3]);
+			m_graphics.text(x,y,text.ptr(),agg::Agg2D::FillOnly );
 		};
 
 		o3_fun void strokeText(const Str & text, double x, double y)
 		{
-			x;y;text;
+			m_graphics.lineWidth(m_currentrenderstate->StrokeWidth);
+			m_graphics.text(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
 		};
 
 		o3_fun void strokeText(const Str & text, double x, double y, double maxWidth)
 		{
-			x;y;text;maxWidth;
+			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
+			m_graphics.lineWidth(m_currentrenderstate->StrokeWidth);
+			m_graphics.text(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
 		};
 
 		o3_fun siScr measureText(const Str & text) //cImage_TextMetrics 
 		{
-			text;
-			return 0;
+			
+			double W = m_graphics.textWidth(text.ptr());
+			cImage_TextMetrics *TM = o3_new(cImage_TextMetrics)();
+			TM->mWidth = W;
+			return siScr(TM);
+			
 		};
 
 #pragma endregion TextFunctions
@@ -1708,8 +1743,37 @@ o3_fun void clear(int signed_color)
 			m_graphics.lineColor(sc[2], sc[1], sc[0], sc[3]);
 			unsigned char *fc = (unsigned char *)&m_currentrenderstate->FillColor;
 			m_graphics.fillColor(fc[2], fc[1], fc[0], fc[3]);
+			UpdateFontState();			
 		};
+		
+		void UpdateFontState()
+		{
+			bool ReloadFont = false;
+			if (mReferenceState.FontFamily != m_currentrenderstate->FontFamily)
+			{
+				mReferenceState.FontFamily = m_currentrenderstate->FontFamily;
+				ReloadFont = true;
+			}
 
+			if (mReferenceState.FontSize !=  m_currentrenderstate->FontSize)
+			{
+				mReferenceState.FontSize =  m_currentrenderstate->FontSize;
+				ReloadFont = true;
+			};
+
+			if (mReferenceState.BoldFont !=  mReferenceState.BoldFont )
+			{
+				mReferenceState.BoldFont =  mReferenceState.BoldFont;
+				ReloadFont = true;
+			};
+
+			if (ReloadFont)
+			{
+				m_graphics.font(mReferenceState.FontFamily.ptr(), mReferenceState.FontSize, mReferenceState.BoldFont, mReferenceState.ItalicFont, agg::Agg2D::VectorFontCache);
+				m_graphics.flipText(true);
+			};
+		};
+		
 		o3_fun void save()
 		{
 			//			RenderState *PreviousState = m_currentrenderstate;

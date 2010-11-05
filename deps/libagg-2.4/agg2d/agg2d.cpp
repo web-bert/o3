@@ -1036,7 +1036,7 @@ void Agg2D::textHints(bool hints)
 
 
 //------------------------------------------------------------------------
-void Agg2D::text(double x, double y, const char* str, bool roundOff, double ddx, double ddy)
+void Agg2D::text(double x, double y, const char* str,DrawPathFlag flag,  bool roundOff, double ddx, double ddy)
 {
    double dx = 0.0;
    double dy = 0.0;
@@ -1108,7 +1108,7 @@ void Agg2D::text(double x, double y, const char* str, bool roundOff, double ddx,
                 m_path.remove_all();
                 //m_path.add_path(tr, 0, false);
 				m_path.concat_path(tr,0); // JME
-                drawPath();
+                drawPath(flag);
             }
 
             if(glyph->data_type == agg::glyph_data_gray8)

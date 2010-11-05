@@ -82,7 +82,7 @@ namespace o3
 			return true;
         } 
         
-        o3_fun unsigned char __getter__(iCtx* ctx, int idx, siEx* ex = 0) 
+        o3_fun size_t __getter__(iCtx* ctx, int idx, siEx* ex = 0) 
 		{
             o3_unused(ctx);
             ex;
@@ -112,12 +112,12 @@ namespace o3
 
 		cImage_CanvasPixelArray mStorage;
 
-		o3_get unsigned long width()
+		o3_get size_t width()
 		{
 			return 0;
 		};
 
-		o3_get unsigned long height()
+		o3_get size_t height()
 		{
 			return 0;
 		};
