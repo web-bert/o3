@@ -394,6 +394,8 @@ void Agg2D::transformations(const Transformations& tr)
 void Agg2D::resetTransformations()
 {
     m_transform.reset();
+	m_convCurve.approximation_scale(worldToScreen(1.0) * g_approxScale);
+    m_convStroke.approximation_scale(worldToScreen(1.0) * g_approxScale);
 }
 
 

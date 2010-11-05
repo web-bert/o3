@@ -26,8 +26,9 @@
 #include <lib_agg.h>
 #include <lib_freetype.h>
 #include <lib_png.h>
+#ifdef CANVAS_USE_JPEG
 #include <lib_jpeg.h>
-
+#endif
 #include "cCanvas_colors.h"
 #include "cCanvas_utils.h"
 #include "cCanvas_others.h"
@@ -71,6 +72,9 @@ namespace o3
 			unsigned int FillColor;
 			unsigned int ClearColor;
 			unsigned int StrokeColor;
+			agg::Agg2D::LineCap CapStyle;
+			agg::Agg2D::LineJoin JoinStyle;
+
 			double StrokeWidth;
 
 	
@@ -84,7 +88,7 @@ namespace o3
 
 			bool ItalicFont;
 			bool BoldFont;
-
+			double GlobalAlpha;
 			double FontSize;
 			int FontStyle;
 			int FontVariant;
@@ -404,7 +408,7 @@ o3_fun void clear(int signed_color)
 			return 0;
 		};
 
-		o3_fun void rect(int x, int y, int w, int h, int signed_color)    // !ALLMODES!
+		o3_fun void img_rect(int x, int y, int w, int h, int signed_color)    // !ALLMODES!
 		{
 			unsigned int color = (unsigned int) signed_color;
 			switch (m_mode_int)
@@ -435,7 +439,7 @@ o3_fun void clear(int signed_color)
 			}
 		};
 
-		o3_fun void line(int x0,int y0,int x1,int y1,int signed_color)    // !ALLMODES!
+		o3_fun void img_line(int x0,int y0,int x1,int y1,int signed_color)    // !ALLMODES!
 		{
 			unsigned int color = (unsigned int) signed_color;
 			bool steep = (abs(y1 - y0) > abs(x1 - x0));
@@ -488,10 +492,12 @@ o3_fun void clear(int signed_color)
 		{
 			return srcPNG(data, ex);
 		};
+#ifdef CANVAS_USE_JPEG
+
 #pragma region JPG_load_and_save
 
 #pragma endregion JPG_load_and_save
-		o3_set Buf srcJPG(const Buf &data)
+		oaaa3_set Buf srcJPG(const Buf &data)
 		{
 
 			using namespace jpg;						
@@ -531,7 +537,7 @@ o3_fun void clear(int signed_color)
 
 		}
 
-		o3_fun Buf jpgBuffer()
+		oaaa3_fun Buf jpgBuffer()
 		{
 			Buf Output;
 			using namespace jpg;
@@ -586,6 +592,8 @@ o3_fun void clear(int signed_color)
 			};
 			return Output;
 		};
+
+#endif
 #pragma region PNG_load_and_save
 
 		
@@ -1048,35 +1056,44 @@ o3_fun void clear(int signed_color)
 			};
 
 			tVec<png_bytep> row_pointers(m_h);
+			unsigned int *rowdata = NULL;
+			
+			bool writeall = true;
 			switch (m_mode_int)
 			{
 			case Image::MODE_ARGB:
 				{
+					rowdata = new unsigned int[m_h * m_w];
 					tVec <unsigned int> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
 					{
+						unsigned int *destrow = rowdata + (y*m_w);
+						row_pointers[y] = (unsigned char*)destrow;
 						unsigned int *D = (unsigned int *)_getRowPtr(y);
 						for (size_t i =0 ;i<m_w;i++)
 						{
 							unsigned int const pixel = *D++;
-							unsigned int shuffled = ((pixel >> 24)&0x255) + ((pixel << 8)&0xffffff00);
-							row[i] = shuffled;
+							//unsigned int shuffled = ((pixel >> 24)&0x255) + ((pixel << 8)&0xffffff00);
+							//row[i] = shuffled;
 
-							unsigned char *c = (unsigned char*)&row[i];
+							unsigned char *c = (unsigned char*)&destrow[i];
 							c[0] = (unsigned char)(pixel>>16);
 							c[1] = (unsigned char)(pixel>>8);
 							c[2] = (unsigned char)(pixel);
 							c[3] = (unsigned char)(pixel>>24);
 						}
-						png_write_row(png_ptr, (png_bytep)row.ptr());
+						//png_write_row(png_ptr, (png_bytep)row.ptr());
 					};
 				}
 				break;
 			case Image::MODE_RGB:
 				{
-					tVec <unsigned int> row(m_w);
+					rowdata = new unsigned int[m_h * m_w];
+					//tVec <unsigned int> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
 					{
+						unsigned int *destrow = rowdata + (y*m_w);
+						row_pointers[y] = (unsigned char*)destrow;
 						unsigned char *D = (unsigned char *)_getRowPtr(y);
 						for (size_t i =0 ;i<m_w;i++)
 						{
@@ -1084,17 +1101,19 @@ o3_fun void clear(int signed_color)
 							unsigned char G = *D++;
 							unsigned char B = *D++;
 							unsigned int const pixel = (R << 24) + (G << 16) + (B << 8) + 0xff ;
-							row[i] = pixel;
+							destrow[i] = pixel;
 						}
-						png_write_row(png_ptr, (png_bytep)row.ptr());
+					//	png_write_row(png_ptr, (png_bytep)row.ptr());
 					};
 				}
 				break;
 			case Image::MODE_GRAY:
 				{
+					writeall = false;
 					tVec <unsigned char> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
 					{
+						
 						unsigned char *D = (unsigned char *)_getRowPtr(y);
 						png_write_row(png_ptr, D);
 					};
@@ -1102,19 +1121,23 @@ o3_fun void clear(int signed_color)
 				break;
 			case Image::MODE_BW:
 				{
+					writeall = false;
 					tVec <unsigned int> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
 					{
 						unsigned char *D = (unsigned char *)_getRowPtr(y);
-						png_write_row(png_ptr, D);
+						//png_write_row(png_ptr, D);
 					};
 				}
 				break;
 
 			};
 
-			//png_write_image(png_ptr, row_pointers.ptr());
-
+			if (writeall )
+			{
+				png_write_image(png_ptr, row_pointers.ptr());
+				delete [] rowdata;
+			};
 
 			if (setjmp(png_jmpbuf(png_ptr)))
 			{
@@ -1283,9 +1306,6 @@ o3_fun void clear(int signed_color)
 		{
 			m_currentrenderstate->StrokeColor = decodeColor(style);
 
-			unsigned int color =  m_currentrenderstate->StrokeColor;
-			unsigned char *c = (unsigned char *)&color;
-			m_graphics.lineColor(c[2], c[1], c[0], c[3]);
 		};
 
 		o3_set void strokeWidth (double Width)
@@ -1293,19 +1313,55 @@ o3_fun void clear(int signed_color)
 			m_currentrenderstate->StrokeWidth = Width;
 		};
 
+		o3_set void lineWidth (double Width)
+		{
+			m_currentrenderstate->StrokeWidth = Width;
+		};
+
 		o3_set void lineCap(const Str &cap)
 		{
-			cap;
+			
+			if (cap == "butt")
+			{
+				m_currentrenderstate->CapStyle = agg::Agg2D::CapButt;
+			}
+			if (cap == "round")
+			{
+				m_currentrenderstate->CapStyle = agg::Agg2D::CapRound;
+			}
+			if (cap == "square")
+			{
+				m_currentrenderstate->CapStyle = agg::Agg2D::CapSquare;
+			};
 		};
 
 		o3_set void lineJoin(const Str &join)
 		{
-			join;
+			if (join == "round")
+			{
+				m_currentrenderstate->JoinStyle = agg::Agg2D::JoinRound;
+				return;
+			}
+			if (join == "bevel")
+			{
+				m_currentrenderstate->JoinStyle = agg::Agg2D::JoinBevel;
+				return;
+			}
+			if (join == "miter")
+			{
+				m_currentrenderstate->JoinStyle = agg::Agg2D::JoinMiter;
+				return;
+			};
 		};
 
 		o3_set void miterLimit(double limit)
 		{
 			limit;
+		};
+
+		o3_set void globalAlpha(double alpha)
+		{
+			m_currentrenderstate->GlobalAlpha = alpha;
 		};
 
 #pragma region TextProperties
@@ -1383,31 +1439,28 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void fillText(const Str & text, double x, double y)
 		{
-			unsigned int color =  m_currentrenderstate->FillColor;
-			unsigned char *c = (unsigned char *)&color;
-			m_graphics.fillColor(c[2], c[1], c[0], c[3]);
+			SetupFillStyle();
 			m_graphics.text(x,y,text.ptr(),agg::Agg2D::FillOnly);
 		};
 		
 		o3_fun void fillText(const Str & text, double x, double y, double maxWidth)
 		{
 			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
-			unsigned int color =  m_currentrenderstate->FillColor;
-			unsigned char *c = (unsigned char *)&color;
-			m_graphics.fillColor(c[2], c[1], c[0], c[3]);
+			SetupFillStyle();
+			
 			m_graphics.text(x,y,text.ptr(),agg::Agg2D::FillOnly );
 		};
 
 		o3_fun void strokeText(const Str & text, double x, double y)
 		{
-			m_graphics.lineWidth(m_currentrenderstate->StrokeWidth);
+			SetupStrokeStyle();
 			m_graphics.text(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
 		};
 
 		o3_fun void strokeText(const Str & text, double x, double y, double maxWidth)
 		{
 			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
-			m_graphics.lineWidth(m_currentrenderstate->StrokeWidth);
+			SetupStrokeStyle();
 			m_graphics.text(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
 		};
 
@@ -1463,7 +1516,7 @@ o3_fun void clear(int signed_color)
 			Ensure32BitSurface();
 
 			m_graphics.resetPath();
-
+			
 			V2<double> p1(xx,yy);
 			V2<double> p2(xx+ww,yy);
 			V2<double> p3(xx+ww,yy+hh);
@@ -1479,12 +1532,13 @@ o3_fun void clear(int signed_color)
 			m_graphics.lineTo(p3.x,p3.y);
 			m_graphics.lineTo(p4.x,p4.y);
 			m_graphics.closePolygon();
-
+			SetupFillStyle();
 			m_graphics.drawPath(agg::Agg2D::FillOnly);
 		};
 
 		o3_fun void strokeRect(double xx, double yy, double ww, double hh)
 		{
+			this->m_lastpoint = V2<double>(xx,yy);
 			Ensure32BitSurface();
 
 			m_graphics.resetPath();
@@ -1505,7 +1559,7 @@ o3_fun void clear(int signed_color)
 			m_graphics.lineTo(p4.x,p4.y);
 
 			m_graphics.closePolygon();
-
+			SetupStrokeStyle();
 			m_graphics.drawPath(agg::Agg2D::StrokeOnly);
 		};
 
@@ -1534,6 +1588,7 @@ o3_fun void clear(int signed_color)
 		o3_fun void fill()
 		{
 			Ensure32BitSurface();
+			SetupFillStyle();
 			m_graphics.resetPath();
 
 			//			TransformCurrentPath();
@@ -1562,12 +1617,31 @@ o3_fun void clear(int signed_color)
 
 
 		};
+		
+		void SetupStrokeStyle()
+		{
+			unsigned int color =  m_currentrenderstate->StrokeColor;
+			unsigned char *c = (unsigned char *)&color;
+
+			m_graphics.lineColor(c[2], c[1], c[0], (unsigned int)(c[3] * m_currentrenderstate->GlobalAlpha));
+			m_graphics.lineWidth(m_currentrenderstate->StrokeWidth);		
+			m_graphics.lineCap(m_currentrenderstate->CapStyle);
+			m_graphics.lineJoin(m_currentrenderstate->JoinStyle);
+		};
+
+		void SetupFillStyle()
+		{
+			unsigned char *fc = (unsigned char *)&m_currentrenderstate->FillColor;
+			m_graphics.fillColor(fc[2], fc[1], fc[0],(unsigned int)( fc[3]* m_currentrenderstate->GlobalAlpha));
+		};
 
 		o3_fun void stroke()
 		{
+			SetupStrokeStyle();
 			Ensure32BitSurface();
 			m_graphics.resetPath();
-			m_graphics.lineWidth(m_currentrenderstate->StrokeWidth);
+
+			
 			//			m_graphics.line(0,0,m_w, m_h);
 
 			//			TransformCurrentPath();
@@ -1595,6 +1669,21 @@ o3_fun void clear(int signed_color)
 		};
 
 #pragma region Path_Generating_Functions
+
+
+		o3_fun void rect(double x, double y, double w, double h)
+		{
+			//V2<double> storepoint = m_lastpoint;
+			double const x2 = x+w;
+			double const y2 = y+h;
+			moveTo(x,y);
+			lineTo(x2, y);
+			lineTo(x2, y2);
+			lineTo(x, y2);
+			lineTo(x, y);		
+			//m_lastpoint = storepoint;
+		};
+		
 		o3_fun void moveTo(double x, double y)
 		{
 			m_paths.push(Path());
@@ -1620,26 +1709,44 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void arc(double x0, double y0, double radius, double startAngle, double endAngle, bool anticlockwise)
 		{
-
-			ArcGen Gen(x0,y0,radius,radius, startAngle, endAngle, (anticlockwise)?true:false);
-			double x, y;
-
 			if (m_paths.size() == 0)
 			{
 				m_paths.push(Path());
 			};
-
-			if (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+			if (anticlockwise == false && endAngle-startAngle>=6.283f)
 			{
-				moveTo(x,y);
-			};
+				
+				agg::agg::ellipse Gen(x0,y0, radius, radius);
+				double x, y;
+				if (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+				{
+					moveTo(x,y);
+				};
 
-			while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
-			{
-				V2<double> point(x,y);
-				m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+				while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+				{
+					V2<double> point(x,y);
+					m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+				}
 			}
+			else
+			{
+				ArcGen Gen(x0,y0,radius,radius, startAngle, endAngle, (anticlockwise)?false:true);
+				double x, y;
 
+			
+
+				if (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+				{
+					moveTo(x,y);
+				};
+
+				while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+				{
+					V2<double> point(x,y);
+					m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+				}
+			};
 			int lastpathsize = m_paths[m_paths.size()-1].m_path.size();
 			if (lastpathsize >0)
 			{
@@ -1724,6 +1831,9 @@ o3_fun void clear(int signed_color)
 			RS.StrokeWidth = 1;
 			RS.ClippingEnabled = false;
 
+			RS.CapStyle = agg::Agg2D::CapButt;
+			RS.JoinStyle = agg::Agg2D::JoinMiter;
+			RS.GlobalAlpha = 1.0;
 			m_renderstates.push(RS);
 			m_currentrenderstate = &m_renderstates[m_renderstates.size()-1];
 
@@ -1739,10 +1849,6 @@ o3_fun void clear(int signed_color)
 				m_currentrenderstate->ClipBottomRight.x,
 				m_currentrenderstate->ClipBottomRight.y);
 
-			unsigned char *sc = (unsigned char *)&m_currentrenderstate->StrokeColor;
-			m_graphics.lineColor(sc[2], sc[1], sc[0], sc[3]);
-			unsigned char *fc = (unsigned char *)&m_currentrenderstate->FillColor;
-			m_graphics.fillColor(fc[2], fc[1], fc[0], fc[3]);
 			UpdateFontState();			
 		};
 		
