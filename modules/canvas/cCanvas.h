@@ -201,6 +201,7 @@ namespace o3
 				break;
 			}
 			m_mem.resize(newsize);
+			m_mem.set(0,0,newsize);
 			m_graphics_attached = false;
 		};
 
@@ -978,6 +979,7 @@ o3_fun void clear(int signed_color)
 		o3_fun Buf pngBuffer(siEx* ex = 0)
 		{
 			Buf data;
+			data.reserve(m_w*m_h*4);
 			using namespace png;
 			png_structp png_ptr;
 			png_infop info_ptr;
@@ -1467,6 +1469,7 @@ o3_fun void clear(int signed_color)
 		o3_fun void fillText(const Str & text, double x, double y)
 		{
 			SetupFillStyle();
+			ApplyTransformation();
 			m_graphics.text(x,y,text.ptr(),agg::Agg2D::FillOnly);
 		};
 		
@@ -1474,13 +1477,15 @@ o3_fun void clear(int signed_color)
 		{
 			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
 			SetupFillStyle();
-			
+			ApplyTransformation();
+
 			m_graphics.text(x,y,text.ptr(),agg::Agg2D::FillOnly );
 		};
 
 		o3_fun void strokeText(const Str & text, double x, double y)
 		{
 			SetupStrokeStyle();
+			ApplyTransformation();
 			m_graphics.text(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
 		};
 
@@ -1488,6 +1493,7 @@ o3_fun void clear(int signed_color)
 		{
 			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
 			SetupStrokeStyle();
+			ApplyTransformation();
 			m_graphics.text(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
 		};
 
@@ -1527,8 +1533,10 @@ o3_fun void clear(int signed_color)
 			m_graphics.lineTo(p4.x,p4.y);
 
 			m_graphics.closePolygon();
+			m_graphics.blendMode(agg::Agg2D::BlendSrc);
 			m_graphics.fillColor(c[2], c[1], c[0], c[3]);
 			m_graphics.drawPath(agg::Agg2D::FillOnly);
+			m_graphics.blendMode(agg::Agg2D::BlendAlpha); // todo, switch back to original compositing mode!
 			{
 
 				unsigned int color =  m_currentrenderstate->FillColor;
@@ -1611,13 +1619,24 @@ o3_fun void clear(int signed_color)
 			m_paths.clear();
 		}
 
-
+		void ApplyTransformation()
+		{
+			agg::Agg2D::Transformations M;
+			M.affineMatrix[0] = m_currentrenderstate->Transformation.M[0][0];
+			M.affineMatrix[1] = m_currentrenderstate->Transformation.M[0][1];
+			M.affineMatrix[2] = m_currentrenderstate->Transformation.M[1][0];
+			M.affineMatrix[3] = m_currentrenderstate->Transformation.M[1][1];
+			M.affineMatrix[4] = m_currentrenderstate->Transformation.M[2][0];
+			M.affineMatrix[5] = m_currentrenderstate->Transformation.M[2][1];
+			m_graphics.transformations(M);
+		};
+		
 		o3_fun void fill()
 		{
 			Ensure32BitSurface();
 			SetupFillStyle();
 			m_graphics.resetPath();
-
+			ApplyTransformation();
 			//			TransformCurrentPath();
 
 			for (size_t i =0 ;i<m_paths.size();i++)
@@ -1667,7 +1686,7 @@ o3_fun void clear(int signed_color)
 			SetupStrokeStyle();
 			Ensure32BitSurface();
 			m_graphics.resetPath();
-
+			ApplyTransformation();
 			
 			//			m_graphics.line(0,0,m_w, m_h);
 
@@ -1715,7 +1734,7 @@ o3_fun void clear(int signed_color)
 		{
 			m_paths.push(Path());
 			V2<double> point(x,y);
-			point = TransformPoint(point);
+			point = NoTransformPoint(point);
 			m_paths[m_paths.size()-1].m_path.push(point);
 			m_lastpoint = point;
 		}
@@ -1729,14 +1748,14 @@ o3_fun void clear(int signed_color)
 			else
 			{
 				V2<double> point(x,y);
-				m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+				m_paths[m_paths.size()-1].m_path.push(NoTransformPoint(point));
 				m_lastpoint.x = x;
 				m_lastpoint.y = y;
 			};
 		};
 
 
-		o3_fun void arc(double x0, double y0, double radius, double startAngle, double endAngle, bool anticlockwise)
+		o3_fun void arc(double x0, double y0, double radius, double startAngle, double endAngle, bool anticlockwise = false)
 		{
 			if (m_paths.size() == 0)
 			{
@@ -1755,7 +1774,7 @@ o3_fun void clear(int signed_color)
 				while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
 				{
 					V2<double> point(x,y);
-					m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+					m_paths[m_paths.size()-1].m_path.push(NoTransformPoint(point));
 				}
 			}
 			else
@@ -1773,7 +1792,7 @@ o3_fun void clear(int signed_color)
 				while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
 				{
 					V2<double> point(x,y);
-					m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+					m_paths[m_paths.size()-1].m_path.push(NoTransformPoint(point));
 				}
 			};
 			int lastpathsize = m_paths[m_paths.size()-1].m_path.size();
@@ -1795,8 +1814,8 @@ o3_fun void clear(int signed_color)
 			V2<double> target(x0,y0);
 			V2<double> cp(cp1x,cp1y);
 
-			target = TransformPoint(target);
-			cp = TransformPoint(cp);
+			target = NoTransformPoint(target);
+			cp = NoTransformPoint(cp);
 			QuadraticCurveGen Gen(m_lastpoint.x,m_lastpoint.y, cp.x,cp.y, target.x, target.y);
 			double x, y;
 
@@ -1823,9 +1842,9 @@ o3_fun void clear(int signed_color)
 			V2<double> cp1(cp1x,cp1y);
 			V2<double> cp2(cp2x,cp2y);
 
-			target = TransformPoint(target);
-			cp1 = TransformPoint(cp1);
-			cp2 = TransformPoint(cp2);
+			target = NoTransformPoint(target);
+			cp1 = NoTransformPoint(cp1);
+			cp2 = NoTransformPoint(cp2);
 
 			BezierCurveGen Gen(m_lastpoint.x,m_lastpoint.y, cp1.x, cp1.y, cp2.x, cp2.y, target.x, target.y);
 			double x, y;
@@ -1839,7 +1858,7 @@ o3_fun void clear(int signed_color)
 			while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
 			{
 				V2<double> point(x,y);
-				m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+				m_paths[m_paths.size()-1].m_path.push(NoTransformPoint(point));
 			}
 
 			m_lastpoint = target;
@@ -1856,7 +1875,7 @@ o3_fun void clear(int signed_color)
 			RS.ClipBottomRight.x = m_w;
 			RS.ClipBottomRight.y = m_h;
 
-			RS.ClearColor = 0xffffffff;
+			RS.ClearColor = 0x0;
 			RS.StrokeWidth = 1;
 			RS.ClippingEnabled = false;
 			RS.FontFamily = "arial.ttf";
@@ -1993,7 +2012,12 @@ o3_fun void clear(int signed_color)
 		};
 
 
-		V2<double> TransformPoint(V2<double> &p)
+		inline V2<double> NoTransformPoint(V2<double> &p)
+		{
+			return p;
+		}
+
+		inline V2<double> RealTransformPoint(V2<double> &p)
 		{
 			return m_currentrenderstate->Transformation.Multiply(p);
 		}
@@ -2005,6 +2029,7 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void clip()
 		{
+			ApplyTransformation();
 			double x2=0,y2=0,x1=m_w,y1=m_h;
 			// calculate extends, set 2d clipping rect for now
 
