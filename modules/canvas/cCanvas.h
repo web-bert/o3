@@ -22,7 +22,7 @@
 #include <tools_math.h>
 #include <math.h>
 
-
+#define IMAGE_ALPHAMAP_ENABLED
 #include <lib_agg.h>
 #include <lib_freetype.h>
 #include <lib_png.h>
@@ -1724,13 +1724,15 @@ o3_fun void clear(int signed_color)
 		{
 			if (m_paths.size() == 0)
 			{
-				m_paths.push(Path());
-				m_paths[m_paths.size()-1].m_path.push(m_lastpoint);
+				moveTo(x,y);
+			}
+			else
+			{
+				V2<double> point(x,y);
+				m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+				m_lastpoint.x = x;
+				m_lastpoint.y = y;
 			};
-			V2<double> point(x,y);
-			m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
-			m_lastpoint.x = x;
-			m_lastpoint.y = y;
 		};
 
 
@@ -1857,13 +1859,17 @@ o3_fun void clear(int signed_color)
 			RS.ClearColor = 0xffffffff;
 			RS.StrokeWidth = 1;
 			RS.ClippingEnabled = false;
+			RS.FontFamily = "arial.ttf";
+			RS.FontSize = 10;
+			RS.BoldFont = false;
+			RS.ItalicFont = false;
 
 			RS.CapStyle = agg::Agg2D::CapButt;
 			RS.JoinStyle = agg::Agg2D::JoinMiter;
 			RS.GlobalAlpha = 1.0;
 			m_renderstates.push(RS);
 			m_currentrenderstate = &m_renderstates[m_renderstates.size()-1];
-
+			
 			strokeStyle("black");
 			fillStyle("black");
 
