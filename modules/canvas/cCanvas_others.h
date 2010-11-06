@@ -41,7 +41,9 @@ namespace o3
 
 		int m_type;
 		V2<double> m_CP1;
+		double m_Radius1;
 		V2<double> m_CP2;
+		double m_Radius2;
 		tVec<unsigned int> m_colorstops;
 	};
 

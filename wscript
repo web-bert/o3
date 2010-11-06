@@ -9,8 +9,8 @@ def configure(conf):
   conf.check_tool('compiler_cxx')
   conf.check_tool('node_addon')   
   conf.add_os_flags('LDFLAGS','LINKFLAGS')
-  conf.env.append_value('CCFLAGS', ['-DDEBUG', '-g', '-O0'])
-  conf.env.append_value('CXXFLAGS', ['-DDEBUG', '-g', '-O0'])
+  conf.env.append_value('CCFLAGS', ['-g', '-O3'])
+  conf.env.append_value('CXXFLAGS', ['-g', '-O3'])
 
 def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')  

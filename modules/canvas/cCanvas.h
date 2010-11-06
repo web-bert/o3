@@ -1126,7 +1126,7 @@ o3_fun void clear(int signed_color)
 					for (size_t y = 0;y<m_h;y++)
 					{
 						unsigned char *D = (unsigned char *)_getRowPtr(y);
-						//png_write_row(png_ptr, D);
+						png_write_row(png_ptr, D);
 					};
 				}
 				break;
@@ -1308,10 +1308,37 @@ o3_fun void clear(int signed_color)
 
 		};
 
-		o3_set void strokeWidth (double Width)
-		{
-			m_currentrenderstate->StrokeWidth = Width;
+
+		o3_fun siScr createLinearGradient(double x0, double y0, double x1, double y1)
+		{						
+			cImage_CanvasGradient *Gr= o3_new(cImage_CanvasGradient)();
+			Gr->m_CP1.x = x0;
+			Gr->m_CP1.y = y0;
+			Gr->m_CP2.x = x1;
+			Gr->m_CP2.y = y1;
+			Gr->m_type = cImage_CanvasGradient::GRADIENT_LIN;
+			return siScr(Gr);
+
 		};
+
+		o3_fun siScr createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1)
+		{
+
+			cImage_CanvasGradient *Gr= o3_new(cImage_CanvasGradient)();
+			Gr->m_CP1.x = x0;
+			Gr->m_CP1.y = y0;
+			Gr->m_CP2.x = x1;
+			Gr->m_CP2.y = y1;
+			Gr->m_Radius1 = r0;
+			Gr->m_Radius2 = r1;
+			Gr->m_type = cImage_CanvasGradient::GRADIENT_RAD;
+			return siScr(Gr);
+		};
+
+	//	o3_set void strokeWidth (double Width)
+	//	{
+	//		m_currentrenderstate->StrokeWidth = Width;
+	//	};
 
 		o3_set void lineWidth (double Width)
 		{
