@@ -476,7 +476,99 @@ tests['integration 1'] = function(ctx){
   ctx.stroke();
 };
 
-
+tests['clock'] = function(ctx)
+{
+  ctx.save();  
+  ctx.clearRect(0,0,150,150);  
+  ctx.translate(75,75);  
+  ctx.scale(0.4,0.4);  
+  ctx.rotate(-Math.PI/2);  
+  ctx.strokeStyle = "black";  
+  ctx.fillStyle = "white";  
+  ctx.lineWidth = 8;  
+  ctx.lineCap = "round";  
+  
+  // Hour marks  
+  ctx.save();  
+  for (var i=0;i<12;i++){  
+    ctx.beginPath();  
+    ctx.rotate(Math.PI/6);  
+    ctx.moveTo(100,0);  
+    ctx.lineTo(120,0);  
+    ctx.stroke();  
+  }  
+  ctx.restore();  
+  
+  // Minute marks  
+  ctx.save();  
+  ctx.lineWidth = 5;  
+  for (i=0;i<60;i++){  
+    if (i%5!=0) {  
+      ctx.beginPath();  
+      ctx.moveTo(117,0);  
+      ctx.lineTo(120,0);  
+      ctx.stroke();  
+    }  
+    ctx.rotate(Math.PI/30);  
+  }  
+  ctx.restore();  
+    
+  var sec = 40;  
+  var min = 25;  
+  var hr  = 1;  
+  hr = hr>=12 ? hr-12 : hr;  
+  
+  ctx.fillStyle = "black";  
+  
+  // write Hours  
+  ctx.save();  
+  ctx.rotate( hr*(Math.PI/6) + (Math.PI/360)*min + (Math.PI/21600)*sec )  
+  ctx.lineWidth = 14;  
+  ctx.beginPath();  
+  ctx.moveTo(-20,0);  
+  ctx.lineTo(80,0);  
+  ctx.stroke();  
+  ctx.restore();  
+  
+  // write Minutes  
+  ctx.save();  
+  ctx.rotate( (Math.PI/30)*min + (Math.PI/1800)*sec )  
+  ctx.lineWidth = 10;  
+  ctx.beginPath();  
+  ctx.moveTo(-28,0);  
+  ctx.lineTo(112,0);  
+  ctx.stroke();  
+  ctx.restore();  
+    
+  // Write seconds  
+  ctx.save();  
+  ctx.rotate(sec * Math.PI/30);  
+  ctx.strokeStyle = "#D40000";  
+  ctx.fillStyle = "#D40000";  
+  ctx.lineWidth = 6;  
+  ctx.beginPath();  
+  ctx.moveTo(-30,0);  
+  ctx.lineTo(83,0);  
+  ctx.stroke();  
+  ctx.beginPath();  
+  ctx.arc(0,0,10,0,Math.PI*2,true);  
+  ctx.fill();  
+  ctx.beginPath();  
+  ctx.arc(95,0,10,0,Math.PI*2,true);  
+  ctx.stroke();  
+  ctx.fillStyle = "#555";  
+  ctx.arc(0,0,3,0,Math.PI*2,true);  
+  ctx.fill();  
+  ctx.restore();  
+  
+  ctx.beginPath();  
+  ctx.lineWidth = 14;  
+  ctx.strokeStyle = '#325FA2';  
+  ctx.arc(0,0,142,0,Math.PI*2,true);  
+  ctx.stroke();  
+  
+  ctx.restore(); 
+  }
 
 
 //var createContext = o3.canvas;
@@ -509,6 +601,11 @@ function drawText(ctx,txt)
   
 var http = require('http');
 var t = 0;
+
+
+function DumpTest(name)
+{
+}
 http.createServer(function (req, res) 
 {
 //	var Query = require('url').parse(req.url, true).query;
@@ -522,30 +619,27 @@ http.createServer(function (req, res)
 	};
 	
 	res.writeHead(200, {'Content-Type': 'text/html'});
-	var Output = "<html><head><title>Canvas Test Suite</title><link rel=\"javascript\" type=\"text/javascript\" href=\"runtests.js\" /></head><body onload=\"Start();\">";
-	
+	var Output = "<html><head><style>h3{font-family:arial;}</style><title>Server - O3 Canvas Test Suite</title></head><body>";
+	console.log("running tests..");
 	for (var testname  in  tests)
 	{
-		var ctx = createContext(300,300, "argb");
+		console.log("running " + testname);
+		var ctx = createContext(210,210, "argb");
 		try 
 		{
 			tests[testname](ctx);
 		}
 		catch(e)
 		{
-			console.log(e.message);
+			console.log("error in test "+testname+ ": "+e.message);
 		}
 		var buf = ctx.pngBuffer();
-		Output += "<h3>"+testname+"</h3><table><tr><td><img alt='Embedded Image' src='data:image/png;base64,"+buf.toBase64()+"'></td><td><canvas id=\""+testname+"\" width=\"300\" height=\"300\"></canvas></td></tr></table>";
+		Output += "<div style=\"border:1px solid gray;background-color:#f0f0f0;margin:10px;float:left;width:350px;height:350px;\"><h3>"+testname+"</h3><table><tr><td><img alt='Embedded Image' src='data:image/png;base64,"+buf.toBase64()+"'></td></tr></table></div>";
 		var ctx = null;
 	};
+	console.log("done running tests!");
 	
     res.end(Output + "</body></html>");
 }).listen(4000, "127.0.0.1");
 
 console.log('Server running at http://127.0.0.1:4000/');
-
-function Start()
-{
-	alert("blah");
-}
