@@ -419,19 +419,22 @@ namespace o3{
 			normalize(a1, a2, ccw);
 			m_path_cmd = agg::agg::path_cmd_move_to; 
 			m_angle = m_start;
+			distancehad= 0;
 		}
 
 
 		unsigned vertex(double* x, double* y)
 		{
 			if(agg::agg::is_stop(m_path_cmd)) return agg::agg::path_cmd_stop;
-			if((m_angle < m_end - m_da/4) != m_ccw)
+			double newdist = distancehad + distanceperstep;
+			if(newdist  >= distance)
 			{
 				*x = m_x + cos(m_end) * m_rx;
 				*y = m_y + sin(m_end) * m_ry;
 				m_path_cmd = agg::agg::path_cmd_stop;
 				return agg::agg::path_cmd_line_to;
 			}
+			distancehad = newdist;
 
 			*x = m_x + cos(m_angle) * m_rx;
 			*y = m_y + sin(m_angle) * m_ry;
@@ -446,14 +449,19 @@ namespace o3{
 		void normalize(double a1, double a2, bool ccw)
 		{
 			double ra = (fabs(m_rx) + fabs(m_ry)) / 2;
+			
 			m_da = acos(ra / (ra + 0.125 / m_scale)) * 2;
+			
+			distance = fabs(a2-a1);
+			distanceperstep = fabs(m_da);
+			
 			if(ccw)
 			{
-				while(a2 < a1) a2 += pi * 2.0;
+			//	while(a2 < a1) a2 += pi * 2.0;
 			}
 			else
 			{
-				while(a1 < a2) a1 += pi * 2.0;
+			//	while(a1 < a2) a1 += pi * 2.0;
 				m_da = -m_da;
 			}
 			m_ccw   = ccw;
@@ -461,7 +469,9 @@ namespace o3{
 			m_end   = a2;
 			m_initialized = true;
 		}
-
+		double distanceperstep;
+		double distancehad;
+		double distance;
 		double   m_x;
 		double   m_y;
 		double   m_rx;

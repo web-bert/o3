@@ -22,6 +22,7 @@
 
 #ifdef O3_WITH_GLUE
 #include "cCanvas_glue.h"
+#include "cCanvas_others_glue.h"
 #endif // O3_WITH_GLUE	
 
 #endif // O3_CANVAS_H

@@ -8,8 +8,6 @@ namespace o3
 	{
 #pragma warning( push)
 #pragma warning( disable : 4100 4512 4244)
-		#include "libagg-2.4/agg2d/agg2d.h"
-		#include "libagg-2.4/agg2d/agg2d.cpp"
 		#include "libagg-2.4/include/agg_rasterizer_scanline_aa.h"
 		#include "libagg-2.4/include/agg_scanline_p.h"
 
@@ -40,13 +38,16 @@ namespace o3
 		#include "libagg-2.4/src/agg_vpgen_clip_polygon.cpp"
 		#include "libagg-2.4/src/agg_vpgen_clip_polyline.cpp"
 		#include "libagg-2.4/src/agg_vpgen_segmentator.cpp"
-
+		
+		#include "libagg-2.4/include/agg_ellipse.h"
 		#include "libagg-2.4/font_freetype/agg_font_freetype.cpp"
 
-#ifdef WINDOWS
-		#include "libagg-2.4/font_win32_tt/agg_font_win32_tt.cpp"
-#endif
-
+//#ifdef WINDOWS
+//		#include "libagg-2.4/font_win32_tt/agg_font_win32_tt.cpp"
+//#endif
+		#include "libagg-2.4/agg2d/agg2d.h"
+		#include "libagg-2.4/agg2d/agg2d.cpp"
+		
 #pragma warning(pop)
 
 	};
