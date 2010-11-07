@@ -7,7 +7,7 @@ try{
 function rxc(){
    return Array.prototype.map.call(arguments,function(b){return b.toString().slice(1,-1)}).join('');
 }
-
+var fontcache = {};
 var fb = /(?:\s*,\s*('[^']+'|"[^"]+"|\w[\w\s-]+\w))?/
 var fontrx = new RegExp(rxc(
         /^\s*/ ,
@@ -31,7 +31,8 @@ module.exports = function(){
     
     var ctx = o3.canvas.apply(arguments);
     ctx.onParseFont = function(font){// need getter/setter overload in O3 too
-       var m = String(font).match(fontrx);
+       
+       var m = fontcache[font] || (fontcache[font] = String(font).match(fontrx));
        if(!m) return;
        // ctx.fontStyle = m[0]; // and so on.
        if(m[3]) ctx.fontSize = parseFloat(m[3]) * (fontscale[m[4]] || 1);
