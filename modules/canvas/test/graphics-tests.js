@@ -664,11 +664,6 @@ http.createServer(function (req, res)
 	{
 		console.log("running " + testname);
 		var ctx = createContext(410,210, "argb");
-		ctx.onSetFont = function()
-		{
-			ctx.fontFamily = "arial.ttf";
-			ctx.fontSize = 20;
-		};
 
 		try 
 		{

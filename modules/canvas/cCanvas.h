@@ -1589,7 +1589,7 @@ o3_fun void clear(int signed_color)
 			{
 			case TextBaseline_top:
 			case TextBaseline_hanging:
-				y+=fontheight-descender+ascender;
+				y+=fontheight;
 			break;
 				
 			case TextBaseline_middle:
