@@ -265,12 +265,11 @@ tests['fillText()'] = function(ctx){
   ctx.rotate(.1);
   ctx.lineTo(10,10);
   ctx.fillText("Awesome!", 50, 100);
-
   var te = ctx.measureText('Awesome!');
-
   ctx.strokeStyle = 'rgba(0,0,0,0.5)';
   ctx.lineTo(50, 102);
   ctx.lineTo(50 + te.width, 102);
+  console.log("5");
   ctx.stroke();
 };
 
@@ -432,6 +431,19 @@ tests['textBaseline ideographic'] = function(ctx){
   ctx.fillText("ideographic", 100, 100);
 };
 
+tests['textBaseline middle'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'normal 20px Arial';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
+  ctx.fillText("ideographic", 100, 100);
+};
+
 tests['integration 1'] = function(ctx){
   ctx.fillStyle = '#eee';
 	ctx.fillRect(0,0,300,300);
@@ -570,6 +582,33 @@ tests['clock'] = function(ctx)
   ctx.restore(); 
   }
 
+tests['baseline compare'] = function(ctx)
+{
+	ctx.strokeStyle = '#666';
+	ctx.strokeRect(0,0,200,200);
+	ctx.lineTo(0,100);
+	ctx.lineTo(200,100);
+	ctx.stroke();
+
+	ctx.font = 'normal 20px Arial';
+	ctx.fontFamily = "arial.ttf";
+	ctx.fontSize = 20;
+
+	var baselines = ['top','hanging', 'middle', 'alphabetic', 'ideographic', 'bottom'];
+	var x = 5;
+	var te = ctx.measureText('OoYjH');
+	for (a in baselines)
+	{
+		ctx.textBaseline = baselines[a];
+		ctx.textAlign = 'left';
+		ctx.fillText('OoYjH', x, 100);
+		ctx.textBaseline = 'top';
+		ctx.textAlign = 'left';
+		ctx.fillText(baselines[a], x, 150);
+		x+=te.width + 5;
+	}
+};
+
 
 //var createContext = o3.canvas;
 //var createContext = require('../lib/o3-canvas')
@@ -624,7 +663,13 @@ http.createServer(function (req, res)
 	for (var testname  in  tests)
 	{
 		console.log("running " + testname);
-		var ctx = createContext(210,210, "argb");
+		var ctx = createContext(410,210, "argb");
+		ctx.onSetFont = function()
+		{
+			ctx.fontFamily = "arial.ttf";
+			ctx.fontSize = 20;
+		};
+
 		try 
 		{
 			tests[testname](ctx);
@@ -634,7 +679,7 @@ http.createServer(function (req, res)
 			console.log("error in test "+testname+ ": "+e.message);
 		}
 		var buf = ctx.pngBuffer();
-		Output += "<div style=\"border:1px solid gray;background-color:#f0f0f0;margin:10px;float:left;width:350px;height:350px;\"><h3>"+testname+"</h3><table><tr><td><img alt='Embedded Image' src='data:image/png;base64,"+buf.toBase64()+"'></td></tr></table></div>";
+		Output += "<div style=\"border:1px solid gray;background-color:#f0f0f0;margin:10px;float:left;\"><h3>"+testname+"</h3><table><tr><td><img alt='Embedded Image' src='data:image/png;base64,"+buf.toBase64()+"'></td></tr></table></div>";
 		var ctx = null;
 	};
 	console.log("done running tests!");

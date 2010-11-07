@@ -427,6 +427,20 @@ tests['textBaseline ideographic'] = function(ctx){
   ctx.fillText("ideographic", 100, 100);
 };
 
+tests['textBaseline middle'] = function(ctx){
+  ctx.strokeStyle = '#666';
+  ctx.strokeRect(0,0,200,200);
+  ctx.lineTo(0,100);
+  ctx.lineTo(200,100);
+  ctx.stroke();
+
+  ctx.font = 'normal 20px Arial';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
+  ctx.fillText("ideographic", 100, 100);
+};
+
+
 tests['integration 1'] = function(ctx){
   ctx.fillStyle = '#eee';
 	ctx.fillRect(0,0,300,300);
@@ -566,6 +580,33 @@ tests['clock'] = function(ctx)
   ctx.restore(); 
   }
 
+
+tests['baseline compare'] = function(ctx)
+{
+	ctx.strokeStyle = '#666';
+	ctx.strokeRect(0,0,200,200);
+	ctx.lineTo(0,100);
+	ctx.lineTo(200,100);
+	ctx.stroke();
+
+	ctx.font = 'normal 20px Arial';
+	ctx.fontFamily = "arial.ttf";
+	ctx.fontSize = 20;
+
+	var baselines = ['top','hanging', 'middle', 'alphabetic', 'ideographic', 'bottom'];
+	var x = 5;
+	var te = ctx.measureText('OoYjH');
+	for (a in baselines)
+	{
+		ctx.textBaseline = baselines[a];
+		ctx.textAlign = 'left';
+		ctx.fillText('OoYjH', x, 100);
+		ctx.textBaseline = 'top';
+		ctx.textAlign = 'left';
+		ctx.fillText(baselines[a], x, 150);
+		x+=te.width + 5;
+	}
+};
 function Start()
 {
 	for(testname in tests)
@@ -574,7 +615,7 @@ function Start()
 		canvas = document.createElement('CANVAS');  
 		header = document.createElement('h3');  
 		header.appendChild(document.createTextNode(testname));
-		canvas.setAttribute('width',210);  
+		canvas.setAttribute('width',410);  
 		canvas.setAttribute('height',210);  
 		
 		thediv.appendChild(header)
@@ -604,8 +645,6 @@ div
 {
 float: left;
 margin: 10px;
-width: 350px;
-height: 350px;
 background-color: #f0f0f0;
 border: 1px solid gray;
 }

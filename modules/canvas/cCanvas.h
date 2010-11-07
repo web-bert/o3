@@ -1423,11 +1423,17 @@ o3_fun void clear(int signed_color)
 
 		o3_set void setFont(const Str &font, iCtx* ctx)
 		{
-			LastSetFont = font;
-			Delegate(siCtx(ctx), m_on_setfont)(siScr(this));
+			if (m_on_setfont)
+			{
+				LastSetFont = font;
+				Delegate(siCtx(ctx), m_on_setfont)(siScr(this));
+				Var arg(font, ctx);
+				Var rval((iAlloc *) ctx);
+				m_on_setfont->invoke(ctx, iScr::ACCESS_CALL, m_on_setfont->resolve(ctx, "__self__"), 1, &arg, &rval);
+			};
 		};
 
-		o3_get Str getFont()
+		o3_get Str font()
 		{
 			return LastSetFont;
 		};
@@ -1552,27 +1558,74 @@ o3_fun void clear(int signed_color)
 			switch (Align)
 			{
 			case TextAlign_start:
-									
+				if (m_currentrenderstate->TextDirectionality == TextDirectionality_ltr)
+				{
+					Align = TextAlign_left;
+				}
+				else
+				{
+					Align = TextAlign_right;
+				}
 				break;
 			case TextAlign_end:
-					
+				if (m_currentrenderstate->TextDirectionality == TextDirectionality_ltr)
+				{
+					Align = TextAlign_right;
+				}
+				else
+				{
+					Align = TextAlign_left;
+				}
 				break;
 			}
+			
+			int Baseline = m_currentrenderstate->TextBaseline;
+
+			double fontheight = m_graphics.m_fontEngine.height();
+			double ascender = m_graphics.m_fontEngine.ascender();
+			double descender = m_graphics.m_fontEngine.descender();
+
+			switch (Baseline)
+			{
+			case TextBaseline_top:
+			case TextBaseline_hanging:
+				y+=fontheight-descender+ascender;
+			break;
+				
+			case TextBaseline_middle:
+				y+=descender  + (fontheight)/2;
+			break;
+
+
+			case TextBaseline_alphabetic:
+			break;
+			
+			case TextBaseline_ideographic:
+			case TextBaseline_bottom:
+				y+=descender;
+			break;
+			}
+			
 			switch (Align)
 			{
 			case TextAlign_right:
-					
+				{
+					double W = m_graphics.textWidth(text.ptr());
+					x -= W;
+				};
 				break;
 			case TextAlign_left:
-					
+					return;
 				break;
 			case TextAlign_center:
+				{
+					double W = m_graphics.textWidth(text.ptr());
+					x -= W/2;
+				};
 				break;
 			};
 
-			switch (m_currentrenderstate->TextAlign)
-			{
-			};
+			
 			
 		};
 		
@@ -1998,6 +2051,7 @@ o3_fun void clear(int signed_color)
 			RS.ItalicFont = false;
 			RS.TextBaseline = TextBaseline_alphabetic;
 			RS.TextAlign = TextAlign_start;
+			RS.TextDirectionality = TextDirectionality_ltr;
 
 			RS.CapStyle = agg::Agg2D::CapButt;
 			RS.JoinStyle = agg::Agg2D::JoinMiter;
@@ -2106,6 +2160,7 @@ o3_fun void clear(int signed_color)
 
 			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(trans);
 		};
+		
 		o3_fun void translate(double _x, double _y)
 		{
 			M33<double> TransMat;

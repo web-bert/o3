@@ -639,6 +639,8 @@ private:
 #ifndef AGG2D_USE_FREETYPE
     HDC                             m_fontDC;
 #endif
+
+public:
     FontEngine                      m_fontEngine;
     FontCacheManager                m_fontCacheManager;
 //#endif
