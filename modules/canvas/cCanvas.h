@@ -93,9 +93,9 @@ namespace o3
 			int FontStyle;
 			int FontVariant;
 			int FontWeight;
-			Str TextDirectionality; // [LTR], RTL -> needs to be dealt with because of align = start/end
-			Str TextBaseline; // top hanging middle [alphabetic] ideographic bottom
-				
+			int TextDirectionality; // [LTR], RTL -> needs to be dealt with because of align = start/end
+			int TextBaseline; // top hanging middle [alphabetic] ideographic bottom
+			int TextAlign;
 			
 			int FillStyle;
 			M33<double> Transformation;
@@ -1406,6 +1406,32 @@ o3_fun void clear(int signed_color)
 			Str TextBaseline; // top hanging middle [alphabetic] ideographic bottom
 		*/
 
+		siScr m_on_setfont;
+		
+		
+		o3_get siScr onSetFont()
+		{
+			return m_on_setfont;
+		}
+		
+		o3_set siScr onSetFont(iScr* cb)
+		{
+			return m_on_setfont = cb;
+		}
+		
+		Str LastSetFont;
+
+		o3_set void setFont(const Str &font, iCtx* ctx)
+		{
+			LastSetFont = font;
+			Delegate(siCtx(ctx), m_on_setfont)(siScr(this));
+		};
+
+		o3_get Str getFont()
+		{
+			return LastSetFont;
+		};
+
 		o3_set void fontFamily(const Str &fontstring)
 		{
 			m_currentrenderstate->FontFamily = fontstring;
@@ -1447,14 +1473,67 @@ o3_fun void clear(int signed_color)
 
 		o3_set void textAlign(const Str &newAlign) // ["start"], "end", "left", "right", "center"
 		{
-			newAlign;	
-			UpdateFontState();
+			if (newAlign == "start")
+			{
+				m_currentrenderstate->TextAlign = TextAlign_start;
+				return;
+			};	
+			if (newAlign == "end")
+			{
+				m_currentrenderstate->TextAlign = TextAlign_end;
+				return;
+			};	
+			if (newAlign == "left")
+			{
+				m_currentrenderstate->TextAlign = TextAlign_left;
+				return;
+			};	
+			if (newAlign == "right")
+			{
+				m_currentrenderstate->TextAlign = TextAlign_right;
+				return;
+			};	
+			if (newAlign == "center")
+			{
+				m_currentrenderstate->TextAlign = TextAlign_center;
+				return;
+			};	
 		};
 		
 		o3_set void textBaseline(const Str &newBaseline) // "top", "hanging", "middle", ["alphabetic"], "ideographic", "bottom"
 		{
-			newBaseline;	
-			UpdateFontState();
+			
+			if (newBaseline == "top")
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_top;
+				return;
+			}
+			if (newBaseline == "hanging") 
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_hanging;
+				return;
+			}
+			if (newBaseline == "middle")
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_middle;
+				return;
+			}
+			if (newBaseline == "alphabetic")
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_alphabetic;
+				return;
+			}
+			if (newBaseline == "ideographic")
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_ideographic;
+				return;
+			}
+			if (newBaseline == "bottom")
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_bottom;
+				return;
+			}
+//			UpdateFontState();
 		};
 
 #pragma endregion TextProperties
@@ -1466,8 +1545,40 @@ o3_fun void clear(int signed_color)
 
 #pragma region TextFunctions
 		
+		void AdjustTextPosition(const Str & text, double &x, double &y)
+		{
+			text,x,y;
+			int Align = m_currentrenderstate->TextAlign;
+			switch (Align)
+			{
+			case TextAlign_start:
+									
+				break;
+			case TextAlign_end:
+					
+				break;
+			}
+			switch (Align)
+			{
+			case TextAlign_right:
+					
+				break;
+			case TextAlign_left:
+					
+				break;
+			case TextAlign_center:
+				break;
+			};
+
+			switch (m_currentrenderstate->TextAlign)
+			{
+			};
+			
+		};
+		
 		o3_fun void fillText(const Str & text, double x, double y)
 		{
+			AdjustTextPosition(text, x, y);
 			SetupFillStyle();
 			ApplyTransformation();
 			m_graphics.text(x,y,text.ptr(),agg::Agg2D::FillOnly);
@@ -1475,6 +1586,7 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void fillText(const Str & text, double x, double y, double maxWidth)
 		{
+			AdjustTextPosition(text, x, y);
 			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
 			SetupFillStyle();
 			ApplyTransformation();
@@ -1484,6 +1596,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void strokeText(const Str & text, double x, double y)
 		{
+			AdjustTextPosition(text, x, y);
 			SetupStrokeStyle();
 			ApplyTransformation();
 			m_graphics.text(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
@@ -1491,6 +1604,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void strokeText(const Str & text, double x, double y, double maxWidth)
 		{
+			AdjustTextPosition(text, x, y);
 			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
 			SetupStrokeStyle();
 			ApplyTransformation();
@@ -1882,6 +1996,8 @@ o3_fun void clear(int signed_color)
 			RS.FontSize = 10;
 			RS.BoldFont = false;
 			RS.ItalicFont = false;
+			RS.TextBaseline = TextBaseline_alphabetic;
+			RS.TextAlign = TextAlign_start;
 
 			RS.CapStyle = agg::Agg2D::CapButt;
 			RS.JoinStyle = agg::Agg2D::JoinMiter;
