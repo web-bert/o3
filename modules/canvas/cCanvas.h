@@ -1441,40 +1441,122 @@ o3_fun void clear(int signed_color)
 		o3_set void fontFamily(const Str &fontstring)
 		{
 			m_currentrenderstate->FontFamily = fontstring;
-			UpdateFontState();
-			
 		};
 
 		o3_set void fontSize(const Str &fontstring)
 		{
 			mReferenceState.FontSizeText = fontstring;
 			// check units!
-			m_currentrenderstate->FontSize = fontstring.toDouble();
-			UpdateFontState();
+			m_currentrenderstate->FontSize = fontstring.toDouble();			
 		};
 
 		o3_set void fontStyle(const Str &fontstring)
 		{
-			fontstring;	
-			UpdateFontState();
+			if (fontstring == "italic")
+			{
+				m_currentrenderstate->FontStyle = FontStyle_italic;
+				return;
+			}
+			if (fontstring == "normal")
+			{
+				m_currentrenderstate->FontStyle = FontStyle_normal;
+				return;
+			}
+			
+			if (fontstring == "oblique")
+			{
+				m_currentrenderstate->FontStyle = FontStyle_oblique;
+				return;
+			}
 		};
 
 		o3_set void fontVariant(const Str &fontstring)
 		{
-			fontstring;	
-			UpdateFontState();
+			fontstring;				
 		};
 
 		o3_set void fontWeight(const Str &fontstring)
 		{
-			fontstring;	
-			UpdateFontState();
+			if (fontstring == "normal")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_normal;
+				return;
+			}
+			if (fontstring == "bold")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_bold;
+				return;
+			}
+			if (fontstring == "bolder")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_bolder;
+				return;
+			}
+			if (fontstring == "lighter")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_lighter;
+				return;
+			}
+			if (fontstring == "100")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_100;
+				return;
+			}
+			if (fontstring == "200")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_200;
+				return;
+			}
+			if (fontstring == "300")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_300;
+				return;
+			}
+			if (fontstring == "400")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_400;
+				return;
+			}
+			if (fontstring == "500")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_500;
+				return;
+			}
+			if (fontstring == "600")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_600;
+				return;
+			}
+			if (fontstring == "700")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_700;
+				return;
+			}
+			if (fontstring == "800")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_800;
+				return;
+			}
+			if (fontstring == "900")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_900;
+				return;
+			};
 		};
 
 		o3_set void textDirectionality(const Str &fontstring)// [LTR] RTL
 		{
-			fontstring;	
-			UpdateFontState();
+			if (fontstring == "ltr")
+			{
+				m_currentrenderstate->TextDirectionality = TextDirectionality_ltr;
+				return;
+			}
+			
+			if (fontstring == "rtl")
+			{
+				m_currentrenderstate->TextDirectionality = TextDirectionality_rtl;
+				return;
+			}						
 		};
 
 		o3_set void textAlign(const Str &newAlign) // ["start"], "end", "left", "right", "center"
@@ -1539,7 +1621,6 @@ o3_fun void clear(int signed_color)
 				m_currentrenderstate->TextBaseline = TextBaseline_bottom;
 				return;
 			}
-//			UpdateFontState();
 		};
 
 #pragma endregion TextProperties
@@ -1582,7 +1663,7 @@ o3_fun void clear(int signed_color)
 			int Baseline = m_currentrenderstate->TextBaseline;
 
 			double fontheight = m_graphics.m_fontEngine.height();
-			double ascender = m_graphics.m_fontEngine.ascender();
+//			double ascender = m_graphics.m_fontEngine.ascender();
 			double descender = m_graphics.m_fontEngine.descender();
 
 			switch (Baseline)
@@ -1631,6 +1712,7 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void fillText(const Str & text, double x, double y)
 		{
+			UpdateFontState();
 			AdjustTextPosition(text, x, y);
 			SetupFillStyle();
 			ApplyTransformation();
@@ -1639,6 +1721,7 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void fillText(const Str & text, double x, double y, double maxWidth)
 		{
+			UpdateFontState();
 			AdjustTextPosition(text, x, y);
 			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
 			SetupFillStyle();
@@ -1649,6 +1732,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void strokeText(const Str & text, double x, double y)
 		{
+			UpdateFontState();
 			AdjustTextPosition(text, x, y);
 			SetupStrokeStyle();
 			ApplyTransformation();
@@ -1657,6 +1741,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void strokeText(const Str & text, double x, double y, double maxWidth)
 		{
+			UpdateFontState();
 			AdjustTextPosition(text, x, y);
 			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
 			SetupStrokeStyle();
@@ -1666,7 +1751,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun siScr measureText(const Str & text) //cImage_TextMetrics 
 		{
-			
+			UpdateFontState();
 			double W = m_graphics.textWidth(text.ptr());
 			cImage_TextMetrics *TM = o3_new(cImage_TextMetrics)();
 			TM->mWidth = W;
@@ -2049,6 +2134,9 @@ o3_fun void clear(int signed_color)
 			RS.FontSize = 10;
 			RS.BoldFont = false;
 			RS.ItalicFont = false;
+			RS.FontStyle = FontStyle_normal;
+			RS.FontVariant = FontVariant_normal;
+			RS.FontWeight = FontWeight_normal;
 			RS.TextBaseline = TextBaseline_alphabetic;
 			RS.TextAlign = TextAlign_start;
 			RS.TextDirectionality = TextDirectionality_ltr;
@@ -2069,14 +2157,13 @@ o3_fun void clear(int signed_color)
 			m_graphics.clipBox(m_currentrenderstate->ClipTopLeft.x,
 				m_currentrenderstate->ClipTopLeft.y,
 				m_currentrenderstate->ClipBottomRight.x,
-				m_currentrenderstate->ClipBottomRight.y);
-
-			UpdateFontState();			
+				m_currentrenderstate->ClipBottomRight.y);			
 		};
 		
 		void UpdateFontState()
 		{
 			bool ReloadFont = false;
+
 			if (mReferenceState.FontFamily != m_currentrenderstate->FontFamily)
 			{
 				mReferenceState.FontFamily = m_currentrenderstate->FontFamily;
@@ -2088,17 +2175,51 @@ o3_fun void clear(int signed_color)
 				mReferenceState.FontSize =  m_currentrenderstate->FontSize;
 				ReloadFont = true;
 			};
-
-			if (mReferenceState.BoldFont !=  mReferenceState.BoldFont )
+			switch (m_currentrenderstate->FontWeight)
 			{
-				mReferenceState.BoldFont =  mReferenceState.BoldFont;
+			
+			case FontWeight_bold:
+			case FontWeight_bolder:
+			case FontWeight_500:
+			case FontWeight_600:
+			case FontWeight_700:
+			case FontWeight_800:
+			case FontWeight_900:
+
+				m_currentrenderstate->BoldFont = true;
+				break;
+			default:
+				m_currentrenderstate->BoldFont = false;
+			};
+
+			switch (m_currentrenderstate->FontStyle)
+			{
+			case FontStyle_italic:
+				m_currentrenderstate->ItalicFont = true;
+				break;
+			default:
+				m_currentrenderstate->ItalicFont = false;
+				break;
+			};
+
+			if (mReferenceState.BoldFont !=  m_currentrenderstate->BoldFont )
+			{
+				mReferenceState.BoldFont =  m_currentrenderstate->BoldFont;
+				ReloadFont = true;
+			};
+
+			if (mReferenceState.ItalicFont !=  m_currentrenderstate->ItalicFont)
+			{
+				mReferenceState.ItalicFont=  m_currentrenderstate->ItalicFont;
 				ReloadFont = true;
 			};
 
 			if (ReloadFont)
 			{
+				m_graphics.textHints(false);
 				m_graphics.font(mReferenceState.FontFamily.ptr(), mReferenceState.FontSize, mReferenceState.BoldFont, mReferenceState.ItalicFont, agg::Agg2D::VectorFontCache);
 				m_graphics.flipText(true);
+
 			};
 		};
 		

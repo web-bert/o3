@@ -291,7 +291,10 @@ tests['fillText() transformations'] = function(ctx){
   ctx.fillText("foo", 150, 100);
   ctx.font = 'normal 30px Arial';
   ctx.fillText("bar", 50, 100);
-};
+
+  
+  
+  };
 
 tests['strokeText()'] = function(ctx){
   ctx.fontFamily="arial.ttf";

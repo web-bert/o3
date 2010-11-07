@@ -26,9 +26,22 @@ var fontscale = {
     mm : 96/25.4,
     cm : 96/2.54
 };
-
+var familylookup = {
+	"sans": "arial",
+	"helvetica" : "arial",
+	"times new roman" : "times"
+}
 var fontlookup = {
-	"arial": "arial.ttf"
+	"arial": "arial.ttf",
+	"arial bold": "arialbd.ttf",
+	"arial italic": "ariali.ttf",
+	"arial bold italic": "arialbi.ttf",
+	"sans-serif": "arial.ttf",
+	"times": "times.ttf",
+	"times bold": "timesbd.ttf",
+	"times italic": "timesi.ttf",
+	"times bold italic": "timesbi.ttf",
+
 }
 
 module.exports = function(x,y,mode){
@@ -39,11 +52,32 @@ module.exports = function(x,y,mode){
        var m = fontcache[font] || (fontcache[font] = String(font).match(fontrx));
        if(!m) return;
        // ctx.fontStyle = m[0]; // and so on.
-       if(m[4]) ctx.fontSize = parseFloat(m[4]) * (fontscale[m[5]] || 1);
-	   if(m[8]) ctx.fontFamily =   fontlookup[m[8].toLowerCase()] || "arial.ttf";
+	   var fontextra = "";
+	   var family = "arial";
 	   
-	   console.log("font parsing results: ");
-	   console.log(m);
+	   if(m[2]) ctx.fontVariant =    m[2].toLowerCase();
+
+	   if(m[3]){ ctx.fontWeight =    m[3].toLowerCase();fontextra += " " + m[3].toLowerCase();}
+	   if(m[1]){ ctx.fontStyle  =    m[1].toLowerCase();fontextra += " " + m[1].toLowerCase();}
+
+       if(m[4]) ctx.fontSize = parseFloat(m[4]) * (fontscale[m[5]] || 1);
+	   if(m[6]) ctx.fontSize = parseFloat(m[6]) * (fontscale[m[7]] || 1);
+	   
+	   
+		if(m[8])
+		{
+			ctx.fontFamily =   fontlookup[(familylookup[m[8].toLowerCase()]||"sans") +fontextra] || "arial.ttf";
+		}
+		else
+		{
+		ctx.fontFamily =   fontlookup["sans" +fontextra] || "arial.ttf";
+		}
+	   
+	 //  console.log("font parsing results: ");
+	  // for (a in m)
+	  // {
+	//	if (m[a]) console.log(a +":" +m[a]);
+	 // } 
     };
     return ctx;
 };
