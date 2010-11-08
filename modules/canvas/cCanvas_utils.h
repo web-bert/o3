@@ -86,7 +86,7 @@ namespace o3
 		png_ptr;
 	}
 
-	int decodeColor(const Str &style)
+	bool decodeColor(const Str &style, unsigned int *color)
 	{
 		unsigned int stylesize = style.size();
 		if (stylesize>0)
@@ -137,8 +137,8 @@ namespace o3
 							(unsigned char)((digits[2]<<4)+ digits[3]),
 							(unsigned char)((digits[4]<<4)+ digits[5])
 						};
-
-						return 0xff000000 + (Res[0]<<16) + (Res[1]<<8) + Res[2];
+						*color = 0xff000000 + (Res[0]<<16) + (Res[1]<<8) + Res[2];
+						return true;
 					};
 				}
 
@@ -150,20 +150,21 @@ namespace o3
 						(unsigned char)((digits[1]<<4)+ digits[1]),
 						(unsigned char)((digits[2]<<4)+ digits[2])
 					};
-					return 0xff000000 + (Res[0]<<16) + (Res[1]<<8) + Res[2];
+					*color = 0xff000000 + (Res[0]<<16) + (Res[1]<<8) + Res[2];
+					return true;
 				};
 
-				return 0xff000000;					
+				return false;					
 
 			}
-			unsigned int color = 0;
+			unsigned int internalcolor = 0;
 			unsigned int index = 0;
-			while (color < 0x0f000000)
+			while (internalcolor < 0x0f000000)
 			{
 
 				if (index > stylesize) 
-				{
-					color = 0xff000000;
+				{					
+					return false;
 				}
 				else
 				{
@@ -192,14 +193,15 @@ namespace o3
 						}
 					};
 					index++;
-					color = css_lut[color][c];
+					internalcolor = css_lut[internalcolor][c];
 				};
 			}
-			unsigned int masked = color&0xff000000;
+			unsigned int masked = internalcolor&0xff000000;
 
 			if (masked == 0xff000000)
 			{
-				return color;
+				*color = internalcolor;
+				return true;
 			};
 
 			int totalchannels;
@@ -257,14 +259,14 @@ namespace o3
 			{ 
 				AlphaRes /= 10;digitsafterdot--;
 			};
-			color = (Res[0]<<16) + (Res[1]<<8) + Res[2] + ((int)(AlphaRes*255.0f)<<24);
+			*color = (Res[0]<<16) + (Res[1]<<8) + Res[2] + ((int)(AlphaRes*255.0f)<<24);
 
-			return color;
+			return true;
 
 		}
 		else
 		{
-			return 0xff000000;
+			return false;
 		};
 	};
 };

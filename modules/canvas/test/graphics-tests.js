@@ -1,5 +1,6 @@
 var createContext = require('../index.js')
-
+var fs = require('fs');
+var Buffer = require('buffer').Buffer;
 
 var tests = {};
 
@@ -110,6 +111,7 @@ tests['createLinearGradient()'] = function(ctx){
 
 tests['createRadialGradient()'] = function(ctx){
   // Create gradients
+
   var radgrad = ctx.createRadialGradient(45,45,10,52,50,30);
   radgrad.addColorStop(0, '#A7D30C');
   radgrad.addColorStop(0.9, '#019F62');
@@ -650,6 +652,7 @@ function DumpTest(name)
 }
 http.createServer(function (req, res) 
 {
+if (req.url == '/favico.ico') return;
 //	var Query = require('url').parse(req.url, true).query;
 //	if (Query.text)
 	//{
@@ -659,14 +662,18 @@ http.createServer(function (req, res)
 	{
 //		drawText(ctx1, "wooYay!");
 	};
-	
+	//console.log(req);
 	res.writeHead(200, {'Content-Type': 'text/html'});
 	var Output = "<html><head><style>h3{font-family:arial;}</style><title>Server - O3 Canvas Test Suite</title></head><body>";
 	console.log("running tests..");
+	var count = 0;
+	var ctx = createContext(410,210, "argb");
 	for (var testname  in  tests)
 	{
+		ctx.clearRect(0,0,410,210);
+		ctx.save();
+		count  = count +1;
 		console.log("running " + testname);
-		var ctx = createContext(410,210, "argb");
 
 		try 
 		{
@@ -677,8 +684,24 @@ http.createServer(function (req, res)
 			console.log("error in test "+testname+ ": "+e.message);
 		}
 		var buf = ctx.pngBuffer();
-		Output += "<div style=\"border:1px solid gray;background-color:#f0f0f0;margin:10px;float:left;\"><h3>"+testname+"</h3><table><tr><td><img alt='Embedded Image' src='data:image/png;base64,"+buf.toBase64()+"'></td></tr></table></div>";
-		var ctx = null;
+		var base64buf = buf.toBase64();
+		Output += "<div style=\"border:1px solid gray;background-color:#f0f0f0;margin:10px;float:left;\"><h3>"+testname+"</h3><table><tr><td><img alt='Embedded Image' src='data:image/png;base64,"+base64buf+"'></td></tr></table></div>";
+		try 
+		{
+			
+			//console.log("attempting to make buffer..");			
+			//var buf2 = new Buffer(ctx.pngBuffer().toBase64(),'base64');
+			//console.log(buf2);
+			//console.log("buffer made -> " + buf2.byte);			
+			//fs.writeFileSync("output.png", base64buf,'base64');
+			//buf2 = null;
+		}
+		catch(e)
+		{
+			console.log("error in writing png for test "+testname+ ": "+e.message);
+		}
+		ctx.restore();
+		
 	};
 	console.log("done running tests!");
 	

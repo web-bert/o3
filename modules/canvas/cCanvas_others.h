@@ -19,12 +19,34 @@
 namespace o3 
 {
 
-	struct cImage_CanvasGradient: cScr 
+	
+	o3_iid(iCanvasGradient, 0x763992e8, 0x17cc, 0x4dd5, 0xa7, 0xb1, 0x30, 0x9c, 0x19, 0xdf, 0xa9, 0xe2);
+
+
+	struct iCanvasGradient: iUnk 
+	{
+		virtual void *GetActualGradientPointer() = 0;
+	};
+
+
+	struct cImage_CanvasGradientData
+	{
+		int m_type;
+		V2<double> m_CP1;
+		double m_Radius1;
+		V2<double> m_CP2;
+		double m_Radius2;
+		tVec<unsigned int> m_colorstops;
+	};
+
+	struct cImage_CanvasGradient: cScr , iCanvasGradient
 	{
 		o3_begin_class(cScr)
+			o3_add_iface(iCanvasGradient)
 		o3_end_class()
-
 		o3_glue_gen();
+
+		virtual void *GetActualGradientPointer() { return this;};
 
 		enum Types
 		{
@@ -38,13 +60,8 @@ namespace o3
 			color;
 			offset;
 		};
-
-		int m_type;
-		V2<double> m_CP1;
-		double m_Radius1;
-		V2<double> m_CP2;
-		double m_Radius2;
-		tVec<unsigned int> m_colorstops;
+		
+		cImage_CanvasGradientData mData;		
 	};
 
 	struct cImage_CanvasPattern: cScr 
