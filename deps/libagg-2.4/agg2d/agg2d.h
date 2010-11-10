@@ -69,32 +69,104 @@
 //+ JME
 #include "../include/agg_image_accessors.h"
 
+template<class ColorT, class Order> struct canvas_blender
+    {
+        typedef ColorT color_type;
+        typedef Order order_type;
+        typedef typename color_type::value_type value_type;
+        typedef typename color_type::calc_type calc_type;
+        enum base_scale_e
+        { 
+            base_shift = color_type::base_shift,
+            base_mask  = color_type::base_mask
+        };
+
+        // Blend pixels using the premultiplied form of Alvy-Ray Smith's
+        // compositing function. 
+
+        //--------------------------------------------------------------------
+        static AGG_INLINE void blend_pix(value_type* p, 
+                                         unsigned cr, unsigned cg, unsigned cb,
+                                         unsigned alpha,
+                                         unsigned cover)
+        {
+             alpha = color_type::int_mult_cover(alpha, cover);
+            if(alpha == 0) return;
+            calc_type a = p[Order::A];
+            calc_type r = color_type::int_mult(p[Order::R], a);
+            calc_type g = color_type::int_mult(p[Order::G], a);
+            calc_type b = color_type::int_mult(p[Order::B], a);
+            p[Order::R] = (value_type)(color_type::int_lerp(r, cr, alpha));
+            p[Order::G] = (value_type)(color_type::int_lerp(g, cg, alpha));
+            p[Order::B] = (value_type)(color_type::int_lerp(b, cb, alpha));
+            p[Order::A] = (value_type)(color_type::int_prelerp(a, alpha, alpha));
+			agg::multiplier_rgba<ColorT,Order>::demultiply(p);
+        }
+        
+        //--------------------------------------------------------------------
+        static AGG_INLINE void blend_pix(value_type* p, 
+                                         unsigned cr, unsigned cg, unsigned cb,
+                                         unsigned alpha)
+        {
+          if(alpha == 0) return;
+    		double b = p[Order::A]/255.0;
+			double a = alpha/255.0;
+
+			double ca = (1-b+a*b);
+			double ica = 1-ca;
+
+			double A = cr;
+			double B = p[Order::R];
+			double AA = cg;
+			double BB = p[Order::G];
+			double AAA = cb;
+			double BBB = p[Order::B];
+			
+			double outA = ca * A + ica *B;			
+			double outAA = ca*AA  + ica * BB;
+			double outAAA = ca*AAA + ica * BBB;
+
+
+/*            calc_type a = p[Order::A];
+            calc_type r = color_type::int_mult(p[Order::R], a);
+            calc_type g = color_type::int_mult(p[Order::G], a);
+            calc_type b = color_type::int_mult(p[Order::B], a);
+            p[Order::R] = (value_type)(color_type::int_lerp(r, cr, alpha));
+            p[Order::G] = (value_type)(color_type::int_lerp(g, cg, alpha));
+            p[Order::B] = (value_type)(color_type::int_lerp(b, cb, alpha));
+            p[Order::A] = (value_type)(color_type::int_prelerp(a, alpha, alpha));
+			agg::multiplier_rgba<ColorT,Order>::demultiply(p);*/
+			p[Order::R] = (value_type)(outA);
+			p[Order::G] = (value_type)(outAA);
+			p[Order::B] = (value_type)(outAAA);
+			//if (b>a ) a= b;
+			p[Order::A] = (value_type)((a*ca + b*ica)*255);
+        }
+    };
+
+
 class Agg2D
 {
     typedef agg::order_bgra ComponentOrder; // Platform dependent!
 
-    typedef agg::rgba8                                               ColorType;
-    typedef agg::blender_rgba<ColorType, ComponentOrder>             Blender;
+public:
+	typedef agg::rgba8                                               ColorType;
+private:
+	typedef canvas_blender<ColorType, ComponentOrder>             Blender;
     typedef agg::comp_op_adaptor_rgba<ColorType, ComponentOrder>     BlenderComp;
-    typedef agg::blender_rgba_pre<ColorType, ComponentOrder>         BlenderPre;
-    typedef agg::comp_op_adaptor_rgba_pre<ColorType, ComponentOrder> BlenderCompPre;
 
 
-	typedef agg::pixfmt_bgra32														PixFormat;
+//	typedef agg::pixfmt_bgra32		PixFormat32;
+	typedef agg::pixfmt_alpha_blend_rgba<Blender , agg::rendering_buffer, agg::pixel32_type> PixFormat;
+    //typedef agg::pixfmt_custom_blend_rgba<Blender,agg::rendering_buffer>        PixFormat_test;
 
     typedef agg::pixfmt_custom_blend_rgba<BlenderComp,agg::rendering_buffer>        PixFormat_Comp;
-    typedef agg::pixfmt_bgra32_pre													PixFormat_Pre;
-    typedef agg::pixfmt_custom_blend_rgba<BlenderCompPre,agg::rendering_buffer>     PixFormat_CompPre;
 	
 	typedef agg::pixfmt_amask_adaptor<PixFormat, agg::amask_no_clip_gray8>			PixFormatAlpha;
 	typedef agg::pixfmt_amask_adaptor<PixFormat_Comp, agg::amask_no_clip_gray8>		PixFormatAlpha_Comp;
-	typedef agg::pixfmt_amask_adaptor<PixFormat_Pre, agg::amask_no_clip_gray8>		PixFormatAlpha_Pre;
-	typedef agg::pixfmt_amask_adaptor<PixFormat_CompPre, agg::amask_no_clip_gray8>	PixFormatAlpha_CompPre;
 
 	typedef agg::renderer_base<PixFormat>         RendererBase;
     typedef agg::renderer_base<PixFormat_Comp>    RendererBase_Comp;
-    typedef agg::renderer_base<PixFormat_Pre>     RendererBase_Pre;
-    typedef agg::renderer_base<PixFormat_CompPre> RendererBase_CompPre;
 
 	typedef agg::renderer_scanline_aa_solid<RendererBase>     Renderer_Solid;
     typedef agg::renderer_scanline_aa_solid<RendererBase_Comp> Renderer_SolidComp;
@@ -102,18 +174,31 @@ class Agg2D
 
 	typedef agg::renderer_base<PixFormatAlpha>         RendererBaseAlpha;
     typedef agg::renderer_base<PixFormatAlpha_Comp>    RendererBaseAlpha_Comp;
-    typedef agg::renderer_base<PixFormatAlpha_Pre>     RendererBaseAlpha_Pre;
-    typedef agg::renderer_base<PixFormatAlpha_CompPre> RendererBaseAlpha_CompPre;
 
 	typedef agg::renderer_scanline_aa_solid<RendererBaseAlpha>     RendererAlpha_Solid;
     typedef agg::renderer_scanline_aa_solid<RendererBaseAlpha_Comp> RendererAlpha_SolidComp;
 
+//  typedef agg::pixfmt_bgra32_pre													PixFormat_Pre;
+//	premultiplied alpha types... these were only used by image-to-image compositing?
+	
+//  typedef agg::blender_rgba_pre<ColorType, ComponentOrder>         BlenderPre;
+//  typedef agg::comp_op_adaptor_rgba_pre<ColorType, ComponentOrder> BlenderCompPre;
+//	typedef agg::pixfmt_custom_blend_rgba<BlenderCompPre,agg::rendering_buffer>     PixFormat_CompPre;
+//	typedef agg::pixfmt_amask_adaptor<PixFormat_Pre, agg::amask_no_clip_gray8>		PixFormatAlpha_Pre;
+//	typedef agg::pixfmt_amask_adaptor<PixFormat_CompPre, agg::amask_no_clip_gray8>	PixFormatAlpha_CompPre;
+//	typedef agg::renderer_base<PixFormat_Pre>     RendererBase_Pre;
+//	typedef agg::renderer_base<PixFormat_CompPre> RendererBase_CompPre;
+//  typedef agg::renderer_base<PixFormatAlpha_Pre>     RendererBaseAlpha_Pre;
+//  typedef agg::renderer_base<PixFormatAlpha_CompPre> RendererBaseAlpha_CompPre;
+
+
 	
 	typedef agg::span_allocator<ColorType> SpanAllocator;
-    typedef agg::pod_auto_array<ColorType, 256> GradientArray;
-
+public:
+	typedef agg::pod_auto_array<ColorType, 256> GradientArray;
+private:
     typedef agg::span_gradient<ColorType, agg::span_interpolator_linear<>, agg::gradient_x,      GradientArray> LinearGradientSpan;
-    typedef agg::span_gradient<ColorType, agg::span_interpolator_linear<>, agg::gradient_circle, GradientArray> RadialGradientSpan;
+    typedef agg::span_gradient<ColorType, agg::span_interpolator_linear<>, agg::gradient_radial_focus, GradientArray> RadialGradientSpan;
 #ifdef AGG2D_USE_FONTS
 
 #ifdef AGG2D_USE_FREETYPE
@@ -132,6 +217,8 @@ class Agg2D
     typedef agg::conv_transform<ConvCurve>        PathTransform;
     typedef agg::conv_transform<ConvStroke>       StrokeTransform;
 
+
+public:
     enum Gradient
     {
         Solid,
@@ -139,8 +226,7 @@ class Agg2D
         Radial
     };
 
-public:
-    friend class Agg2DRenderer;
+	friend class Agg2DRenderer;
 
     typedef ColorType         Color;
     // JME
@@ -547,25 +633,25 @@ private:
 
     PixFormat                       m_pixFormat;
     PixFormat_Comp                  m_pixFormat_Comp;
-    PixFormat_Pre                   m_pixFormat_Pre;
-    PixFormat_CompPre               m_pixFormat_CompPre;
+    //PixFormat_Pre                   m_pixFormat_Pre;
+    //PixFormat_CompPre               m_pixFormat_CompPre;
 
     PixFormatAlpha                       m_pixFormatAlpha;
     PixFormatAlpha_Comp                  m_pixFormatAlpha_Comp;
-    PixFormatAlpha_Pre                   m_pixFormatAlpha_Pre;
-    PixFormatAlpha_CompPre               m_pixFormatAlpha_CompPre;
+//    PixFormatAlpha_Pre                   m_pixFormatAlpha_Pre;
+ //   PixFormatAlpha_CompPre               m_pixFormatAlpha_CompPre;
 
 	RendererBase                    m_renBase;
     RendererBase_Comp               m_renBase_Comp;
-    RendererBase_Pre                m_renBase_Pre;
-    RendererBase_CompPre            m_renBase_CompPre;
+//    RendererBase_Pre                m_renBase_Pre;
+    //RendererBase_CompPre            m_renBase_CompPre;
     Renderer_Solid                  m_ren_Solid;
     Renderer_SolidComp              m_ren_SolidComp;
 
 	RendererBaseAlpha                    m_renBaseAlpha;
     RendererBaseAlpha_Comp               m_renBaseAlpha_Comp;
-    RendererBaseAlpha_Pre                m_renBaseAlpha_Pre;
-    RendererBaseAlpha_CompPre            m_renBaseAlpha_CompPre;
+//    RendererBaseAlpha_Pre                m_renBaseAlpha_Pre;
+    //RendererBaseAlpha_CompPre            m_renBaseAlpha_CompPre;
     RendererAlpha_Solid				     m_renAlpha_Solid;
     RendererAlpha_SolidComp              m_renAlpha_SolidComp;
 
@@ -588,13 +674,15 @@ private:
 
     Color                           m_fillColor;
     Color                           m_lineColor;
+public:
     GradientArray                   m_fillGradient;
     GradientArray                   m_lineGradient;
 
     LineCap                         m_lineCap;
     LineJoin                        m_lineJoin;
 
-    Gradient                        m_fillGradientFlag;
+	// sorry for the public mod.. all the relevant bits need to be moved to cCanvas later on anyway.
+	Gradient                        m_fillGradientFlag;
     Gradient                        m_lineGradientFlag;
     agg::trans_affine               m_fillGradientMatrix;
     agg::trans_affine               m_lineGradientMatrix;
@@ -603,7 +691,8 @@ private:
     double                          m_fillGradientD2;
     double                          m_lineGradientD2;
 
-    double                          m_textAngle;
+private:
+	double                          m_textAngle;
     TextAlignment                   m_textAlignX;
     TextAlignment                   m_textAlignY;
     bool                            m_textHints;
@@ -621,14 +710,16 @@ private:
     agg::span_interpolator_linear<> m_lineGradientInterpolator;
 
     agg::gradient_x                 m_linearGradientFunction;
-    agg::gradient_circle            m_radialGradientFunction;
-
+public:
+	agg::gradient_radial_focus      m_radialGradientFunction;
+private:
     double                          m_lineWidth;
     bool                            m_evenOddFlag;
 
     agg::path_storage               m_path;
-    agg::trans_affine               m_transform;
-
+public:
+	agg::trans_affine               m_transform;
+private:
     ConvCurve                       m_convCurve;
     ConvStroke                      m_convStroke;
 
@@ -639,6 +730,8 @@ private:
 #ifndef AGG2D_USE_FREETYPE
     HDC                             m_fontDC;
 #endif
+
+public:
     FontEngine                      m_fontEngine;
     FontCacheManager                m_fontCacheManager;
 //#endif

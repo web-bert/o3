@@ -41,28 +41,28 @@ Agg2D::Agg2D() :
     m_rbuf_alpha(),
 	m_pixFormat(m_rbuf),
     m_pixFormat_Comp(m_rbuf),
-    m_pixFormat_Pre(m_rbuf),
-    m_pixFormat_CompPre(m_rbuf),
+//    m_pixFormat_Pre(m_rbuf),
+  //  m_pixFormat_CompPre(m_rbuf),
 	
 	m_alphamask(m_rbuf_alpha),
 
 	m_pixFormatAlpha(m_pixFormat, m_alphamask),
     m_pixFormatAlpha_Comp(m_pixFormat_Comp, m_alphamask),
-    m_pixFormatAlpha_Pre(m_pixFormat_Pre, m_alphamask),
-    m_pixFormatAlpha_CompPre(m_pixFormat_CompPre, m_alphamask),
+//    m_pixFormatAlpha_Pre(m_pixFormat_Pre, m_alphamask),
+  //  m_pixFormatAlpha_CompPre(m_pixFormat_CompPre, m_alphamask),
 	
 	m_renBase(m_pixFormat),
     m_renBase_Comp(m_pixFormat_Comp),
-    m_renBase_Pre(m_pixFormat_Pre),
-    m_renBase_CompPre(m_pixFormat_CompPre),
+    //m_renBase_Pre(m_pixFormat_Pre),
+    //m_renBase_CompPre(m_pixFormat_CompPre),
     m_ren_Solid(m_renBase),
     m_ren_SolidComp(m_renBase_Comp),
 
 
 	m_renBaseAlpha(m_pixFormatAlpha),
     m_renBaseAlpha_Comp(m_pixFormatAlpha_Comp),
-    m_renBaseAlpha_Pre(m_pixFormatAlpha_Pre),
-    m_renBaseAlpha_CompPre(m_pixFormatAlpha_CompPre),
+//    m_renBaseAlpha_Pre(m_pixFormatAlpha_Pre),
+  //  m_renBaseAlpha_CompPre(m_pixFormatAlpha_CompPre),
     m_renAlpha_Solid(m_renBaseAlpha),
     m_renAlpha_SolidComp(m_renBaseAlpha_Comp),
 
@@ -156,14 +156,14 @@ void Agg2D::attach(unsigned char* buf, unsigned width, unsigned height, int stri
 
     m_renBase.reset_clipping(true);
     m_renBase_Comp.reset_clipping(true);
-    m_renBase_Pre.reset_clipping(true);
-    m_renBase_CompPre.reset_clipping(true);
+    //m_renBase_Pre.reset_clipping(true);
+//    m_renBase_CompPre.reset_clipping(true);
 
 
     m_renBaseAlpha.reset_clipping(true);
     m_renBaseAlpha_Comp.reset_clipping(true);
-    m_renBaseAlpha_Pre.reset_clipping(true);
-    m_renBaseAlpha_CompPre.reset_clipping(true);
+//    m_renBaseAlpha_Pre.reset_clipping(true);
+  //  m_renBaseAlpha_CompPre.reset_clipping(true);
 
 	resetTransformations();
     lineWidth(1.0),
@@ -204,13 +204,13 @@ void Agg2D::clipBox(double x1, double y1, double x2, double y2)
 
     m_renBase.clip_box(rx1, ry1, rx2, ry2);
     m_renBase_Comp.clip_box(rx1, ry1, rx2, ry2);
-    m_renBase_Pre.clip_box(rx1, ry1, rx2, ry2);
-    m_renBase_CompPre.clip_box(rx1, ry1, rx2, ry2);
+//    m_renBase_Pre.clip_box(rx1, ry1, rx2, ry2);
+ //   m_renBase_CompPre.clip_box(rx1, ry1, rx2, ry2);
 
     m_renBaseAlpha.clip_box(rx1, ry1, rx2, ry2);
     m_renBaseAlpha_Comp.clip_box(rx1, ry1, rx2, ry2);
-    m_renBaseAlpha_Pre.clip_box(rx1, ry1, rx2, ry2);
-    m_renBaseAlpha_CompPre.clip_box(rx1, ry1, rx2, ry2);
+  //  m_renBaseAlpha_Pre.clip_box(rx1, ry1, rx2, ry2);
+    //m_renBaseAlpha_CompPre.clip_box(rx1, ry1, rx2, ry2);
 
 	m_rasterizer.clip_box(x1, y1, x2, y2);
 }
@@ -220,7 +220,7 @@ void Agg2D::blendMode(BlendMode m)
 {
     m_blendMode = m;
     m_pixFormat_Comp.comp_op(m);
-    m_pixFormat_CompPre.comp_op(m);
+//    m_pixFormat_CompPre.comp_op(m);
 }
 
 //------------------------------------------------------------------------
@@ -1819,22 +1819,22 @@ void Agg2D::renderImage(const Image& img, int x1, int y1, int x2, int y2,
     {
 		if (m_alphamaskenabled)
 		{
-			Agg2DRenderer::renderImage(*this,img, m_renBaseAlpha_Pre, interpolator);
+			Agg2DRenderer::renderImage(*this,img, m_renBaseAlpha, interpolator);
 		}
 		else
 		{
-			Agg2DRenderer::renderImage(*this,img, m_renBase_Pre, interpolator);
+			Agg2DRenderer::renderImage(*this,img, m_renBase, interpolator);
 		};
     }
     else
     {
 		if (m_alphamaskenabled)
 		{
-			Agg2DRenderer::renderImage(*this,img, m_renBaseAlpha_CompPre, interpolator);
+			Agg2DRenderer::renderImage(*this,img, m_renBaseAlpha_Comp, interpolator);
 		}
 		else
 		{
-			Agg2DRenderer::renderImage(*this,img, m_renBase_CompPre, interpolator);
+			Agg2DRenderer::renderImage(*this,img, m_renBase_Comp, interpolator);
 		};
     }
 }
@@ -1872,11 +1872,11 @@ void Agg2D::blendImage(Image& img,
     Rect r(imgX1, imgY1, imgX2, imgY2);
     if(m_blendMode == BlendAlpha)
     {
-		m_renBase_Pre.blend_from(pixF, &r, int(dstX)-imgX1, int(dstY)-imgY1, alpha);
+		m_renBase.blend_from(pixF, &r, int(dstX)-imgX1, int(dstY)-imgY1, alpha);
     }
     else
     {
-		m_renBase_CompPre.blend_from(pixF, &r, int(dstX)-imgX1, int(dstY)-imgY1, alpha);
+		m_renBase_Comp.blend_from(pixF, &r, int(dstX)-imgX1, int(dstY)-imgY1, alpha);
     }
 }
 
@@ -1886,15 +1886,15 @@ void Agg2D::blendImage(Image& img, double dstX, double dstY, unsigned alpha)
 {
     worldToScreen(dstX, dstY);
     PixFormat pixF(img.renBuf);
-    m_renBase_Pre.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
+    m_renBase.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
 
 	if(m_blendMode == BlendAlpha)
     {
-		m_renBase_Pre.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
+		m_renBase.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
     }
     else
     {
-		m_renBase_CompPre.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
+		m_renBase_Comp.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
     }
 }
 

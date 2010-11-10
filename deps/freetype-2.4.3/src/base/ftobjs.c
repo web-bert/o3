@@ -132,7 +132,7 @@
   {
     FT_Error   error;
     FT_Memory  memory;
-    FT_Stream  stream;
+    FT_Stream  stream = 0;
 
 
     *astream = 0;
@@ -4024,7 +4024,7 @@
   {
     FT_Error   error;
     FT_Memory  memory;
-    FT_Module  module;
+    FT_Module  module = 0;
     FT_UInt    nn;
 
 

@@ -15,16 +15,111 @@
 * this library; if not, write to the Free Software Foundation, Inc., 51
 * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 */
+#include <map>
 
 namespace o3 
 {
 
-	struct cImage_CanvasGradient: cScr 
+	
+	o3_iid(iCanvasGradient, 0x763992e8, 0x17cc, 0x4dd5, 0xa7, 0xb1, 0x30, 0x9c, 0x19, 0xdf, 0xa9, 0xe2);
+
+
+	struct iCanvasGradient: iUnk 
+	{
+		virtual void *GetActualGradientPointer() = 0;
+	};
+
+
+	struct cImage_CanvasGradientData
+	{
+		int m_type;
+		V2<double> m_CP1;
+		double m_Radius1;
+		V2<double> m_CP2;
+		double m_Radius2;
+		tMap<double, unsigned int> m_colorstops;
+		
+		void FillGradientArray(agg::Agg2D::GradientArray *inArray, double globalAlpha)
+		{
+			int Count = m_colorstops.size();
+			if (Count == 0)
+			{
+
+				return;
+			}
+			tVec<agg::Agg2D::Color> Colors(Count);
+			tVec<int> Offsets(Count);
+
+			
+			for (tMap<double, unsigned int>::ConstIter i = ((const tMap<double, unsigned int>*)&m_colorstops)->begin();i!= ((const tMap<double, unsigned int>*)&m_colorstops)->end();i++)				
+			{
+				unsigned int color =  (*i).val;
+				unsigned char *cc = (unsigned char *)&color;
+
+				agg::Agg2D::Color C(cc[2], cc[1], cc[0], (unsigned int)(cc[3] * globalAlpha));
+
+				Colors.push(C);;
+				Offsets.push((unsigned int)floor((*i).key * 255.0));
+			};
+			
+			
+			
+			if (Offsets[0] > 0)
+			{
+				Offsets.insert(0,0);
+				Colors.insert(0,agg::Agg2D::Color(0,0,0,(unsigned int)(255* globalAlpha)));
+				Count++;
+			};
+
+			if (Count == 1)
+			{
+				for (unsigned int i = 0;i<256;i++)
+				{
+					(*inArray)[i] = Colors[0];
+				};
+				return;
+			}
+			int colorindex = 1;
+			agg::Agg2D::Color *First = &Colors[0];
+			agg::Agg2D::Color *Second = &Colors[1];
+			double length = Offsets[colorindex]-Offsets[colorindex-1];
+			for (int i = 0;i<256;i++)
+			{
+				if (Offsets[colorindex] <= i)
+				{
+					colorindex++;
+					First = Second;
+					if (colorindex < Count)
+					{						
+						Second = &Colors[colorindex];
+						length = Offsets[colorindex]-Offsets[colorindex-1];
+					}
+					else
+					{
+						for (;i<256;i++)
+						{
+							(*inArray)[i] = *Second;
+						};
+						return;
+					}
+				}
+				double fade = (double)(i-Offsets[colorindex-1])/length ;
+				(*inArray)[i] = (*First).gradient(*Second, fade);
+			};
+
+			
+		};
+		
+	};
+
+	struct cImage_CanvasGradient: cScr , iCanvasGradient
 	{
 		o3_begin_class(cScr)
+			o3_add_iface(iCanvasGradient)
 		o3_end_class()
-
 		o3_glue_gen();
+
+		virtual void *GetActualGradientPointer() { return this;};
 
 		enum Types
 		{
@@ -33,18 +128,16 @@ namespace o3
 			__Type_Count
 		};
 
-		o3_fun void addColorStop(double offset, const Str &color)
+		o3_fun void addColorStop(double offset, const Str &colorstring)
 		{
-			color;
-			offset;
+			if (offset < 0.0 || offset > 1.0) return;
+			unsigned int color = 0;
+			decodeColor(colorstring, &color);
+			while(mData.m_colorstops.find(offset) != mData.m_colorstops.end()) offset+=0.00001;
+			mData.m_colorstops[offset] = color;			
 		};
-
-		int m_type;
-		V2<double> m_CP1;
-		double m_Radius1;
-		V2<double> m_CP2;
-		double m_Radius2;
-		tVec<unsigned int> m_colorstops;
+		
+		cImage_CanvasGradientData mData;		
 	};
 
 	struct cImage_CanvasPattern: cScr 
@@ -54,7 +147,6 @@ namespace o3
 
 		o3_glue_gen();
 	};
-
 
 	struct cImage_TextMetrics: cScr 
 	{

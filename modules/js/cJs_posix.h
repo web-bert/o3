@@ -142,7 +142,7 @@ struct cJs : cJsBase {
         int index = scr->resolve(pthis, name);
 
         //return index >= 0 ? True() : False();
-		return index >= 0 ? v8::Integer::New(v8::DontEnum)
+		return index >= 0 ? v8::Integer::New(v8::None)
 			: v8::Handle<v8::Integer>();		
 	}
 
@@ -262,40 +262,30 @@ struct cJs : cJsBase {
     {
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
-        int enumerator = scr->resolve(pthis, "__enumerator__");
-        Var arg((iAlloc*) pthis);
+        siCtx ctx(pthis);
+		Var arg((iAlloc*) pthis);
         Var rval((iAlloc*) pthis);
-        Handle<Array> names;
+        Handle<Array> names_out;
         size_t length;
         int key;
+		int next_id = -1;
+		tVec<Str> names;
 
-        length = 0;
-        arg = -1;
-        if (siEx ex = scr->invoke(pthis, ACCESS_CALL, enumerator, 1, &arg,
-                                  &rval)) {
-            ThrowException(String::New(ex->message()));
-            return Handle<Array>();
-        }
-        for (int index = rval.toInt32(); index >= 0; index = rval.toInt32()) {
-            ++length;
-            arg = index;
-            scr->invoke(pthis, ACCESS_CALL, enumerator, 1, &arg, &rval);
-        }
-        names = Array::New(length);
-        key = 0;
-        arg = -1;
-        if (siEx ex = scr->invoke(pthis, ACCESS_CALL, enumerator, 1, &arg,
-                                  &rval)) {
-            ThrowException(String::New(ex->message()));
-            return Handle<Array>();
-        }
-        for (int index = rval.toInt32(); index >= 0; index = rval.toInt32()) {
-            names->Set(Number::New(key++),
-                       String::New(scr->name(pthis, index)));
-            arg = index;
-            scr->invoke(pthis, ACCESS_CALL, enumerator, 1, &arg, &rval);
-        }
-        return names;
+		while (true) {
+			next_id = scr->enumerate(ctx,next_id);
+			if (next_id == -1)
+				break;			
+			names.push(scr->name(ctx,next_id));
+		}
+
+		length = names.size();
+		names_out = Array::New(length);
+		for (size_t i=0; i<length; i++) {
+			names_out->Set(Number::New(i),
+				String::New(names[i]));
+		}
+		
+        return names_out;
     }
 
     static void finalize(Persistent<Value> value, void* parameter)

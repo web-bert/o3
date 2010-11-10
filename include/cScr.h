@@ -95,17 +95,20 @@ struct cScr : cUnk, iScr {
         o3_add_iface(iScr)
     o3_end_class();
 
-    int enumerate(iCtx* ctx, int index)
+    int enumerate(iCtx* ctx, int idx)
     {
         o3_trace2 trace;
-        Trait* ptrait = select();
-        int base = 0;
+		Trait* ptrait = select();
+        int index = idx;
+		int base = 0;
+		int level = 0;
 
         ++index;
         for (; ptrait && index >= O3_TRAIT_COUNT;
              index -= O3_TRAIT_COUNT) { 
             ptrait = (Trait*) ptrait->ptr;
             base += O3_TRAIT_COUNT;
+			level++;
         }
         if (ptrait) {
             if (index >= O3_EXT_TRAIT_COUNT) {
@@ -117,11 +120,17 @@ struct cScr : cUnk, iScr {
             for (; ptrait->type != Trait::TYPE_END; ++ptrait)
                 if (ptrait->offset == index)
                     return base + index;
-        }
+
+			if (((level+1)*O3_TRAIT_COUNT)<O3_VALUE_OFFSET) {		
+				return enumerate(ctx, (level+1)*O3_TRAIT_COUNT);
+			}
+		}
+
         for (tMap<int, Var>::ConstIter i = m_values.begin();
              i != m_values.end(); ++i)
             if (i->key >= index)
                 return i->key;
+
         return -1;//NOT_FOUND; 
     }
 

@@ -96,15 +96,23 @@ namespace o3 {
         //    return parseFromString(data, type);
         //}        
 
-        o3_fun siXmlNode2 parseFromString(iCtx* ctx, const char* str, const char* contentType = "text/xml") {
+        o3_fun siXmlNode2 parseFromString(iCtx* ctx, const char* str, const char* contentType = "text/xml", siEx* ex = 0) {
             o3_assert(str);
             o3_assert(contentType);
 
             if (!strEquals(contentType, "text/xml"))
                 return siXmlNode2();
 
-            return wrapNode(ctx, (xmlNodePtr) xmlParseDoc(BAD_CAST str), 0);            
-        }
+			xmlNodePtr result = (xmlNodePtr) xmlParseDoc(BAD_CAST str);
+			if (result)
+				return wrapNode(ctx, (xmlNodePtr) xmlParseDoc(BAD_CAST str), 0);            
+			
+			xmlErrorPtr error = xmlGetLastError();
+			if (ex) {
+				*ex = o3_new(cEx)(error->message);
+			}
+			return siXmlNode2();
+		}
     };
     
     siXmlNode2 wrapNode(iCtx* ctx, xmlNodePtr node, iXmlNode2* owner_node) {

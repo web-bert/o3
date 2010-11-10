@@ -343,6 +343,23 @@ namespace o3 {
 			return Str((const char*) ns->href);
 		}
 
+		o3_get Str prefix() 
+		{
+			if (!m_node)
+				return "";
+
+			xmlNs* ns = m_node->ns;
+			if (!ns)
+				return "";
+
+			return Str((const char*) ns->prefix);
+		}
+
+		o3_fun Str toString()
+		{
+			return xml();
+		}
+
         virtual siXmlNode2 ownerNode()
         {            
             return m_owner_node;
