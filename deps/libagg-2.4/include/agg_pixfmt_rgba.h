@@ -149,10 +149,21 @@ namespace agg
                                          unsigned cover)
         {
             alpha = color_type::int_mult_cover(alpha, cover);
-            p[Order::R] = (value_type)(color_type::int_lerp(p[Order::R], cr, alpha));
-            p[Order::G] = (value_type)(color_type::int_lerp(p[Order::G], cg, alpha));
-            p[Order::B] = (value_type)(color_type::int_lerp(p[Order::B], cb, alpha));
-            p[Order::A] = (value_type)(color_type::int_prelerp(p[Order::A], alpha, alpha));
+			// this needs careful checking! blending on to something transparent is not a clear case..
+			if (p[Order::A] == 0)
+			{
+				p[Order::R] = cr;
+				p[Order::G] = cg;
+				p[Order::B] = cb;
+				p[Order::A] = alpha;
+			}
+			else
+			{
+				p[Order::R] = (value_type)(color_type::int_lerp(p[Order::R], cr, alpha));
+				p[Order::G] = (value_type)(color_type::int_lerp(p[Order::G], cg, alpha));
+				p[Order::B] = (value_type)(color_type::int_lerp(p[Order::B], cb, alpha));
+				p[Order::A] = (value_type)(color_type::int_prelerp(p[Order::A], alpha, alpha));
+			};
         }
         
         //--------------------------------------------------------------------

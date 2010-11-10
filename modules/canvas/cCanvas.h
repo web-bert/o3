@@ -222,11 +222,17 @@ namespace o3
 			if (!m_graphics_attached && m_mode_int == Image::MODE_ARGB) 
 			{
 				m_graphics.attach((unsigned char *)m_mem.ptr(), m_w, m_h, m_stride*4);
+				m_graphics.blendMode(agg::Agg2D::BlendAlpha);
 				// TODO -- check different pixel alignments
 				//				m_graphics.viewport(0,0,m_w, m_h, 0,0,m_w, m_h, agg::Agg2D::ViewportOption::XMidYMid);
 				RestoreStateToGraphicsObject();
 				m_graphics_attached = true;
 			};
+		};
+		
+		void ClearAlpha()
+		{			
+			if (m_alphamem.size()>0) m_alphamem.set<unsigned char>(0, 0, m_alphamem.size());
 		};
 
 		void AttachAlpha()
@@ -1977,24 +1983,103 @@ o3_fun void clear(int signed_color)
 		
 		void SetupStrokeStyle()
 		{
-			unsigned int color =  m_currentrenderstate->StrokeColor;
-			unsigned char *c = (unsigned char *)&color;
+			if (m_currentrenderstate->StrokeGradientEnabled)
+			{
+				if (m_currentrenderstate->StrokeGradient.m_type == cImage_CanvasGradient::GRADIENT_LIN)
+				{
+					m_graphics.m_lineGradientFlag = agg::Agg2D::Linear;
+					double const x1 = m_currentrenderstate->StrokeGradient.m_CP1.x;
+					double const y1 = m_currentrenderstate->StrokeGradient.m_CP1.y;
+					double const x2 = m_currentrenderstate->StrokeGradient.m_CP2.x;
+					double const y2 = m_currentrenderstate->StrokeGradient.m_CP2.y;
 
-			m_graphics.lineColor(c[2], c[1], c[0], (unsigned int)(c[3] * m_currentrenderstate->GlobalAlpha));
+					double angle = atan2(y2-y1, x2-x1);
+					m_graphics.m_lineGradientMatrix.reset();
+					m_graphics.m_lineGradientMatrix *= agg::agg::trans_affine_rotation(angle);
+					m_graphics.m_lineGradientMatrix *= agg::agg::trans_affine_translation(x1, y1);
+					m_graphics.m_lineGradientMatrix *= m_graphics.m_transform;
+					m_graphics.m_lineGradientMatrix.invert();
+					m_graphics.m_lineGradientD1 = 0.0;
+					m_graphics.m_lineGradientD2 = sqrt((x2-x1) * (x2-x1) + (y2-y1) * (y2-y1));
+
+				}
+				else
+				{
+					m_graphics.m_lineGradientFlag = agg::Agg2D::Radial;
+				}
+				m_currentrenderstate->StrokeGradient.FillGradientArray(&m_graphics.m_lineGradient, m_currentrenderstate->GlobalAlpha);
+
+			    
+			}
+			else
+			{
+				m_graphics.m_lineGradientFlag = agg::Agg2D::Solid;
+				unsigned int color =  m_currentrenderstate->StrokeColor;
+				unsigned char *c = (unsigned char *)&color;
+
+				m_graphics.lineColor(c[2], c[1], c[0], (unsigned int)(c[3] * m_currentrenderstate->GlobalAlpha));
+			};
+			
 			m_graphics.lineWidth(m_currentrenderstate->StrokeWidth);		
 			m_graphics.lineCap(m_currentrenderstate->CapStyle);
 			m_graphics.lineJoin(m_currentrenderstate->JoinStyle);
 		};
-
+		
+		
 		void SetupFillStyle()
 		{
-			unsigned char *fc = (unsigned char *)&m_currentrenderstate->FillColor;
-			m_graphics.fillColor(fc[2], fc[1], fc[0],(unsigned int)( fc[3]* m_currentrenderstate->GlobalAlpha));
 
 			if (m_currentrenderstate->FillGradientEnabled)
 			{
+				double const x1 = m_currentrenderstate->FillGradient.m_CP1.x;
+				double const y1 = m_currentrenderstate->FillGradient.m_CP1.y;
+				double const x2 = m_currentrenderstate->FillGradient.m_CP2.x;
+				double const y2 = m_currentrenderstate->FillGradient.m_CP2.y;
 
-			};
+				if (m_currentrenderstate->FillGradient.m_type == cImage_CanvasGradient::GRADIENT_LIN)
+				{
+					m_graphics.m_fillGradientFlag = agg::Agg2D::Linear;
+
+					double angle = atan2(y2-y1, x2-x1);
+					m_graphics.m_fillGradientMatrix.reset();
+					m_graphics.m_fillGradientMatrix *= agg::agg::trans_affine_rotation(angle);
+					m_graphics.m_fillGradientMatrix *= agg::agg::trans_affine_translation(x1, y1);
+					m_graphics.m_fillGradientMatrix *= m_graphics.m_transform;
+					m_graphics.m_fillGradientMatrix.invert();
+					m_graphics.m_fillGradientD1 = 0.0;
+					m_graphics.m_fillGradientD2 = sqrt((x2-x1) * (x2-x1) + (y2-y1) * (y2-y1));
+				}
+				else
+				{
+					m_graphics.m_fillGradientFlag = agg::Agg2D::Radial;
+
+					double gx1=x1,gy1=y1;
+					double gx2=x2,gy2=y2;
+					m_graphics.worldToScreen(gx1,gy1);
+					m_graphics.worldToScreen(gx2,gy2);
+					m_graphics.m_radialGradientFunction.init(m_currentrenderstate->FillGradient.m_Radius2, gx1-gx2,gy1-gy2);
+					//double angle = atan2(y2-y1, x2-x1);
+					m_graphics.m_fillGradientMatrix.reset();
+					//m_graphics.m_fillGradientMatrix *= agg::agg::trans_affine_rotation(angle);
+					m_graphics.m_fillGradientMatrix *= agg::agg::trans_affine_translation(x2, y2);
+					m_graphics.m_fillGradientMatrix *= m_graphics.m_transform;
+					m_graphics.m_fillGradientMatrix.invert();
+					m_graphics.m_fillGradientD1 = m_graphics.worldToScreen(m_currentrenderstate->FillGradient.m_Radius1);
+					m_graphics.m_fillGradientD2 = m_graphics.worldToScreen(m_currentrenderstate->FillGradient.m_Radius2);
+
+					
+				}
+
+				m_currentrenderstate->FillGradient.FillGradientArray(&m_graphics.m_fillGradient, m_currentrenderstate->GlobalAlpha);
+
+				
+			}
+			else
+			{
+				m_graphics.m_fillGradientFlag = agg::Agg2D::Solid;
+				unsigned char *fc = (unsigned char *)&m_currentrenderstate->FillColor;
+				m_graphics.fillColor(fc[2], fc[1], fc[0],(unsigned int)( fc[3]* m_currentrenderstate->GlobalAlpha));
+			}
 		};
 
 		o3_fun void stroke()
@@ -2013,6 +2098,7 @@ o3_fun void clear(int signed_color)
 				if (m_paths[i].m_path.size()>1)
 				{
 					V2<double> Prev = m_paths[i].m_path[0];
+					V2<double> First = Prev;
 					m_graphics.moveTo(Prev.x, Prev.y);
 					for (size_t j = 1;j<m_paths[i].m_path.size();j++)
 					{
@@ -2023,7 +2109,10 @@ o3_fun void clear(int signed_color)
 						//						line(Prev.x, Prev.y, Cur.x, Cur.y, color);
 						Prev.x = Cur.x;
 						Prev.y = Cur.y;
+
+						
 					};
+					if (First.x == Prev.x && First.y == Prev.y)	m_graphics.closePolygon();
 				};
 			};
 			m_graphics.drawPath(agg::Agg2D::StrokeOnly);
@@ -2077,21 +2166,23 @@ o3_fun void clear(int signed_color)
 			{
 				m_paths.push(Path());
 			};
-			if (anticlockwise == false && endAngle-startAngle>=6.283f)
+			if (anticlockwise && fabs(endAngle-startAngle)>=6.283f)
 			{
 				
 				agg::agg::ellipse Gen(x0,y0, radius, radius);
-				double x, y;
-				if (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+				double fx, fy;
+				if (Gen.vertex(&fx,&fy) != agg::agg::path_cmd_stop)
 				{
-					moveTo(x,y);
+					moveTo(fx,fy);
 				};
 
+				double x, y;
 				while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
 				{
-					V2<double> point(x,y);
-					m_paths[m_paths.size()-1].m_path.push(NoTransformPoint(point));
+					lineTo(x,y);
 				}
+				lineTo(fx,fy);
+
 			}
 			else
 			{
@@ -2191,7 +2282,7 @@ o3_fun void clear(int signed_color)
 			RS.ClipBottomRight.x = m_w;
 			RS.ClipBottomRight.y = m_h;
 
-			RS.ClearColor = 0x0;
+			RS.ClearColor = 0xffffff;
 			RS.StrokeWidth = 1;
 			RS.ClippingEnabled = false;
 			RS.FontFamily = "arial.ttf";
@@ -2404,6 +2495,7 @@ o3_fun void clear(int signed_color)
 				m_currentrenderstate->ClippingEnabled = true;
 #ifdef IMAGE_ALPHAMAP_ENABLED
 				AttachAlpha();
+				ClearAlpha();
 				m_graphics.EnableAlphaMask( true ) ;
 
 
@@ -2417,7 +2509,7 @@ o3_fun void clear(int signed_color)
 				renderer ren(rb);
 				agg::agg::scanline_p8 m_sl;
 
-				agg::agg::path_storage     path;
+				agg::agg::path_storage path;
 
 #endif
 
@@ -2455,7 +2547,10 @@ o3_fun void clear(int signed_color)
 					};
 				};
 #ifdef IMAGE_ALPHAMAP_ENABLED
-				m_ras.add_path(path);
+
+				agg::agg::conv_transform<agg::agg::path_storage>    TransformPath(path, m_graphics.m_transform);;
+
+				m_ras.add_path(TransformPath);
 				ren.color(agg::agg::gray8(255));
 				agg::agg::render_scanlines(m_ras, m_sl, ren);
 #endif
