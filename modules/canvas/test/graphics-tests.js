@@ -303,6 +303,23 @@ tests['clip()'] = function(ctx){
 };
 
 tests['clip() 2'] = function(ctx){
+  function drawStar(ctx,r){
+    ctx.save();
+    ctx.beginPath()
+    ctx.moveTo(r,0);
+    for (var i=0;i<9;i++){
+      ctx.rotate(Math.PI/5);
+      if(i%2 == 0) {
+        ctx.lineTo((r/0.525731)*0.200811,0);
+      } else {
+        ctx.lineTo(r,0);
+      }
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+  
   ctx.fillRect(0,0,150,150);
   ctx.translate(75,75);
 
@@ -328,22 +345,7 @@ tests['clip() 2'] = function(ctx){
     drawStar(ctx,Math.floor(Math.random()*4)+2);
     ctx.restore();
   }
-  function drawStar(ctx,r){
-    ctx.save();
-    ctx.beginPath()
-    ctx.moveTo(r,0);
-    for (var i=0;i<9;i++){
-      ctx.rotate(Math.PI/5);
-      if(i%2 == 0) {
-        ctx.lineTo((r/0.525731)*0.200811,0);
-      } else {
-        ctx.lineTo(r,0);
-      }
-    }
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-  }
+  
 };
 
 tests['createLinearGradient()'] = function(ctx){
@@ -794,7 +796,7 @@ tests['integration 1'] = function(ctx){
 
 	ctx.fillStyle = "rgba(0,0,200,0.5)";
 	ctx.strokeStyle= "rgba(100,100,100,0.5)";
-	var n = Date.now()/1000;
+	var n = 0;
 	var xs = 10, ys = 10, cx = xs/2, cy=ys/2, xd = 300/xs, yd = 300/ys;
 	for(var xt = 0; xt<300; xt+=xd){
 		for(var yt = 0; yt<300; yt+=yd){
@@ -1641,8 +1643,40 @@ function DumpTest(name)
 }
 http.createServer(function (req, res) 
 {
-if (req.url == '/favico.ico') return;
-//	var Query = require('url').parse(req.url, true).query;
+	if (req.url == '/performance')
+	{
+		console.log("running integration 100x!")
+		
+		
+		var ctx = createContext(410,210, "argb");
+	
+		var start = Date.now();
+		
+		for (var i =0;i<100;i++)
+		{
+			ctx.save();
+			ctx.clearRect(0,0,410,210);		
+			tests['integration 1'](ctx);
+			ctx.restore();
+		};
+		
+		var end = Date.now();
+		
+		var runtime = end-start;
+		console.log(runtime);
+		res.writeHead(200, {'Content-Type': 'text/html'});
+		res.end("<html>"+runtime+" millisconds</html>");
+
+		return;
+	}
+	if (req.url != '/')
+	{
+		res.writeHead(200, {'Content-Type': 'text/html'});
+		res.end("<html>nothing to see..</html>");
+		return;
+	};
+	
+	//	var Query = require('url').parse(req.url, true).query;
 //	if (Query.text)
 	//{
 		//drawText(ctx1, Query.text);
@@ -1652,8 +1686,9 @@ if (req.url == '/favico.ico') return;
 //		drawText(ctx1, "wooYay!");
 	};
 	//console.log(req);
+	
 	res.writeHead(200, {'Content-Type': 'text/html'});
-	var Output = "<html><head><style>h3{font-family:arial;}</style><title>Server - O3 Canvas Test Suite</title></head><body>";
+	var Output = "<html><head><style>html{font-family:arial;};h3{font-family:arial;}</style><title>Server - O3 Canvas Test Suite</title></head><body>";
 	console.log("running tests..");
 	var count = 0;
 	var ctx = createContext(410,210, "argb");
@@ -1662,19 +1697,26 @@ if (req.url == '/favico.ico') return;
 		ctx.clearRect(0,0,410,210);
 		ctx.save();
 		count  = count +1;
-		console.log("running " + testname);
-
+		var runtime = -1;
 		try 
 		{
+			console.log("running " + testname);
+			var start = Date.now();
 			tests[testname](ctx);
+			var end = Date.now();
+			runtime = end-start;
+			var start = Date.now();
+			var buf = ctx.pngBuffer();
+			var end = Date.now();
+			compresstime = end-start;
+			var base64buf = buf.toBase64();
+			Output += "<div style=\"border:1px solid gray;background-color:#f0f0f0;margin:10px;float:left;\"><h3>"+testname+"</h3><img alt='Embedded Image' src='data:image/png;base64,"+base64buf+"'><br>time to generate: "+runtime.toString()+" msec. ("+Math.round((1000/Math.max(runtime,1))).toString()+" fps)<br>time to compress: "+compresstime.toString()+" msec.</div>";
+			
 		}
 		catch(e)
 		{
 			console.log("error in test "+testname+ ": "+e.message);
 		}
-		var buf = ctx.pngBuffer();
-		var base64buf = buf.toBase64();
-		Output += "<div style=\"border:1px solid gray;background-color:#f0f0f0;margin:10px;float:left;\"><h3>"+testname+"</h3><img alt='Embedded Image' src='data:image/png;base64,"+base64buf+"'></div>";
 		try 
 		{
 			
@@ -1692,6 +1734,7 @@ if (req.url == '/favico.ico') return;
 		ctx.restore();
 		
 	};
+		
 	console.log("done running tests!");
 	
     res.end(Output + "</body></html>");

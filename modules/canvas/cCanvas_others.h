@@ -37,7 +37,7 @@ namespace o3
 		double m_Radius1;
 		V2<double> m_CP2;
 		double m_Radius2;
-		std::map<double, unsigned int> m_colorstops;
+		tMap<double, unsigned int> m_colorstops;
 		
 		void FillGradientArray(agg::Agg2D::GradientArray *inArray, double globalAlpha)
 		{
@@ -51,15 +51,15 @@ namespace o3
 			tVec<int> Offsets(Count);
 
 			
-			for (std::map<double, unsigned int>::iterator i = m_colorstops.begin();i!= m_colorstops.end();i++)				
+			for (tMap<double, unsigned int>::ConstIter i = ((const tMap<double, unsigned int>*)&m_colorstops)->begin();i!= ((const tMap<double, unsigned int>*)&m_colorstops)->end();i++)				
 			{
-				unsigned int color =  (*i).second;
+				unsigned int color =  (*i).val;
 				unsigned char *cc = (unsigned char *)&color;
 
 				agg::Agg2D::Color C(cc[2], cc[1], cc[0], (unsigned int)(cc[3] * globalAlpha));
 
 				Colors.push(C);;
-				Offsets.push((unsigned int)floor((*i).first * 255.0));
+				Offsets.push((unsigned int)floor((*i).key * 255.0));
 			};
 			
 			

@@ -74,6 +74,8 @@ namespace o3
 			unsigned int StrokeColor;
 			agg::Agg2D::LineCap CapStyle;
 			agg::Agg2D::LineJoin JoinStyle;
+
+			agg::agg::path_storage ClipPath;
 			
 			cImage_CanvasGradientData FillGradient;
 			cImage_CanvasGradientData StrokeGradient;
@@ -124,7 +126,7 @@ namespace o3
 		agg::Agg2D m_graphics;
 
 		tVec<Path> m_paths;
-		tVec<RenderState> m_renderstates;
+		tVec<RenderState *> m_renderstates;
 		RenderState *m_currentrenderstate;		
 		
 		RenderState mReferenceState;
@@ -142,13 +144,35 @@ namespace o3
 			m_bytesperpixel = 4;
 			m_graphics_attached = false;
 			m_mode = Str("argb");
-			SetupRenderState();
+			
+			m_currentrenderstate = SetupRenderState();
+			m_renderstates.push(m_currentrenderstate);
+
+		//	strokeStyle("black");
+		//	fillStyle("black");
+
 			Ensure32BitSurface();
 		};
 
 		cCanvas(size_t w, size_t h, const Str &mode)
 		{
+			m_currentrenderstate = SetupRenderState();
+			m_renderstates.push(m_currentrenderstate);
 			SetupMode(w,h,mode);
+		};
+
+		void ClearAllRenderStates()
+		{
+			for (unsigned int i = 0;i<m_renderstates.size();i++)
+			{
+				delete m_renderstates[i];
+			}
+			m_renderstates.clear();
+		};
+
+		virtual ~cCanvas()
+		{
+			ClearAllRenderStates();
 		};
 
 		void SetupMode(size_t w, size_t h, const Str &mode)
@@ -187,7 +211,9 @@ namespace o3
 			}
 
 			SetupBuffer();
-			SetupRenderState();
+//			ClearAllRenderStates();
+//			m_currentrenderstate = SetupRenderState();
+//			m_renderstates.push(m_currentrenderstate);
 
 			if (m_mode_int == Image::MODE_ARGB)
 			{
@@ -1031,7 +1057,7 @@ o3_fun void clear(int signed_color)
 			png_set_write_fn(png_ptr,(void*)&data, 
 				(png_rw_ptr) &o3_write_data_bufstream, (png_flush_ptr) &o3_flush_data_bufstream);
 
-
+			png_set_compression_level(png_ptr,Z_BEST_SPEED);
 			/* write header */
 			if (setjmp(png_jmpbuf(png_ptr)))
 			{
@@ -1445,7 +1471,7 @@ o3_fun void clear(int signed_color)
 
 		o3_set void miterLimit(double limit)
 		{
-			limit;
+			m_currentrenderstate->miterLimit = limit;			
 		};
 
 		o3_set void globalAlpha(double alpha)
@@ -1945,15 +1971,21 @@ o3_fun void clear(int signed_color)
 			M.affineMatrix[3] = m_currentrenderstate->Transformation.M[1][1];
 			M.affineMatrix[4] = m_currentrenderstate->Transformation.M[2][0];
 			M.affineMatrix[5] = m_currentrenderstate->Transformation.M[2][1];
-			m_graphics.transformations(M);
+			m_graphics.transformations(M);			
 		};
 		
+		void ResetTransformations()
+		{
+			m_graphics.resetTransformations();
+		};
+
 		o3_fun void fill()
 		{
 			Ensure32BitSurface();
 			SetupFillStyle();
 			m_graphics.resetPath();
-			ApplyTransformation();
+			ResetTransformations();
+			//ApplyTransformation();
 			//			TransformCurrentPath();
 
 			for (size_t i =0 ;i<m_paths.size();i++)
@@ -2020,9 +2052,21 @@ o3_fun void clear(int signed_color)
 				m_graphics.lineColor(c[2], c[1], c[0], (unsigned int)(c[3] * m_currentrenderstate->GlobalAlpha));
 			};
 			
-			m_graphics.lineWidth(m_currentrenderstate->StrokeWidth);		
+
+			
+			V2<double> p1,p2(m_currentrenderstate->StrokeWidth,m_currentrenderstate->StrokeWidth);
+			p1 = NoTransformPoint(p1);
+			p2 = NoTransformPoint(p2);
+			double dx = p1.x-p2.x;
+			double dy = p1.y-p2.y;
+			double const squarediv = 1.0/sqrt(2.0);
+			m_graphics.lineWidth(sqrt(dx*dx+dy*dy)*squarediv);		
+			
+			
+			
 			m_graphics.lineCap(m_currentrenderstate->CapStyle);
 			m_graphics.lineJoin(m_currentrenderstate->JoinStyle);
+			// todo -> miter limit!
 		};
 		
 		
@@ -2087,7 +2131,8 @@ o3_fun void clear(int signed_color)
 			SetupStrokeStyle();
 			Ensure32BitSurface();
 			m_graphics.resetPath();
-			ApplyTransformation();
+			//ApplyTransformation();
+			ResetTransformations();
 			
 			//			m_graphics.line(0,0,m_w, m_h);
 
@@ -2274,39 +2319,98 @@ o3_fun void clear(int signed_color)
 
 #pragma endregion Path_Generating_Functions
 #pragma region RenderState_Management
-		void SetupRenderState()
+		RenderState *SetupRenderState(RenderState *source = 0)
 		{
-			RenderState RS;
-			RS.ClipTopLeft.x = 0;
-			RS.ClipTopLeft.y = 0;
-			RS.ClipBottomRight.x = m_w;
-			RS.ClipBottomRight.y = m_h;
-
-			RS.ClearColor = 0xffffff;
-			RS.StrokeWidth = 1;
-			RS.ClippingEnabled = false;
-			RS.FontFamily = "arial.ttf";
-			RS.FontSize = 10;
-			RS.BoldFont = false;
-			RS.ItalicFont = false;
-			RS.FontStyle = FontStyle_normal;
-			RS.FontVariant = FontVariant_normal;
-			RS.FontWeight = FontWeight_normal;
-			RS.TextBaseline = TextBaseline_alphabetic;
-			RS.TextAlign = TextAlign_start;
-			RS.TextDirectionality = TextDirectionality_ltr;
-
-			RS.CapStyle = agg::Agg2D::CapButt;
-			RS.JoinStyle = agg::Agg2D::JoinMiter;
-			RS.GlobalAlpha = 1.0;
-			RS.FillGradientEnabled = false;
-			RS.StrokeGradientEnabled = false;
-			m_renderstates.push(RS);
-			m_currentrenderstate = &m_renderstates[m_renderstates.size()-1];
 			
-			strokeStyle("black");
-			fillStyle("black");
+			RenderState *RS = new RenderState();
+			
+			if (source)
+			{
+				RS->ClipTopLeft = source->ClipTopLeft;
+				RS->ClipBottomRight = source->ClipBottomRight;
 
+				RS->ClearColor = source->ClearColor;
+				RS->StrokeWidth = source->StrokeWidth;
+				
+				RS->FontFamily = source->FontFamily;
+				RS->FontSize = source->FontSize;
+				RS->BoldFont = source->BoldFont;
+				RS->ItalicFont = source->ItalicFont;
+				RS->FontStyle = source->FontStyle;
+				RS->FontVariant = source->FontVariant;
+				RS->FontWeight = source->FontWeight;
+				RS->TextBaseline = source->TextBaseline;
+				RS->TextAlign = source->TextAlign;
+				RS->TextDirectionality = source->TextDirectionality;
+
+				RS->CapStyle = source->CapStyle;
+				RS->JoinStyle = source->JoinStyle;
+				RS->GlobalAlpha = source->GlobalAlpha;
+				
+				RS->FillGradientEnabled = source->FillGradientEnabled;
+				if (RS->FillGradientEnabled)
+				{
+					RS->FillGradient.m_CP1 = source->FillGradient.m_CP1;
+					RS->FillGradient.m_CP2 = source->FillGradient.m_CP2;
+					RS->FillGradient.m_type = source->FillGradient.m_type;
+					RS->FillGradient.m_Radius1 = source->FillGradient.m_Radius1;
+					RS->FillGradient.m_Radius2 = source->FillGradient.m_Radius2;
+					RS->FillGradient.m_colorstops = source->FillGradient.m_colorstops;
+				};
+				RS->StrokeGradientEnabled = source->StrokeGradientEnabled ;
+				if (RS->StrokeGradientEnabled)
+				{
+					RS->StrokeGradient.m_CP1 = source->StrokeGradient.m_CP1;
+					RS->StrokeGradient.m_CP2 = source->StrokeGradient.m_CP2;
+					RS->StrokeGradient.m_type = source->StrokeGradient.m_type;
+					RS->StrokeGradient.m_Radius1 = source->StrokeGradient.m_Radius1;
+					RS->StrokeGradient.m_Radius2 = source->StrokeGradient.m_Radius2;
+					RS->StrokeGradient.m_colorstops = source->StrokeGradient.m_colorstops;
+				};
+				
+				RS->FillColor = source->FillColor;
+				RS->StrokeColor = source->StrokeColor;
+				RS->Transformation = source->Transformation;
+				RS->miterLimit = source->miterLimit;
+				RS->ClippingEnabled = source->ClippingEnabled;
+				if (RS->ClippingEnabled)
+				{
+					RS->ClipPath = source->ClipPath;
+				};
+				
+				// todo -> gradient stops & suchlike!
+			}
+			else
+			{
+				// default renderstate!
+				RS->ClipTopLeft.x = 0;
+				RS->ClipTopLeft.y = 0;
+				RS->ClipBottomRight.x = m_w;
+				RS->ClipBottomRight.y = m_h;
+
+				RS->ClearColor = 0;
+				decodeColor("black", &RS->StrokeColor);
+				decodeColor("black", &RS->FillColor);
+				RS->StrokeWidth = 1;
+				RS->ClippingEnabled = false;
+				RS->FontFamily = "arial.ttf";
+				RS->FontSize = 10;
+				RS->BoldFont = false;
+				RS->ItalicFont = false;
+				RS->FontStyle = FontStyle_normal;
+				RS->FontVariant = FontVariant_normal;
+				RS->FontWeight = FontWeight_normal;
+				RS->TextBaseline = TextBaseline_alphabetic;
+				RS->TextAlign = TextAlign_start;
+				RS->TextDirectionality = TextDirectionality_ltr;
+
+				RS->CapStyle = agg::Agg2D::CapButt;
+				RS->JoinStyle = agg::Agg2D::JoinMiter;
+				RS->GlobalAlpha = 1.0;
+				RS->FillGradientEnabled = false;
+				RS->StrokeGradientEnabled = false;
+			};
+			return RS;
 		};
 
 		void RestoreStateToGraphicsObject()
@@ -2383,9 +2487,9 @@ o3_fun void clear(int signed_color)
 		o3_fun void save()
 		{
 			//			RenderState *PreviousState = m_currentrenderstate;
-			RenderState RS = *m_currentrenderstate;
-			m_renderstates.push(RS);
-			m_currentrenderstate = &m_renderstates[m_renderstates.size()-1];
+			m_currentrenderstate = SetupRenderState(m_currentrenderstate);
+			m_renderstates.push(m_currentrenderstate);
+
 			//			for (size_t i = 0;i<PreviousState->ClippingPaths.size();i++)
 			//			{
 			//				m_currentrenderstate->ClippingPaths.push(PreviousState->ClippingPaths[i]);
@@ -2396,13 +2500,43 @@ o3_fun void clear(int signed_color)
 		{
 			if (m_renderstates.size()>1) 
 			{
+				unsigned int LastClipVertexCount = 0;
+				if (m_currentrenderstate)
+				{
+					LastClipVertexCount = m_currentrenderstate->ClipPath.total_vertices();
+					delete m_currentrenderstate;
+				};
 				m_renderstates.pop();
-				m_currentrenderstate = &m_renderstates[m_renderstates.size()-1];
+				m_currentrenderstate = m_renderstates[m_renderstates.size()-1];
 				RestoreStateToGraphicsObject();				
 				beginPath();	
-				clip();
+				if (m_currentrenderstate->ClipPath.total_vertices() != LastClipVertexCount)
+				{
+					clip();
+				}
+				else
+				{
+					if (m_currentrenderstate->ClipPath.total_vertices() == 0)
+					{
+						double x1=0,y1=0,x2=m_w,y2=m_h;
+						m_currentrenderstate->ClipBottomRight.x = x2;
+						m_currentrenderstate->ClipTopLeft.x = x1;
+						m_currentrenderstate->ClipBottomRight.y = y2;
+						m_currentrenderstate->ClipTopLeft.y = y1;
+						m_graphics.clipBox(x1,y1, x2,y2);
+					}
+					else
+					{
+						double x1,y1,x2,y2;
+						agg::agg::bounding_rect_single<agg::agg::path_storage, double>(m_currentrenderstate->ClipPath, 0,&x1,&y1,&x2,&y2);
+						m_currentrenderstate->ClipBottomRight.x = x2;
+						m_currentrenderstate->ClipTopLeft.x = x1;
+						m_currentrenderstate->ClipBottomRight.y = y2;
+						m_currentrenderstate->ClipTopLeft.y = y1;
+						m_graphics.clipBox(x1,y1, x2,y2);
+					}
+				};
 			};
-
 		};
 
 #pragma endregion RenderState_Management
@@ -2463,12 +2597,12 @@ o3_fun void clear(int signed_color)
 		};
 
 
-		inline V2<double> NoTransformPoint(V2<double> &p)
+		inline V2<double> NoNoTransformPoint(V2<double> &p)
 		{
 			return p;
 		}
 
-		inline V2<double> RealTransformPoint(V2<double> &p)
+		inline V2<double> NoTransformPoint(V2<double> &p)
 		{
 			return m_currentrenderstate->Transformation.Multiply(p);
 		}
@@ -2480,12 +2614,12 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void clip()
 		{
-			ApplyTransformation();
+			//ApplyTransformation();
 			double x2=0,y2=0,x1=m_w,y1=m_h;
 			// calculate extends, set 2d clipping rect for now
 
 
-			if (m_paths.size() == 0)
+			if (m_paths.size() == 0 && m_currentrenderstate->ClipPath.total_vertices() == 0)
 			{
 				m_currentrenderstate->ClippingEnabled = false;
 				m_graphics.EnableAlphaMask( false) ;
@@ -2509,52 +2643,66 @@ o3_fun void clear(int signed_color)
 				renderer ren(rb);
 				agg::agg::scanline_p8 m_sl;
 
-				agg::agg::path_storage path;
+				
 
 #endif
 
+				
 				for (size_t i = 0 ;i<m_paths.size();i++)
 				{
 					size_t pathlen = m_paths[i].m_path.size();
 					if (pathlen >1)
 					{
 						{
-							V2<double> &p = m_paths[i].m_path[0];
-							x1 = __min(p.x, x1);
-							x2 = __max(p.x, x2);
-							y1 = __min(p.y, y1);
-							y2 = __max(p.y, y2);
+							V2<double> p = m_paths[i].m_path[0];							
+							//m_graphics.m_transform.transform(&p.x, &p.y);
+						//	x1 = __min(p.x, x1);
+					//		x2 = __max(p.x, x2);
+					//		y1 = __min(p.y, y1);
+					//		y2 = __max(p.y, y2);
 #ifdef IMAGE_ALPHAMAP_ENABLED
-							path.move_to(p.x,p.y);
+							m_currentrenderstate->ClipPath.move_to(p.x,p.y);
 #endif
 						}
 
-						for (size_t j = 0 ;j <pathlen ;j++)
+						for (size_t j = 1 ;j <pathlen ;j++)
 						{
-							V2<double> &p = m_paths[i].m_path[j];
-							x1 = __min(p.x, x1);
-							x2 = __max(p.x, x2);
-							y1 = __min(p.y, y1);
-							y2 = __max(p.y, y2);
+							V2<double> p = m_paths[i].m_path[j];
+							//m_graphics.m_transform.transform(&p.x, &p.y);
+
+							//x1 = __min(p.x, x1);
+						//	x2 = __max(p.x, x2);
+						//	y1 = __min(p.y, y1);
+						//	y2 = __max(p.y, y2);
 #ifdef IMAGE_ALPHAMAP_ENABLED
-							path.line_to(p.x,p.y);
+							m_currentrenderstate->ClipPath.line_to(p.x,p.y);
 #endif
 						}
 #ifdef IMAGE_ALPHAMAP_ENABLED
-						path.close_polygon();
+						m_currentrenderstate->ClipPath.close_polygon();
 #endif
 
 					};
 				};
 #ifdef IMAGE_ALPHAMAP_ENABLED
 
-				agg::agg::conv_transform<agg::agg::path_storage>    TransformPath(path, m_graphics.m_transform);;
+				//agg::agg::conv_transform<agg::agg::path_storage>    TransformPath(path, m_graphics.m_transform);;
 
-				m_ras.add_path(TransformPath);
+				m_ras.add_path(m_currentrenderstate->ClipPath);
 				ren.color(agg::agg::gray8(255));
 				agg::agg::render_scanlines(m_ras, m_sl, ren);
 #endif
+			agg::agg::bounding_rect_single<agg::agg::path_storage, double>(m_currentrenderstate->ClipPath, 0, 
+					&x1, 
+					&y1, 
+					&x2, 
+					&y2);
+
 			};
+//			double x1,y1,x2,y2;
+
+							  
+							  //m_currentrenderstate->ClipPath.
 			m_currentrenderstate->ClipBottomRight.x = x2;
 			m_currentrenderstate->ClipTopLeft.x = x1;
 			m_currentrenderstate->ClipBottomRight.y = y2;
