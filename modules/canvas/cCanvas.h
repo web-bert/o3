@@ -159,6 +159,7 @@ namespace o3
 			m_currentrenderstate = SetupRenderState();
 			m_renderstates.push(m_currentrenderstate);
 			SetupMode(w,h,mode);
+			SetupClipBox();
 		};
 
 		void ClearAllRenderStates()
@@ -214,7 +215,7 @@ namespace o3
 //			ClearAllRenderStates();
 //			m_currentrenderstate = SetupRenderState();
 //			m_renderstates.push(m_currentrenderstate);
-
+			SetupClipBox();
 			if (m_mode_int == Image::MODE_ARGB)
 			{
 				Ensure32BitSurface();
@@ -2516,33 +2517,37 @@ o3_fun void clear(int signed_color)
 				}
 				else
 				{
-					if (m_currentrenderstate->ClipPath.total_vertices() == 0)
-					{
-						double x1=0,y1=0,x2=m_w,y2=m_h;
-						m_currentrenderstate->ClipBottomRight.x = x2;
-						m_currentrenderstate->ClipTopLeft.x = x1;
-						m_currentrenderstate->ClipBottomRight.y = y2;
-						m_currentrenderstate->ClipTopLeft.y = y1;
-						m_graphics.clipBox(x1,y1, x2,y2);
-					}
-					else
-					{
-						double x1,y1,x2,y2;
-						agg::agg::bounding_rect_single<agg::agg::path_storage, double>(m_currentrenderstate->ClipPath, 0,&x1,&y1,&x2,&y2);
-						m_currentrenderstate->ClipBottomRight.x = x2;
-						m_currentrenderstate->ClipTopLeft.x = x1;
-						m_currentrenderstate->ClipBottomRight.y = y2;
-						m_currentrenderstate->ClipTopLeft.y = y1;
-						m_graphics.clipBox(x1,y1, x2,y2);
-					}
+					SetupClipBox();
 				};
 			};
 		};
 
+		void SetupClipBox()
+		{
+			if (m_currentrenderstate->ClipPath.total_vertices() == 0)
+			{
+				double x1=0,y1=0,x2=m_w,y2=m_h;
+				m_currentrenderstate->ClipBottomRight.x = x2;
+				m_currentrenderstate->ClipTopLeft.x = x1;
+				m_currentrenderstate->ClipBottomRight.y = y2;
+				m_currentrenderstate->ClipTopLeft.y = y1;
+				m_graphics.clipBox(x1,y1, x2,y2);
+			}
+			else
+			{
+				double x1,y1,x2,y2;
+				agg::agg::bounding_rect_single<agg::agg::path_storage, double>(m_currentrenderstate->ClipPath, 0,&x1,&y1,&x2,&y2);
+				m_currentrenderstate->ClipBottomRight.x = x2;
+				m_currentrenderstate->ClipTopLeft.x = x1;
+				m_currentrenderstate->ClipBottomRight.y = y2;
+				m_currentrenderstate->ClipTopLeft.y = y1;
+				m_graphics.clipBox(x1,y1, x2,y2);
+			}
+		};
+
 #pragma endregion RenderState_Management
 #pragma region Transformation_Matrix_Related
-		
-		
+				
 		o3_fun void setTransform(double m11, double m12, double m21, double m22, double dx, double dy)
 		{
 			m_currentrenderstate->Transformation.M[0][0] = m11;
@@ -2615,7 +2620,7 @@ o3_fun void clear(int signed_color)
 		o3_fun void clip()
 		{
 			//ApplyTransformation();
-			double x2=0,y2=0,x1=m_w,y1=m_h;
+			//double x2=0,y2=0,x1=m_w,y1=m_h;
 			// calculate extends, set 2d clipping rect for now
 
 
@@ -2656,10 +2661,6 @@ o3_fun void clear(int signed_color)
 						{
 							V2<double> p = m_paths[i].m_path[0];							
 							//m_graphics.m_transform.transform(&p.x, &p.y);
-						//	x1 = __min(p.x, x1);
-					//		x2 = __max(p.x, x2);
-					//		y1 = __min(p.y, y1);
-					//		y2 = __max(p.y, y2);
 #ifdef IMAGE_ALPHAMAP_ENABLED
 							m_currentrenderstate->ClipPath.move_to(p.x,p.y);
 #endif
@@ -2670,10 +2671,6 @@ o3_fun void clear(int signed_color)
 							V2<double> p = m_paths[i].m_path[j];
 							//m_graphics.m_transform.transform(&p.x, &p.y);
 
-							//x1 = __min(p.x, x1);
-						//	x2 = __max(p.x, x2);
-						//	y1 = __min(p.y, y1);
-						//	y2 = __max(p.y, y2);
 #ifdef IMAGE_ALPHAMAP_ENABLED
 							m_currentrenderstate->ClipPath.line_to(p.x,p.y);
 #endif
@@ -2692,22 +2689,10 @@ o3_fun void clear(int signed_color)
 				ren.color(agg::agg::gray8(255));
 				agg::agg::render_scanlines(m_ras, m_sl, ren);
 #endif
-			agg::agg::bounding_rect_single<agg::agg::path_storage, double>(m_currentrenderstate->ClipPath, 0, 
-					&x1, 
-					&y1, 
-					&x2, 
-					&y2);
+			
 
 			};
-//			double x1,y1,x2,y2;
-
-							  
-							  //m_currentrenderstate->ClipPath.
-			m_currentrenderstate->ClipBottomRight.x = x2;
-			m_currentrenderstate->ClipTopLeft.x = x1;
-			m_currentrenderstate->ClipBottomRight.y = y2;
-			m_currentrenderstate->ClipTopLeft.y = y1;
-			m_graphics.clipBox(x1,y1, x2,y2);
+			SetupClipBox();
 		}
 
 #pragma endregion CanvasFunctions
