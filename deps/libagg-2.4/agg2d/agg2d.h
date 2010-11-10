@@ -22,9 +22,10 @@
 #ifndef AGG2D_INCLUDED
 #define AGG2D_INCLUDED
 
+
 // With this define uncommented you can use FreeType font engine
-//#define AGG2D_USE_FREETYPE
-//#define AGG2D_USE_FONTS
+#define AGG2D_USE_FREETYPE
+#define AGG2D_USE_FONTS
 
 // JME
 #include "../include/agg_basics.h"
@@ -53,11 +54,11 @@
 #include "../include/agg_font_cache_manager.h"
 
 #ifdef AGG2D_USE_FREETYPE
-#include "../font_freetype/agg_font_freetype.h"
+//#include "../font_freetype/agg_font_freetype.h"
 #else
-	#ifdef WINDOWS
-		#include "../font_win32_tt/agg_font_win32_tt.h"
-	#endif
+//	#ifdef WINDOWS
+//		#include "../font_win32_tt/agg_font_win32_tt.h"
+//	#endif
 #endif
 
 #include "../include/agg_pixfmt_rgba.h"
@@ -396,9 +397,8 @@ public:
     void polygon(double* xy, int numPoints);
     void polyline(double* xy, int numPoints);
 
-#ifdef AGG2D_USE_FONTS
-
-    // Text
+//#ifdef AGG2D_USE_FONTS
+	// Text
     //-----------------------
     void   flipText(bool flip);
     void   font(const char* fileName, double height,
@@ -411,8 +411,8 @@ public:
     bool   textHints() const;
     void   textHints(bool hints);
     double textWidth(const char* str);
-    void   text(double x, double y, const char* str, bool roundOff=false, double dx=0.0, double dy=0.0);
-#endif
+    void   text(double x, double y, const char* str, DrawPathFlag flag, bool roundOff=false, double dx=0.0, double dy=0.0);
+//#endif
 
     // Path commands
     //-----------------------
@@ -532,9 +532,9 @@ public:
 private:
     void render(bool fillColor);
 
-#ifdef AGG2D_USE_FONTS
+//#ifdef AGG2D_USE_FONTS
     void render(FontRasterizer& ras, FontScanline& sl);
-#endif
+//#endif
 
     void addLine(double x1, double y1, double x2, double y2);
     void updateRasterizerGamma();
@@ -634,14 +634,16 @@ private:
 
     PathTransform                   m_pathTransform;
     StrokeTransform                 m_strokeTransform;
-#ifdef AGG2D_USE_FONTS
+//#ifdef AGG2D_USE_FONTS
 
 #ifndef AGG2D_USE_FREETYPE
     HDC                             m_fontDC;
 #endif
+
+public:
     FontEngine                      m_fontEngine;
     FontCacheManager                m_fontCacheManager;
-#endif
+//#endif
 };
 
 

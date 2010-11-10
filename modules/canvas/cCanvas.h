@@ -22,12 +22,13 @@
 #include <tools_math.h>
 #include <math.h>
 
-
+#define IMAGE_ALPHAMAP_ENABLED
 #include <lib_agg.h>
 #include <lib_freetype.h>
 #include <lib_png.h>
+#ifdef CANVAS_USE_JPEG
 #include <lib_jpeg.h>
-
+#endif
 #include "cCanvas_colors.h"
 #include "cCanvas_utils.h"
 #include "cCanvas_others.h"
@@ -71,18 +72,30 @@ namespace o3
 			unsigned int FillColor;
 			unsigned int ClearColor;
 			unsigned int StrokeColor;
+			agg::Agg2D::LineCap CapStyle;
+			agg::Agg2D::LineJoin JoinStyle;
+
 			double StrokeWidth;
 
-	/*
+	
 		// css 1.0 based font properties:
 			Str FontFamily; // Serif, [Sans-serif], Monospace, fontfilenames
-			Str FontSize; // xx-small x-small small medium large x-large xx-large smaller larger length %
-			Str FontStyle; // [normal] italic oblique
-			Str FontVariant; // [normal] small-caps
-			Str FontWeight; // [normal] bold bolder lighter 100 200 300 400 500 600 700 800 900			
-			Str TextDirectionality; // [LTR], RTL -> needs to be dealt with because of align = start/end
-			Str TextBaseline; // top hanging middle [alphabetic] ideographic bottom
-		*/		
+
+			Str FontSizeText; // xx-small x-small small medium large x-large xx-large smaller larger length %
+			Str FontStyleText; // [normal] italic oblique
+			Str FontVariantText; // [normal] small-caps
+			Str FontWeightText; // [normal] bold bolder lighter 100 200 300 400 500 600 700 800 900			
+
+			bool ItalicFont;
+			bool BoldFont;
+			double GlobalAlpha;
+			double FontSize;
+			int FontStyle;
+			int FontVariant;
+			int FontWeight;
+			int TextDirectionality; // [LTR], RTL -> needs to be dealt with because of align = start/end
+			int TextBaseline; // top hanging middle [alphabetic] ideographic bottom
+			int TextAlign;
 			
 			int FillStyle;
 			M33<double> Transformation;
@@ -105,7 +118,9 @@ namespace o3
 		tVec<Path> m_paths;
 		V2<double> m_lastpoint;
 		tVec<RenderState> m_renderstates;
-		RenderState *m_currentrenderstate;
+		RenderState *m_currentrenderstate;		
+		
+		RenderState mReferenceState;
 
 		size_t m_w, m_h, m_stride;
 		int    m_bytesperpixel;
@@ -186,6 +201,7 @@ namespace o3
 				break;
 			}
 			m_mem.resize(newsize);
+			m_mem.set(0,0,newsize);
 			m_graphics_attached = false;
 		};
 
@@ -393,7 +409,7 @@ o3_fun void clear(int signed_color)
 			return 0;
 		};
 
-		o3_fun void rect(int x, int y, int w, int h, int signed_color)    // !ALLMODES!
+		o3_fun void img_rect(int x, int y, int w, int h, int signed_color)    // !ALLMODES!
 		{
 			unsigned int color = (unsigned int) signed_color;
 			switch (m_mode_int)
@@ -424,7 +440,7 @@ o3_fun void clear(int signed_color)
 			}
 		};
 
-		o3_fun void line(int x0,int y0,int x1,int y1,int signed_color)    // !ALLMODES!
+		o3_fun void img_line(int x0,int y0,int x1,int y1,int signed_color)    // !ALLMODES!
 		{
 			unsigned int color = (unsigned int) signed_color;
 			bool steep = (abs(y1 - y0) > abs(x1 - x0));
@@ -477,10 +493,12 @@ o3_fun void clear(int signed_color)
 		{
 			return srcPNG(data, ex);
 		};
+#ifdef CANVAS_USE_JPEG
+
 #pragma region JPG_load_and_save
 
 #pragma endregion JPG_load_and_save
-		o3_set Buf srcJPG(const Buf &data)
+		oaaa3_set Buf srcJPG(const Buf &data)
 		{
 
 			using namespace jpg;						
@@ -520,7 +538,7 @@ o3_fun void clear(int signed_color)
 
 		}
 
-		o3_fun Buf jpgBuffer()
+		oaaa3_fun Buf jpgBuffer()
 		{
 			Buf Output;
 			using namespace jpg;
@@ -575,6 +593,8 @@ o3_fun void clear(int signed_color)
 			};
 			return Output;
 		};
+
+#endif
 #pragma region PNG_load_and_save
 
 		
@@ -959,6 +979,7 @@ o3_fun void clear(int signed_color)
 		o3_fun Buf pngBuffer(siEx* ex = 0)
 		{
 			Buf data;
+			data.reserve(m_w*m_h*4);
 			using namespace png;
 			png_structp png_ptr;
 			png_infop info_ptr;
@@ -1037,35 +1058,44 @@ o3_fun void clear(int signed_color)
 			};
 
 			tVec<png_bytep> row_pointers(m_h);
+			unsigned int *rowdata = NULL;
+			
+			bool writeall = true;
 			switch (m_mode_int)
 			{
 			case Image::MODE_ARGB:
 				{
+					rowdata = new unsigned int[m_h * m_w];
 					tVec <unsigned int> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
 					{
+						unsigned int *destrow = rowdata + (y*m_w);
+						row_pointers[y] = (unsigned char*)destrow;
 						unsigned int *D = (unsigned int *)_getRowPtr(y);
 						for (size_t i =0 ;i<m_w;i++)
 						{
 							unsigned int const pixel = *D++;
-							unsigned int shuffled = ((pixel >> 24)&0x255) + ((pixel << 8)&0xffffff00);
-							row[i] = shuffled;
+							//unsigned int shuffled = ((pixel >> 24)&0x255) + ((pixel << 8)&0xffffff00);
+							//row[i] = shuffled;
 
-							unsigned char *c = (unsigned char*)&row[i];
+							unsigned char *c = (unsigned char*)&destrow[i];
 							c[0] = (unsigned char)(pixel>>16);
 							c[1] = (unsigned char)(pixel>>8);
 							c[2] = (unsigned char)(pixel);
 							c[3] = (unsigned char)(pixel>>24);
 						}
-						png_write_row(png_ptr, (png_bytep)row.ptr());
+						//png_write_row(png_ptr, (png_bytep)row.ptr());
 					};
 				}
 				break;
 			case Image::MODE_RGB:
 				{
-					tVec <unsigned int> row(m_w);
+					rowdata = new unsigned int[m_h * m_w];
+					//tVec <unsigned int> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
 					{
+						unsigned int *destrow = rowdata + (y*m_w);
+						row_pointers[y] = (unsigned char*)destrow;
 						unsigned char *D = (unsigned char *)_getRowPtr(y);
 						for (size_t i =0 ;i<m_w;i++)
 						{
@@ -1073,17 +1103,19 @@ o3_fun void clear(int signed_color)
 							unsigned char G = *D++;
 							unsigned char B = *D++;
 							unsigned int const pixel = (R << 24) + (G << 16) + (B << 8) + 0xff ;
-							row[i] = pixel;
+							destrow[i] = pixel;
 						}
-						png_write_row(png_ptr, (png_bytep)row.ptr());
+					//	png_write_row(png_ptr, (png_bytep)row.ptr());
 					};
 				}
 				break;
 			case Image::MODE_GRAY:
 				{
+					writeall = false;
 					tVec <unsigned char> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
 					{
+						
 						unsigned char *D = (unsigned char *)_getRowPtr(y);
 						png_write_row(png_ptr, D);
 					};
@@ -1091,6 +1123,7 @@ o3_fun void clear(int signed_color)
 				break;
 			case Image::MODE_BW:
 				{
+					writeall = false;
 					tVec <unsigned int> row(m_w);
 					for (size_t y = 0;y<m_h;y++)
 					{
@@ -1102,8 +1135,11 @@ o3_fun void clear(int signed_color)
 
 			};
 
-			//png_write_image(png_ptr, row_pointers.ptr());
-
+			if (writeall )
+			{
+				png_write_image(png_ptr, row_pointers.ptr());
+				delete [] rowdata;
+			};
 
 			if (setjmp(png_jmpbuf(png_ptr)))
 			{
@@ -1272,29 +1308,89 @@ o3_fun void clear(int signed_color)
 		{
 			m_currentrenderstate->StrokeColor = decodeColor(style);
 
-			unsigned int color =  m_currentrenderstate->StrokeColor;
-			unsigned char *c = (unsigned char *)&color;
-			m_graphics.lineColor(c[2], c[1], c[0], c[3]);
 		};
 
-		o3_set void strokeWidth (double Width)
+
+		o3_fun siScr createLinearGradient(double x0, double y0, double x1, double y1)
+		{						
+			cImage_CanvasGradient *Gr= o3_new(cImage_CanvasGradient)();
+			Gr->m_CP1.x = x0;
+			Gr->m_CP1.y = y0;
+			Gr->m_CP2.x = x1;
+			Gr->m_CP2.y = y1;
+			Gr->m_type = cImage_CanvasGradient::GRADIENT_LIN;
+			return siScr(Gr);
+
+		};
+
+		o3_fun siScr createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1)
+		{
+
+			cImage_CanvasGradient *Gr= o3_new(cImage_CanvasGradient)();
+			Gr->m_CP1.x = x0;
+			Gr->m_CP1.y = y0;
+			Gr->m_CP2.x = x1;
+			Gr->m_CP2.y = y1;
+			Gr->m_Radius1 = r0;
+			Gr->m_Radius2 = r1;
+			Gr->m_type = cImage_CanvasGradient::GRADIENT_RAD;
+			return siScr(Gr);
+		};
+
+	//	o3_set void strokeWidth (double Width)
+	//	{
+	//		m_currentrenderstate->StrokeWidth = Width;
+	//	};
+
+		o3_set void lineWidth (double Width)
 		{
 			m_currentrenderstate->StrokeWidth = Width;
 		};
 
 		o3_set void lineCap(const Str &cap)
 		{
-			cap;
+			
+			if (cap == "butt")
+			{
+				m_currentrenderstate->CapStyle = agg::Agg2D::CapButt;
+			}
+			if (cap == "round")
+			{
+				m_currentrenderstate->CapStyle = agg::Agg2D::CapRound;
+			}
+			if (cap == "square")
+			{
+				m_currentrenderstate->CapStyle = agg::Agg2D::CapSquare;
+			};
 		};
 
 		o3_set void lineJoin(const Str &join)
 		{
-			join;
+			if (join == "round")
+			{
+				m_currentrenderstate->JoinStyle = agg::Agg2D::JoinRound;
+				return;
+			}
+			if (join == "bevel")
+			{
+				m_currentrenderstate->JoinStyle = agg::Agg2D::JoinBevel;
+				return;
+			}
+			if (join == "miter")
+			{
+				m_currentrenderstate->JoinStyle = agg::Agg2D::JoinMiter;
+				return;
+			};
 		};
 
 		o3_set void miterLimit(double limit)
 		{
 			limit;
+		};
+
+		o3_set void globalAlpha(double alpha)
+		{
+			m_currentrenderstate->GlobalAlpha = alpha;
 		};
 
 #pragma region TextProperties
@@ -1310,45 +1406,221 @@ o3_fun void clear(int signed_color)
 			Str TextBaseline; // top hanging middle [alphabetic] ideographic bottom
 		*/
 
+		siScr m_on_setfont;
+		
+		
+		o3_get siScr onSetFont()
+		{
+			return m_on_setfont;
+		}
+		
+		o3_set siScr onSetFont(iScr* cb)
+		{
+			return m_on_setfont = cb;
+		}
+		
+		Str LastSetFont;
+
+		o3_set void setFont(const Str &font, iCtx* ctx)
+		{
+			if (m_on_setfont)
+			{
+				LastSetFont = font;
+				Delegate(siCtx(ctx), m_on_setfont)(siScr(this));
+				Var arg(font, ctx);
+				Var rval((iAlloc *) ctx);
+				m_on_setfont->invoke(ctx, iScr::ACCESS_CALL, m_on_setfont->resolve(ctx, "__self__"), 1, &arg, &rval);
+			};
+		};
+
+		o3_get Str font()
+		{
+			return LastSetFont;
+		};
+
 		o3_set void fontFamily(const Str &fontstring)
 		{
-			fontstring;
-			
+			m_currentrenderstate->FontFamily = fontstring;
 		};
 
 		o3_set void fontSize(const Str &fontstring)
 		{
-			fontstring;	
+			mReferenceState.FontSizeText = fontstring;
+			// check units!
+			m_currentrenderstate->FontSize = fontstring.toDouble();			
 		};
 
 		o3_set void fontStyle(const Str &fontstring)
 		{
-			fontstring;	
+			if (fontstring == "italic")
+			{
+				m_currentrenderstate->FontStyle = FontStyle_italic;
+				return;
+			}
+			if (fontstring == "normal")
+			{
+				m_currentrenderstate->FontStyle = FontStyle_normal;
+				return;
+			}
+			
+			if (fontstring == "oblique")
+			{
+				m_currentrenderstate->FontStyle = FontStyle_oblique;
+				return;
+			}
 		};
 
 		o3_set void fontVariant(const Str &fontstring)
 		{
-			fontstring;	
+			fontstring;				
 		};
 
 		o3_set void fontWeight(const Str &fontstring)
 		{
-			fontstring;	
+			if (fontstring == "normal")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_normal;
+				return;
+			}
+			if (fontstring == "bold")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_bold;
+				return;
+			}
+			if (fontstring == "bolder")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_bolder;
+				return;
+			}
+			if (fontstring == "lighter")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_lighter;
+				return;
+			}
+			if (fontstring == "100")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_100;
+				return;
+			}
+			if (fontstring == "200")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_200;
+				return;
+			}
+			if (fontstring == "300")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_300;
+				return;
+			}
+			if (fontstring == "400")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_400;
+				return;
+			}
+			if (fontstring == "500")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_500;
+				return;
+			}
+			if (fontstring == "600")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_600;
+				return;
+			}
+			if (fontstring == "700")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_700;
+				return;
+			}
+			if (fontstring == "800")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_800;
+				return;
+			}
+			if (fontstring == "900")
+			{
+				m_currentrenderstate->FontWeight = FontWeight_900;
+				return;
+			};
 		};
 
 		o3_set void textDirectionality(const Str &fontstring)// [LTR] RTL
 		{
-			fontstring;	
+			if (fontstring == "ltr")
+			{
+				m_currentrenderstate->TextDirectionality = TextDirectionality_ltr;
+				return;
+			}
+			
+			if (fontstring == "rtl")
+			{
+				m_currentrenderstate->TextDirectionality = TextDirectionality_rtl;
+				return;
+			}						
 		};
 
 		o3_set void textAlign(const Str &newAlign) // ["start"], "end", "left", "right", "center"
 		{
-			newAlign;	
+			if (newAlign == "start")
+			{
+				m_currentrenderstate->TextAlign = TextAlign_start;
+				return;
+			};	
+			if (newAlign == "end")
+			{
+				m_currentrenderstate->TextAlign = TextAlign_end;
+				return;
+			};	
+			if (newAlign == "left")
+			{
+				m_currentrenderstate->TextAlign = TextAlign_left;
+				return;
+			};	
+			if (newAlign == "right")
+			{
+				m_currentrenderstate->TextAlign = TextAlign_right;
+				return;
+			};	
+			if (newAlign == "center")
+			{
+				m_currentrenderstate->TextAlign = TextAlign_center;
+				return;
+			};	
 		};
 		
 		o3_set void textBaseline(const Str &newBaseline) // "top", "hanging", "middle", ["alphabetic"], "ideographic", "bottom"
 		{
-			newBaseline;	
+			
+			if (newBaseline == "top")
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_top;
+				return;
+			}
+			if (newBaseline == "hanging") 
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_hanging;
+				return;
+			}
+			if (newBaseline == "middle")
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_middle;
+				return;
+			}
+			if (newBaseline == "alphabetic")
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_alphabetic;
+				return;
+			}
+			if (newBaseline == "ideographic")
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_ideographic;
+				return;
+			}
+			if (newBaseline == "bottom")
+			{
+				m_currentrenderstate->TextBaseline = TextBaseline_bottom;
+				return;
+			}
 		};
 
 #pragma endregion TextProperties
@@ -1360,30 +1632,131 @@ o3_fun void clear(int signed_color)
 
 #pragma region TextFunctions
 		
+		void AdjustTextPosition(const Str & text, double &x, double &y)
+		{
+			text,x,y;
+			int Align = m_currentrenderstate->TextAlign;
+			switch (Align)
+			{
+			case TextAlign_start:
+				if (m_currentrenderstate->TextDirectionality == TextDirectionality_ltr)
+				{
+					Align = TextAlign_left;
+				}
+				else
+				{
+					Align = TextAlign_right;
+				}
+				break;
+			case TextAlign_end:
+				if (m_currentrenderstate->TextDirectionality == TextDirectionality_ltr)
+				{
+					Align = TextAlign_right;
+				}
+				else
+				{
+					Align = TextAlign_left;
+				}
+				break;
+			}
+			
+			int Baseline = m_currentrenderstate->TextBaseline;
+
+			double fontheight = m_graphics.m_fontEngine.height();
+//			double ascender = m_graphics.m_fontEngine.ascender();
+			double descender = m_graphics.m_fontEngine.descender();
+
+			switch (Baseline)
+			{
+			case TextBaseline_top:
+			case TextBaseline_hanging:
+				y+=fontheight;
+			break;
+				
+			case TextBaseline_middle:
+				y+=descender  + (fontheight)/2;
+			break;
+
+
+			case TextBaseline_alphabetic:
+			break;
+			
+			case TextBaseline_ideographic:
+			case TextBaseline_bottom:
+				y+=descender;
+			break;
+			}
+			
+			switch (Align)
+			{
+			case TextAlign_right:
+				{
+					double W = m_graphics.textWidth(text.ptr());
+					x -= W;
+				};
+				break;
+			case TextAlign_left:
+					return;
+				break;
+			case TextAlign_center:
+				{
+					double W = m_graphics.textWidth(text.ptr());
+					x -= W/2;
+				};
+				break;
+			};
+
+			
+			
+		};
+		
 		o3_fun void fillText(const Str & text, double x, double y)
 		{
-			x;y;text;
+			UpdateFontState();
+			AdjustTextPosition(text, x, y);
+			SetupFillStyle();
+			ApplyTransformation();
+			m_graphics.text(x,y,text.ptr(),agg::Agg2D::FillOnly);
 		};
 		
 		o3_fun void fillText(const Str & text, double x, double y, double maxWidth)
 		{
-			x;y;text;maxWidth;
+			UpdateFontState();
+			AdjustTextPosition(text, x, y);
+			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
+			SetupFillStyle();
+			ApplyTransformation();
+
+			m_graphics.text(x,y,text.ptr(),agg::Agg2D::FillOnly );
 		};
 
 		o3_fun void strokeText(const Str & text, double x, double y)
 		{
-			x;y;text;
+			UpdateFontState();
+			AdjustTextPosition(text, x, y);
+			SetupStrokeStyle();
+			ApplyTransformation();
+			m_graphics.text(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
 		};
 
 		o3_fun void strokeText(const Str & text, double x, double y, double maxWidth)
 		{
-			x;y;text;maxWidth;
+			UpdateFontState();
+			AdjustTextPosition(text, x, y);
+			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
+			SetupStrokeStyle();
+			ApplyTransformation();
+			m_graphics.text(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
 		};
 
 		o3_fun siScr measureText(const Str & text) //cImage_TextMetrics 
 		{
-			text;
-			return 0;
+			UpdateFontState();
+			double W = m_graphics.textWidth(text.ptr());
+			cImage_TextMetrics *TM = o3_new(cImage_TextMetrics)();
+			TM->mWidth = W;
+			return siScr(TM);
+			
 		};
 
 #pragma endregion TextFunctions
@@ -1412,8 +1785,10 @@ o3_fun void clear(int signed_color)
 			m_graphics.lineTo(p4.x,p4.y);
 
 			m_graphics.closePolygon();
+			m_graphics.blendMode(agg::Agg2D::BlendSrc);
 			m_graphics.fillColor(c[2], c[1], c[0], c[3]);
 			m_graphics.drawPath(agg::Agg2D::FillOnly);
+			m_graphics.blendMode(agg::Agg2D::BlendAlpha); // todo, switch back to original compositing mode!
 			{
 
 				unsigned int color =  m_currentrenderstate->FillColor;
@@ -1428,7 +1803,7 @@ o3_fun void clear(int signed_color)
 			Ensure32BitSurface();
 
 			m_graphics.resetPath();
-
+			
 			V2<double> p1(xx,yy);
 			V2<double> p2(xx+ww,yy);
 			V2<double> p3(xx+ww,yy+hh);
@@ -1444,12 +1819,13 @@ o3_fun void clear(int signed_color)
 			m_graphics.lineTo(p3.x,p3.y);
 			m_graphics.lineTo(p4.x,p4.y);
 			m_graphics.closePolygon();
-
+			SetupFillStyle();
 			m_graphics.drawPath(agg::Agg2D::FillOnly);
 		};
 
 		o3_fun void strokeRect(double xx, double yy, double ww, double hh)
 		{
+			this->m_lastpoint = V2<double>(xx,yy);
 			Ensure32BitSurface();
 
 			m_graphics.resetPath();
@@ -1470,7 +1846,7 @@ o3_fun void clear(int signed_color)
 			m_graphics.lineTo(p4.x,p4.y);
 
 			m_graphics.closePolygon();
-
+			SetupStrokeStyle();
 			m_graphics.drawPath(agg::Agg2D::StrokeOnly);
 		};
 
@@ -1495,12 +1871,24 @@ o3_fun void clear(int signed_color)
 			m_paths.clear();
 		}
 
-
+		void ApplyTransformation()
+		{
+			agg::Agg2D::Transformations M;
+			M.affineMatrix[0] = m_currentrenderstate->Transformation.M[0][0];
+			M.affineMatrix[1] = m_currentrenderstate->Transformation.M[0][1];
+			M.affineMatrix[2] = m_currentrenderstate->Transformation.M[1][0];
+			M.affineMatrix[3] = m_currentrenderstate->Transformation.M[1][1];
+			M.affineMatrix[4] = m_currentrenderstate->Transformation.M[2][0];
+			M.affineMatrix[5] = m_currentrenderstate->Transformation.M[2][1];
+			m_graphics.transformations(M);
+		};
+		
 		o3_fun void fill()
 		{
 			Ensure32BitSurface();
+			SetupFillStyle();
 			m_graphics.resetPath();
-
+			ApplyTransformation();
 			//			TransformCurrentPath();
 
 			for (size_t i =0 ;i<m_paths.size();i++)
@@ -1527,12 +1915,31 @@ o3_fun void clear(int signed_color)
 
 
 		};
+		
+		void SetupStrokeStyle()
+		{
+			unsigned int color =  m_currentrenderstate->StrokeColor;
+			unsigned char *c = (unsigned char *)&color;
+
+			m_graphics.lineColor(c[2], c[1], c[0], (unsigned int)(c[3] * m_currentrenderstate->GlobalAlpha));
+			m_graphics.lineWidth(m_currentrenderstate->StrokeWidth);		
+			m_graphics.lineCap(m_currentrenderstate->CapStyle);
+			m_graphics.lineJoin(m_currentrenderstate->JoinStyle);
+		};
+
+		void SetupFillStyle()
+		{
+			unsigned char *fc = (unsigned char *)&m_currentrenderstate->FillColor;
+			m_graphics.fillColor(fc[2], fc[1], fc[0],(unsigned int)( fc[3]* m_currentrenderstate->GlobalAlpha));
+		};
 
 		o3_fun void stroke()
 		{
+			SetupStrokeStyle();
 			Ensure32BitSurface();
 			m_graphics.resetPath();
-			m_graphics.lineWidth(m_currentrenderstate->StrokeWidth);
+			ApplyTransformation();
+			
 			//			m_graphics.line(0,0,m_w, m_h);
 
 			//			TransformCurrentPath();
@@ -1560,11 +1967,26 @@ o3_fun void clear(int signed_color)
 		};
 
 #pragma region Path_Generating_Functions
+
+
+		o3_fun void rect(double x, double y, double w, double h)
+		{
+			//V2<double> storepoint = m_lastpoint;
+			double const x2 = x+w;
+			double const y2 = y+h;
+			moveTo(x,y);
+			lineTo(x2, y);
+			lineTo(x2, y2);
+			lineTo(x, y2);
+			lineTo(x, y);		
+			//m_lastpoint = storepoint;
+		};
+		
 		o3_fun void moveTo(double x, double y)
 		{
 			m_paths.push(Path());
 			V2<double> point(x,y);
-			point = TransformPoint(point);
+			point = NoTransformPoint(point);
 			m_paths[m_paths.size()-1].m_path.push(point);
 			m_lastpoint = point;
 		}
@@ -1573,38 +1995,58 @@ o3_fun void clear(int signed_color)
 		{
 			if (m_paths.size() == 0)
 			{
-				m_paths.push(Path());
-				m_paths[m_paths.size()-1].m_path.push(m_lastpoint);
+				moveTo(x,y);
+			}
+			else
+			{
+				V2<double> point(x,y);
+				m_paths[m_paths.size()-1].m_path.push(NoTransformPoint(point));
+				m_lastpoint.x = x;
+				m_lastpoint.y = y;
 			};
-			V2<double> point(x,y);
-			m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
-			m_lastpoint.x = x;
-			m_lastpoint.y = y;
 		};
 
 
-		o3_fun void arc(double x0, double y0, double radius, double startAngle, double endAngle, bool anticlockwise)
+		o3_fun void arc(double x0, double y0, double radius, double startAngle, double endAngle, bool anticlockwise = false)
 		{
-
-			ArcGen Gen(x0,y0,radius,radius, startAngle, endAngle, (anticlockwise)?true:false);
-			double x, y;
-
 			if (m_paths.size() == 0)
 			{
 				m_paths.push(Path());
 			};
-
-			if (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+			if (anticlockwise == false && endAngle-startAngle>=6.283f)
 			{
-				moveTo(x,y);
-			};
+				
+				agg::agg::ellipse Gen(x0,y0, radius, radius);
+				double x, y;
+				if (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+				{
+					moveTo(x,y);
+				};
 
-			while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
-			{
-				V2<double> point(x,y);
-				m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+				while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+				{
+					V2<double> point(x,y);
+					m_paths[m_paths.size()-1].m_path.push(NoTransformPoint(point));
+				}
 			}
+			else
+			{
+				ArcGen Gen(x0,y0,radius,radius, startAngle, endAngle, (anticlockwise)?false:true);
+				double x, y;
 
+			
+
+				if (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+				{
+					moveTo(x,y);
+				};
+
+				while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
+				{
+					V2<double> point(x,y);
+					m_paths[m_paths.size()-1].m_path.push(NoTransformPoint(point));
+				}
+			};
 			int lastpathsize = m_paths[m_paths.size()-1].m_path.size();
 			if (lastpathsize >0)
 			{
@@ -1624,8 +2066,8 @@ o3_fun void clear(int signed_color)
 			V2<double> target(x0,y0);
 			V2<double> cp(cp1x,cp1y);
 
-			target = TransformPoint(target);
-			cp = TransformPoint(cp);
+			target = NoTransformPoint(target);
+			cp = NoTransformPoint(cp);
 			QuadraticCurveGen Gen(m_lastpoint.x,m_lastpoint.y, cp.x,cp.y, target.x, target.y);
 			double x, y;
 
@@ -1652,9 +2094,9 @@ o3_fun void clear(int signed_color)
 			V2<double> cp1(cp1x,cp1y);
 			V2<double> cp2(cp2x,cp2y);
 
-			target = TransformPoint(target);
-			cp1 = TransformPoint(cp1);
-			cp2 = TransformPoint(cp2);
+			target = NoTransformPoint(target);
+			cp1 = NoTransformPoint(cp1);
+			cp2 = NoTransformPoint(cp2);
 
 			BezierCurveGen Gen(m_lastpoint.x,m_lastpoint.y, cp1.x, cp1.y, cp2.x, cp2.y, target.x, target.y);
 			double x, y;
@@ -1668,7 +2110,7 @@ o3_fun void clear(int signed_color)
 			while (Gen.vertex(&x,&y) != agg::agg::path_cmd_stop)
 			{
 				V2<double> point(x,y);
-				m_paths[m_paths.size()-1].m_path.push(TransformPoint(point));
+				m_paths[m_paths.size()-1].m_path.push(NoTransformPoint(point));
 			}
 
 			m_lastpoint = target;
@@ -1685,13 +2127,26 @@ o3_fun void clear(int signed_color)
 			RS.ClipBottomRight.x = m_w;
 			RS.ClipBottomRight.y = m_h;
 
-			RS.ClearColor = 0xffffffff;
+			RS.ClearColor = 0x0;
 			RS.StrokeWidth = 1;
 			RS.ClippingEnabled = false;
+			RS.FontFamily = "arial.ttf";
+			RS.FontSize = 10;
+			RS.BoldFont = false;
+			RS.ItalicFont = false;
+			RS.FontStyle = FontStyle_normal;
+			RS.FontVariant = FontVariant_normal;
+			RS.FontWeight = FontWeight_normal;
+			RS.TextBaseline = TextBaseline_alphabetic;
+			RS.TextAlign = TextAlign_start;
+			RS.TextDirectionality = TextDirectionality_ltr;
 
+			RS.CapStyle = agg::Agg2D::CapButt;
+			RS.JoinStyle = agg::Agg2D::JoinMiter;
+			RS.GlobalAlpha = 1.0;
 			m_renderstates.push(RS);
 			m_currentrenderstate = &m_renderstates[m_renderstates.size()-1];
-
+			
 			strokeStyle("black");
 			fillStyle("black");
 
@@ -1702,14 +2157,72 @@ o3_fun void clear(int signed_color)
 			m_graphics.clipBox(m_currentrenderstate->ClipTopLeft.x,
 				m_currentrenderstate->ClipTopLeft.y,
 				m_currentrenderstate->ClipBottomRight.x,
-				m_currentrenderstate->ClipBottomRight.y);
-
-			unsigned char *sc = (unsigned char *)&m_currentrenderstate->StrokeColor;
-			m_graphics.lineColor(sc[2], sc[1], sc[0], sc[3]);
-			unsigned char *fc = (unsigned char *)&m_currentrenderstate->FillColor;
-			m_graphics.fillColor(fc[2], fc[1], fc[0], fc[3]);
+				m_currentrenderstate->ClipBottomRight.y);			
 		};
+		
+		void UpdateFontState()
+		{
+			bool ReloadFont = false;
 
+			if (mReferenceState.FontFamily != m_currentrenderstate->FontFamily)
+			{
+				mReferenceState.FontFamily = m_currentrenderstate->FontFamily;
+				ReloadFont = true;
+			}
+
+			if (mReferenceState.FontSize !=  m_currentrenderstate->FontSize)
+			{
+				mReferenceState.FontSize =  m_currentrenderstate->FontSize;
+				ReloadFont = true;
+			};
+			switch (m_currentrenderstate->FontWeight)
+			{
+			
+			case FontWeight_bold:
+			case FontWeight_bolder:
+			case FontWeight_500:
+			case FontWeight_600:
+			case FontWeight_700:
+			case FontWeight_800:
+			case FontWeight_900:
+
+				m_currentrenderstate->BoldFont = true;
+				break;
+			default:
+				m_currentrenderstate->BoldFont = false;
+			};
+
+			switch (m_currentrenderstate->FontStyle)
+			{
+			case FontStyle_italic:
+				m_currentrenderstate->ItalicFont = true;
+				break;
+			default:
+				m_currentrenderstate->ItalicFont = false;
+				break;
+			};
+
+			if (mReferenceState.BoldFont !=  m_currentrenderstate->BoldFont )
+			{
+				mReferenceState.BoldFont =  m_currentrenderstate->BoldFont;
+				ReloadFont = true;
+			};
+
+			if (mReferenceState.ItalicFont !=  m_currentrenderstate->ItalicFont)
+			{
+				mReferenceState.ItalicFont=  m_currentrenderstate->ItalicFont;
+				ReloadFont = true;
+			};
+
+			if (ReloadFont)
+			{
+				m_graphics.textHints(false);
+				m_graphics.font(mReferenceState.FontFamily.ptr(), mReferenceState.FontSize, mReferenceState.BoldFont, mReferenceState.ItalicFont, agg::Agg2D::VectorFontCache);
+				m_graphics.flipText(true);
+
+			};
+		};
+		
 		o3_fun void save()
 		{
 			//			RenderState *PreviousState = m_currentrenderstate;
@@ -1768,6 +2281,7 @@ o3_fun void clear(int signed_color)
 
 			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(trans);
 		};
+		
 		o3_fun void translate(double _x, double _y)
 		{
 			M33<double> TransMat;
@@ -1790,7 +2304,12 @@ o3_fun void clear(int signed_color)
 		};
 
 
-		V2<double> TransformPoint(V2<double> &p)
+		inline V2<double> NoTransformPoint(V2<double> &p)
+		{
+			return p;
+		}
+
+		inline V2<double> RealTransformPoint(V2<double> &p)
 		{
 			return m_currentrenderstate->Transformation.Multiply(p);
 		}
@@ -1802,6 +2321,7 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void clip()
 		{
+			ApplyTransformation();
 			double x2=0,y2=0,x1=m_w,y1=m_h;
 			// calculate extends, set 2d clipping rect for now
 

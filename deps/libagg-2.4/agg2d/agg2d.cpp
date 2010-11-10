@@ -394,6 +394,8 @@ void Agg2D::transformations(const Transformations& tr)
 void Agg2D::resetTransformations()
 {
     m_transform.reset();
+	m_convCurve.approximation_scale(worldToScreen(1.0) * g_approxScale);
+    m_convStroke.approximation_scale(worldToScreen(1.0) * g_approxScale);
 }
 
 
@@ -714,7 +716,7 @@ void Agg2D::lineRadialGradient(double x, double y, double r)
 void Agg2D::lineWidth(double w)
 {
     m_lineWidth = w;
-    m_convStroke.width(w);
+    m_convStroke.width(w);	
 }
 
 
@@ -1036,7 +1038,7 @@ void Agg2D::textHints(bool hints)
 
 
 //------------------------------------------------------------------------
-void Agg2D::text(double x, double y, const char* str, bool roundOff, double ddx, double ddy)
+void Agg2D::text(double x, double y, const char* str,DrawPathFlag flag,  bool roundOff, double ddx, double ddy)
 {
    double dx = 0.0;
    double dy = 0.0;
@@ -1108,7 +1110,7 @@ void Agg2D::text(double x, double y, const char* str, bool roundOff, double ddx,
                 m_path.remove_all();
                 //m_path.add_path(tr, 0, false);
 				m_path.concat_path(tr,0); // JME
-                drawPath();
+                drawPath(flag);
             }
 
             if(glyph->data_type == agg::glyph_data_gray8)
@@ -1417,7 +1419,7 @@ void Agg2D::drawPath(DrawPathFlag flag)
     switch(flag)
     {
     case FillOnly:
-        if (m_fillColor.a)
+        if (m_fillColor.a || m_blendMode == BlendSrc)
         {
             m_rasterizer.add_path(m_pathTransform);
             render(true);
@@ -1425,7 +1427,7 @@ void Agg2D::drawPath(DrawPathFlag flag)
         break;
 
     case StrokeOnly:
-        if (m_lineColor.a && m_lineWidth > 0.0)
+		if ((m_lineColor.a || m_blendMode == BlendSrc) && m_lineWidth > 0.0)
         {
             m_rasterizer.add_path(m_strokeTransform);
             render(false);
@@ -1433,13 +1435,13 @@ void Agg2D::drawPath(DrawPathFlag flag)
         break;
 
     case FillAndStroke:
-        if (m_fillColor.a)
+        if (m_fillColor.a || m_blendMode == BlendSrc)
         {
             m_rasterizer.add_path(m_pathTransform);
             render(true);
         }
 
-        if (m_lineColor.a && m_lineWidth > 0.0)
+        if ((m_lineColor.a || m_blendMode == BlendSrc) && m_lineWidth > 0.0)
         {
             m_rasterizer.add_path(m_strokeTransform);
             render(false);
@@ -1447,7 +1449,7 @@ void Agg2D::drawPath(DrawPathFlag flag)
         break;
 
     case FillWithLineColor:
-        if (m_lineColor.a)
+        if (m_lineColor.a  || m_blendMode == BlendSrc)
         {
             m_rasterizer.add_path(m_pathTransform);
             render(false);

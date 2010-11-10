@@ -41,7 +41,9 @@ namespace o3
 
 		int m_type;
 		V2<double> m_CP1;
+		double m_Radius1;
 		V2<double> m_CP2;
+		double m_Radius2;
 		tVec<unsigned int> m_colorstops;
 	};
 
@@ -82,7 +84,7 @@ namespace o3
 			return true;
         } 
         
-        o3_fun unsigned char __getter__(iCtx* ctx, int idx, siEx* ex = 0) 
+        o3_fun size_t __getter__(iCtx* ctx, int idx, siEx* ex = 0) 
 		{
             o3_unused(ctx);
             ex;
@@ -112,12 +114,12 @@ namespace o3
 
 		cImage_CanvasPixelArray mStorage;
 
-		o3_get unsigned long width()
+		o3_get size_t width()
 		{
 			return 0;
 		};
 
-		o3_get unsigned long height()
+		o3_get size_t height()
 		{
 			return 0;
 		};
