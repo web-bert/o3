@@ -72,6 +72,13 @@ namespace o3
 			unsigned int FillColor;
 			unsigned int ClearColor;
 			unsigned int StrokeColor;
+			unsigned int ShadowColor;
+			bool Shadows;
+			double ShadowBlur;
+			double ShadowXDistance;
+			double ShadowYDistance;
+			int GlobalCompositeOperation;
+
 			agg::Agg2D::LineCap CapStyle;
 			agg::Agg2D::LineJoin JoinStyle;
 
@@ -136,6 +143,7 @@ namespace o3
 		int    m_bitdepth;
 		Buf	   m_mem;
 		Buf	   m_alphamem;
+		Buf	   m_shadowmem;
 #pragma region ObjectLifeCycleManagement
 		cCanvas()
 		{
@@ -271,6 +279,23 @@ namespace o3
 			};
 			m_graphics.attachalpha((unsigned char *)m_alphamem.ptr(), m_w, m_h, m_stride);
 		};
+
+
+		void ClearShadow()
+		{			
+			if (m_shadowmem.size()>0) m_shadowmem.set<unsigned char>(0, 0, m_shadowmem.size());
+		};
+
+		void AttachShadow()
+		{
+			if (m_shadowmem.size() < m_stride*m_h*4)
+			{
+				m_shadowmem.resize(m_stride*m_h*4);
+				m_shadowmem.set<unsigned char>(0, 0, m_shadowmem.size());
+			};
+			m_graphics.m_rbuf.attach((unsigned char *)m_shadowmem.ptr(), m_w, m_h, m_stride*4);
+		};
+
 
 #pragma endregion ObjectLifeCycleManagement
 
@@ -1336,6 +1361,45 @@ o3_fun void clear(int signed_color)
 
 #pragma endregion CanvasEnums
 		
+		bool ShadowsEnabled()
+		{
+			if (m_currentrenderstate->ShadowColor >0 && 
+			(m_currentrenderstate->ShadowXDistance !=0  
+			||m_currentrenderstate->ShadowYDistance !=0  
+			||m_currentrenderstate->ShadowBlur!=0  ))
+			{
+				return true;
+			}
+			return false;
+		}
+
+		o3_set void setShadowOffsetX(double offs)
+		{
+			m_currentrenderstate->ShadowXDistance = offs;
+		};
+
+		o3_set void setShadowOffsetY(double offs)
+		{
+			m_currentrenderstate->ShadowYDistance = offs;
+		};
+
+		o3_set void setShadowBlur(double width)
+		{
+			m_currentrenderstate->ShadowBlur = width;
+		};
+
+		o3_set void setShadowColor(const Str &color)
+		{
+			decodeColor(color, &m_currentrenderstate->ShadowColor);
+		};
+
+		o3_set void setGlobalCompositeOperation (const Str &op)
+		{
+			op;
+			// todo.. parse ops and feed them to agg compositor.
+		};
+
+
 		o3_set void fillStyle(const Var &objectstyle)
 		{
 			if (objectstyle.type() == Var::TYPE_STR)
@@ -1803,7 +1867,22 @@ o3_fun void clear(int signed_color)
 			AdjustTextPosition(text, x, y);
 			SetupFillStyle();
 			ApplyTransformation();
-			m_graphics.text(x,y,text.ptr(),agg::Agg2D::FillOnly);
+			TextCall(x,y,text.ptr(),agg::Agg2D::FillOnly);
+		};
+
+		void TextCall(double &x, double &y, const char *txt, agg::Agg2D::DrawPathFlag Mode)
+		{
+			if (m_currentrenderstate->Shadows)
+			{
+				m_graphics.textpath(x,y,txt);
+				CallDraw(Mode, true);
+			}
+			else
+			{
+				m_graphics.text(x,y,txt, Mode);
+			}
+
+
 		};
 		
 		o3_fun void fillText(const Str & text, double x, double y, double maxWidth)
@@ -1814,7 +1893,7 @@ o3_fun void clear(int signed_color)
 			SetupFillStyle();
 			ApplyTransformation();
 
-			m_graphics.text(x,y,text.ptr(),agg::Agg2D::FillOnly );
+			TextCall(x,y,text.ptr(),agg::Agg2D::FillOnly);
 		};
 
 		o3_fun void strokeText(const Str & text, double x, double y)
@@ -1823,7 +1902,7 @@ o3_fun void clear(int signed_color)
 			AdjustTextPosition(text, x, y);
 			SetupStrokeStyle();
 			ApplyTransformation();
-			m_graphics.text(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
+			TextCall(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
 		};
 
 		o3_fun void strokeText(const Str & text, double x, double y, double maxWidth)
@@ -1833,7 +1912,7 @@ o3_fun void clear(int signed_color)
 			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
 			SetupStrokeStyle();
 			ApplyTransformation();
-			m_graphics.text(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
+			TextCall(x,y,text.ptr(),agg::Agg2D::StrokeOnly);
 		};
 
 		o3_fun siScr measureText(const Str & text) //cImage_TextMetrics 
@@ -1876,7 +1955,7 @@ o3_fun void clear(int signed_color)
 			m_graphics.closePolygon();
 			m_graphics.blendMode(agg::Agg2D::BlendSrc);
 			m_graphics.fillColor(c[2], c[1], c[0], c[3]);
-			m_graphics.drawPath(agg::Agg2D::FillOnly);
+			CallDraw(agg::Agg2D::FillOnly);
 			m_graphics.blendMode(agg::Agg2D::BlendAlpha); // todo, switch back to original compositing mode!
 			{
 
@@ -1911,7 +1990,7 @@ o3_fun void clear(int signed_color)
 			m_graphics.lineTo(p4.x,p4.y);
 			m_graphics.closePolygon();
 			SetupFillStyle();
-			m_graphics.drawPath(agg::Agg2D::FillOnly);
+			CallDraw(agg::Agg2D::FillOnly);
 		};
 
 		o3_fun void strokeRect(double xx, double yy, double ww, double hh)
@@ -1938,12 +2017,74 @@ o3_fun void clear(int signed_color)
 			m_graphics.lineTo(p4.x,p4.y);
 
 			m_graphics.closePolygon();
-			SetupStrokeStyle();
-			m_graphics.drawPath(agg::Agg2D::StrokeOnly);
+			SetupStrokeStyle();			
+			CallDraw(agg::Agg2D::StrokeOnly);
 		};
 
 
-		
+		void CallDraw(agg::Agg2D::DrawPathFlag Mode, bool text = false)
+		{
+			if (m_currentrenderstate->Shadows)
+			{
+				AttachShadow();
+				ClearShadow();
+				m_graphics.resetTransformations();
+				m_graphics.translate(m_currentrenderstate->ShadowXDistance, m_currentrenderstate->ShadowYDistance);								
+				m_graphics.EnableAlphaMask(false);
+
+				m_graphics.drawPath(Mode, text);
+				unsigned int blurint = agg::agg::uround(m_currentrenderstate->ShadowBlur);
+				if (m_currentrenderstate->ShadowBlur >0)
+				{
+					agg::agg::stack_blur_rgba32(m_graphics.m_pixFormat, blurint, blurint);
+				};
+
+				if (!m_currentrenderstate->ClippingEnabled)
+				{
+//					agg::Agg2D::PixFormatAlpha pfa(
+				}
+				else
+				{
+				}
+				m_graphics.m_rbuf.attach((unsigned char *)m_mem.ptr(), m_w, m_h, m_stride*4);
+				m_graphics.resetTransformations();
+				
+				if (m_currentrenderstate->ClippingEnabled)
+				{
+					m_graphics.EnableAlphaMask(true);
+				}
+
+				agg::Agg2D::Image shad((unsigned char*)m_shadowmem.ptr(), m_w, m_h, m_stride *4);
+//				double Parl[6] = {0,0,m_w,0,m_w,m_h};
+				
+				unsigned char *sc = (unsigned char *)&m_currentrenderstate->ShadowColor;
+				
+				unsigned int R = sc[2];
+				unsigned int G = sc[1];
+				unsigned int B = sc[0];
+				unsigned int alphafac = (unsigned int)(sc[3] * m_currentrenderstate->GlobalAlpha);
+				int lx = __max(0, m_currentrenderstate->ClipTopLeft.x - blurint);
+				int rx = __min(m_w, m_currentrenderstate->ClipBottomRight.x + blurint);
+				for (int y = __max(0, m_currentrenderstate->ClipTopLeft.y - blurint);y<__min(m_h, m_currentrenderstate->ClipBottomRight.y + blurint);y++)
+				{
+					unsigned char *rowptr =(unsigned char*)m_shadowmem.ptr() + (y * m_stride)*4;
+					for (int x = lx*4;x<rx*4;x+=4)
+					{
+						rowptr[x+0] = B;
+						rowptr[x+1] = G;
+						rowptr[x+2] = R;
+						rowptr[x+3] = (rowptr[x+3]*alphafac)>>8;
+					};
+				};
+				//m_graphics.imageBlendColor(sc[2], sc[1], sc[0],(unsigned int)( sc[3]* m_currentrenderstate->GlobalAlpha));
+				
+				
+				m_graphics.blendImage(shad, 0,0);
+							
+			//					m_graphics.renderImage(shad, 0,0, m_w, m_h, Parl, true);
+			}
+			m_graphics.drawPath(Mode,text);
+		};
 		
 		o3_fun void closePath()
 		{
@@ -2008,7 +2149,7 @@ o3_fun void clear(int signed_color)
 					m_graphics.closePolygon();
 				};
 			};
-			m_graphics.drawPath(agg::Agg2D::FillOnly);
+			CallDraw(agg::Agg2D::FillOnly);
 			//m_paths.clear();
 
 
@@ -2016,6 +2157,7 @@ o3_fun void clear(int signed_color)
 		
 		void SetupStrokeStyle()
 		{
+			m_currentrenderstate->Shadows = ShadowsEnabled();
 			if (m_currentrenderstate->StrokeGradientEnabled)
 			{
 				if (m_currentrenderstate->StrokeGradient.m_type == cImage_CanvasGradient::GRADIENT_LIN)
@@ -2073,7 +2215,7 @@ o3_fun void clear(int signed_color)
 		
 		void SetupFillStyle()
 		{
-
+			m_currentrenderstate->Shadows = ShadowsEnabled();
 			if (m_currentrenderstate->FillGradientEnabled)
 			{
 				double const x1 = m_currentrenderstate->FillGradient.m_CP1.x;
@@ -2161,7 +2303,7 @@ o3_fun void clear(int signed_color)
 					if (First.x == Prev.x && First.y == Prev.y)	m_graphics.closePolygon();
 				};
 			};
-			m_graphics.drawPath(agg::Agg2D::StrokeOnly);
+			CallDraw(agg::Agg2D::StrokeOnly);
 			//			m_paths.clear();
 		};
 
@@ -2327,6 +2469,13 @@ o3_fun void clear(int signed_color)
 			
 			if (source)
 			{
+				RS->ShadowColor = source->ShadowColor;
+				RS->ShadowBlur = source->ShadowBlur;
+				RS->ShadowXDistance = source->ShadowXDistance;
+				RS->ShadowYDistance = source->ShadowYDistance;
+				RS->GlobalCompositeOperation  = source->GlobalCompositeOperation;
+
+
 				RS->ClipTopLeft = source->ClipTopLeft;
 				RS->ClipBottomRight = source->ClipBottomRight;
 
@@ -2384,6 +2533,15 @@ o3_fun void clear(int signed_color)
 			else
 			{
 				// default renderstate!
+
+				RS->ShadowColor = 0;
+				RS->ShadowBlur = 0;
+				RS->ShadowXDistance = 0;
+				RS->ShadowYDistance = 0;
+				RS->GlobalCompositeOperation  = 0;
+
+
+
 				RS->ClipTopLeft.x = 0;
 				RS->ClipTopLeft.y = 0;
 				RS->ClipBottomRight.x = m_w;

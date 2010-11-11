@@ -91,25 +91,10 @@ template<class ColorT, class Order> struct canvas_blender
                                          unsigned cover)
         {
              alpha = color_type::int_mult_cover(alpha, cover);
-            if(alpha == 0) return;
-            calc_type a = p[Order::A];
-            calc_type r = color_type::int_mult(p[Order::R], a);
-            calc_type g = color_type::int_mult(p[Order::G], a);
-            calc_type b = color_type::int_mult(p[Order::B], a);
-            p[Order::R] = (value_type)(color_type::int_lerp(r, cr, alpha));
-            p[Order::G] = (value_type)(color_type::int_lerp(g, cg, alpha));
-            p[Order::B] = (value_type)(color_type::int_lerp(b, cb, alpha));
-            p[Order::A] = (value_type)(color_type::int_prelerp(a, alpha, alpha));
-			agg::multiplier_rgba<ColorT,Order>::demultiply(p);
-        }
-        
-        //--------------------------------------------------------------------
-        static AGG_INLINE void blend_pix(value_type* p, 
-                                         unsigned cr, unsigned cg, unsigned cb,
-                                         unsigned alpha)
-        {
+
           if(alpha == 0) return;
-    		double b = p[Order::A]/255.0;
+
+    	/*	double b = p[Order::A]/255.0;
 			double a = alpha/255.0;
 
 			double ca = (1-b+a*b);
@@ -126,7 +111,106 @@ template<class ColorT, class Order> struct canvas_blender
 			double outAA = ca*AA  + ica * BB;
 			double outAAA = ca*AAA + ica * BBB;
 
+			p[Order::R] = (value_type)(outA);
+			p[Order::G] = (value_type)(outAA);
+			p[Order::B] = (value_type)(outAAA);
+			p[Order::A] = (value_type)((a*ca + b*ica)*255);
+*/
+		  			double a = alpha/255.0;
+			double b = p[Order::A]/255.0;
 
+			double ica = b *(1-a);
+				
+			double ao = a + ica;
+		
+			double A = cr;
+			double B = p[Order::R];
+			double AA = cg;
+			double BB = p[Order::G];
+			double AAA = cb;
+			double BBB = p[Order::B];
+			
+			
+			double outA = (a * A + ica *B)/ao;			
+			double outAA = (a*AA  + ica * BB)/ao;
+			double outAAA = (a*AAA + ica * BBB)/ao;
+
+			p[Order::R] = (value_type)(outA);
+			p[Order::G] = (value_type)(outAA);
+			p[Order::B] = (value_type)(outAAA);
+		
+
+			p[Order::A] = (value_type)((ao)*255);
+
+			return;
+  //          if(alpha == 0) return;
+    //        calc_type a = p[Order::A];
+      //      calc_type r = color_type::int_mult(p[Order::R], a);
+        //    calc_type g = color_type::int_mult(p[Order::G], a);
+          //  calc_type b = color_type::int_mult(p[Order::B], a);
+///            p[Order::R] = (value_type)(color_type::int_lerp(r, cr, alpha));
+   //         p[Order::G] = (value_type)(color_type::int_lerp(g, cg, alpha));
+           p[Order::B] = 255;//(value_type)(color_type::int_lerp(b, cb, alpha));
+		   p[Order::A] = 255;
+      //      p[Order::A] = (value_type)(color_type::int_prelerp(a, alpha, alpha));
+		//	agg::multiplier_rgba<ColorT,Order>::demultiply(p);
+        }
+        
+        //--------------------------------------------------------------------
+        static AGG_INLINE void blend_pix(value_type* p, 
+                                         unsigned cr, unsigned cg, unsigned cb,
+                                         unsigned alpha)
+        {
+          if(alpha == 0) return;
+    	/*	double b = p[Order::A]/255.0;
+			double a = alpha/255.0;
+
+			double ca = (1-b+a*b);
+			double ica = 1-ca;
+
+			double A = cr;
+			double B = p[Order::R];
+			double AA = cg;
+			double BB = p[Order::G];
+			double AAA = cb;
+			double BBB = p[Order::B];
+			
+			double outA = ca * A + ica *B;			
+			double outAA = ca*AA  + ica * BB;
+			double outAAA = ca*AAA + ica * BBB;
+
+			p[Order::R] = (value_type)(outA);
+			p[Order::G] = (value_type)(outAA);
+			p[Order::B] = (value_type)(outAAA);
+			p[Order::A] = (value_type)((a*ca + b*ica)*255);
+*/
+
+
+			double a = alpha/255.0;
+			double b = p[Order::A]/255.0;
+
+			double ica = b *(1-a);
+				
+			double ao = a + ica;
+		
+			double A = cr;
+			double B = p[Order::R];
+			double AA = cg;
+			double BB = p[Order::G];
+			double AAA = cb;
+			double BBB = p[Order::B];
+			
+			
+			double outA = (a * A + ica *B)/ao;			
+			double outAA = (a*AA  + ica * BB)/ao;
+			double outAAA = (a*AAA + ica * BBB)/ao;
+
+			p[Order::R] = (value_type)(outA);
+			p[Order::G] = (value_type)(outAA);
+			p[Order::B] = (value_type)(outAAA);
+		
+
+			p[Order::A] = (value_type)((ao)*255);
 /*            calc_type a = p[Order::A];
             calc_type r = color_type::int_mult(p[Order::R], a);
             calc_type g = color_type::int_mult(p[Order::G], a);
@@ -136,11 +220,6 @@ template<class ColorT, class Order> struct canvas_blender
             p[Order::B] = (value_type)(color_type::int_lerp(b, cb, alpha));
             p[Order::A] = (value_type)(color_type::int_prelerp(a, alpha, alpha));
 			agg::multiplier_rgba<ColorT,Order>::demultiply(p);*/
-			p[Order::R] = (value_type)(outA);
-			p[Order::G] = (value_type)(outAA);
-			p[Order::B] = (value_type)(outAAA);
-			//if (b>a ) a= b;
-			p[Order::A] = (value_type)((a*ca + b*ica)*255);
         }
     };
 
@@ -372,11 +451,13 @@ public:
 
     // Setup
     //-----------------------
+//	void  attachshadow(unsigned char* buf, unsigned width, unsigned height, int stride);
 	void  attachalpha(unsigned char* buf, unsigned width, unsigned height, int stride);
     void  attach(unsigned char* buf, unsigned width, unsigned height, int stride);
     void  attach(Image& img);
 
 	agg::rendering_buffer *GetAlphaBuffer();
+//	agg::rendering_buffer *GetShadowBuffer();
 
     void  clipBox(double x1, double y1, double x2, double y2);
     RectD clipBox() const;
@@ -498,6 +579,7 @@ public:
     void   textHints(bool hints);
     double textWidth(const char* str);
     void   text(double x, double y, const char* str, DrawPathFlag flag, bool roundOff=false, double dx=0.0, double dy=0.0);
+    void   textpath(double x, double y, const char* str, bool roundOff=false, double dx=0.0, double dy=0.0);
 //#endif
 
     // Path commands
@@ -552,7 +634,7 @@ public:
     void addEllipse(double cx, double cy, double rx, double ry, Direction dir);
     void closePolygon();
 
-    void drawPath(DrawPathFlag flag = FillAndStroke);
+    void drawPath(DrawPathFlag flag = FillAndStroke, bool text = false);
     void drawPathNoTransform(DrawPathFlag flag = FillAndStroke);
 
 
@@ -624,16 +706,18 @@ private:
 
     void addLine(double x1, double y1, double x2, double y2);
     void updateRasterizerGamma();
-    void renderImage(const Image& img, int x1, int y1, int x2, int y2, const double* parl);
+public:
+    void renderImage(const Image& img, int x1, int y1, int x2, int y2, const double* parl, bool keeprect = false);
 
     agg::rendering_buffer           m_rbuf;
     agg::rendering_buffer           m_rbuf_alpha;
+//    agg::rendering_buffer           m_rbuf_shadow;
 
     agg::amask_no_clip_gray8 m_alphamask;
-
     PixFormat                       m_pixFormat;
     PixFormat_Comp                  m_pixFormat_Comp;
-    //PixFormat_Pre                   m_pixFormat_Pre;
+	private:
+	//PixFormat_Pre                   m_pixFormat_Pre;
     //PixFormat_CompPre               m_pixFormat_CompPre;
 
     PixFormatAlpha                       m_pixFormatAlpha;
@@ -716,15 +800,20 @@ private:
     double                          m_lineWidth;
     bool                            m_evenOddFlag;
 
-    agg::path_storage               m_path;
 public:
+    agg::path_storage               m_path;
+    agg::path_storage               m_textpath;
 	agg::trans_affine               m_transform;
-private:
     ConvCurve                       m_convCurve;
     ConvStroke                      m_convStroke;
+	ConvCurve                       m_convCurveText;
+    ConvStroke                      m_convStrokeText;
 
-    PathTransform                   m_pathTransform;
-    StrokeTransform                 m_strokeTransform;
+    PathTransform                   m_pathTransformText;
+	PathTransform                   m_pathTransform;
+    StrokeTransform                 m_strokeTransformText;
+	StrokeTransform                 m_strokeTransform;
+private:
 //#ifdef AGG2D_USE_FONTS
 
 #ifndef AGG2D_USE_FREETYPE

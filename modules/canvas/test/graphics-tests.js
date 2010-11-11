@@ -1574,22 +1574,22 @@ tests['shadow globalAlpha'] = function(ctx){
 };
 
 tests['shadow fillText()'] = function(ctx){
-  ctx.shadowColor = '#00c';
-  ctx.shadowBlur = 2;
+  ctx.shadowColor = 'rgba(0,0,255,0.3)';
+  ctx.shadowBlur = 4;
   ctx.shadowOffsetX = 8;
   ctx.shadowOffsetY = 8;
   ctx.textAlign = 'center';
-  ctx.font = '35px Arial';
+  ctx.font = '50px Arial';
   ctx.fillText("Shadow", 100, 100);
 };
 
 tests['shadow strokeText()'] = function(ctx){
-  ctx.shadowColor = '#00c';
-  ctx.shadowBlur = 2;
+  ctx.shadowColor = 'rgba(0,0,255,0.3)';
+  ctx.shadowBlur = 4;
   ctx.shadowOffsetX = 8;
   ctx.shadowOffsetY = 8;
   ctx.textAlign = 'center';
-  ctx.font = '35px Arial';
+  ctx.font = '50px Arial';
   ctx.strokeText("Shadow", 100, 100);
 };
 

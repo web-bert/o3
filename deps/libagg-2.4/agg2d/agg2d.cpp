@@ -48,8 +48,10 @@ Agg2D::Agg2D() :
 
 	m_pixFormatAlpha(m_pixFormat, m_alphamask),
     m_pixFormatAlpha_Comp(m_pixFormat_Comp, m_alphamask),
+
+	
 //    m_pixFormatAlpha_Pre(m_pixFormat_Pre, m_alphamask),
-  //  m_pixFormatAlpha_CompPre(m_pixFormat_CompPre, m_alphamask),
+ //  m_pixFormatAlpha_CompPre(m_pixFormat_CompPre, m_alphamask),
 	
 	m_renBase(m_pixFormat),
     m_renBase_Comp(m_pixFormat_Comp),
@@ -123,9 +125,13 @@ Agg2D::Agg2D() :
 
     m_convCurve(m_path),
     m_convStroke(m_convCurve),
+    m_convCurveText(m_path),
+    m_convStrokeText(m_convCurveText),
 
     m_pathTransform(m_convCurve, m_transform),
-    m_strokeTransform(m_convStroke, m_transform)
+    m_pathTransformText(m_convCurveText, m_transform),
+    m_strokeTransform(m_convStroke, m_transform),
+	m_strokeTransformText(m_convStrokeText, m_transform)
 
 #ifdef AGG2D_USE_FONTS
 ,
@@ -143,6 +149,11 @@ Agg2D::Agg2D() :
 
 	m_alphamaskenabled = false;
 }
+
+//void  Agg2D::attachshadow(unsigned char* buf, unsigned width, unsigned height, int stride)
+//{
+//	m_rbuf_shadow.attach(buf, width, height, stride);
+//};
 
 void Agg2D::attachalpha(unsigned char* buf, unsigned width, unsigned height, int stride)
 {
@@ -1124,6 +1135,90 @@ void Agg2D::text(double x, double y, const char* str,DrawPathFlag flag,  bool ro
     }
 }
 
+
+void Agg2D::textpath(double x, double y, const char* str, bool roundOff, double ddx, double ddy)
+{
+   double dx = 0.0;
+   double dy = 0.0;
+
+   switch(m_textAlignX)
+   {
+       case AlignCenter:  dx = -textWidth(str) * 0.5; break;
+       case AlignRight:   dx = -textWidth(str);       break;
+       default: break;
+   }
+
+
+   double asc = fontHeight();
+   const agg::glyph_cache* glyph = m_fontCacheManager.glyph('H');
+   if(glyph)
+   {
+       asc = glyph->bounds.y2 - glyph->bounds.y1;
+   }
+
+   if(m_fontCacheType == RasterFontCache)
+   {
+       asc = screenToWorld(asc);
+   }
+
+   switch(m_textAlignY)
+   {
+       case AlignCenter:  dy = -asc * 0.5; break;
+       case AlignTop:     dy = -asc;       break;
+       default: break;
+   }
+
+   if(m_fontEngine.flip_y()) dy = -dy;
+
+   agg::trans_affine  mtx;
+
+    double start_x = x + dx;
+    double start_y = y + dy;
+
+    if (roundOff)
+    {
+        start_x = int(start_x);
+        start_y = int(start_y);
+    }
+    start_x += ddx;
+    start_y += ddy;
+
+    mtx *= agg::trans_affine_translation(-x, -y);
+    mtx *= agg::trans_affine_rotation(m_textAngle);
+    mtx *= agg::trans_affine_translation(x, y);
+
+    agg::conv_transform<FontCacheManager::path_adaptor_type> tr(m_fontCacheManager.path_adaptor(), mtx);
+
+    if(m_fontCacheType == RasterFontCache)
+    {
+        worldToScreen(start_x, start_y);
+    }
+	
+	m_path.remove_all();
+
+    int i;
+    for (i = 0; str[i]; i++)
+    {
+        glyph = m_fontCacheManager.glyph(str[i]);
+        if(glyph)
+        {
+            if(i) m_fontCacheManager.add_kerning(&start_x, &start_y);
+            m_fontCacheManager.init_embedded_adaptors(glyph, start_x, start_y);
+
+            if(glyph->data_type == agg::glyph_data_outline)
+            {
+                //m_path.add_path(tr, 0, false);
+				m_path.concat_path(tr,0); // JME
+//                drawPath(flag);
+            }
+
+           
+            start_x += glyph->advance_x;
+            start_y += glyph->advance_y;
+        }
+    }
+}
+
 #endif 
 
 
@@ -1413,7 +1508,7 @@ void Agg2D::transformImagePath(const Image& img, const double* parallelogram)
 
 
 //------------------------------------------------------------------------
-void Agg2D::drawPath(DrawPathFlag flag)
+void Agg2D::drawPath(DrawPathFlag flag, bool text)
 {
     m_rasterizer.reset();
     switch(flag)
@@ -1421,7 +1516,7 @@ void Agg2D::drawPath(DrawPathFlag flag)
     case FillOnly:
         if (m_fillColor.a || m_blendMode == BlendSrc)
         {
-            m_rasterizer.add_path(m_pathTransform);
+			m_rasterizer.add_path((text)?m_pathTransformText:m_pathTransform);
             render(true);
         }
         break;
@@ -1429,7 +1524,7 @@ void Agg2D::drawPath(DrawPathFlag flag)
     case StrokeOnly:
 		if ((m_lineColor.a || m_blendMode == BlendSrc) && m_lineWidth > 0.0)
         {
-            m_rasterizer.add_path(m_strokeTransform);
+			m_rasterizer.add_path((text)?m_strokeTransformText:m_strokeTransform);
             render(false);
         }
         break;
@@ -1437,13 +1532,13 @@ void Agg2D::drawPath(DrawPathFlag flag)
     case FillAndStroke:
         if (m_fillColor.a || m_blendMode == BlendSrc)
         {
-            m_rasterizer.add_path(m_pathTransform);
+			m_rasterizer.add_path((text)?m_pathTransformText:m_pathTransform);
             render(true);
         }
 
         if ((m_lineColor.a || m_blendMode == BlendSrc) && m_lineWidth > 0.0)
         {
-            m_rasterizer.add_path(m_strokeTransform);
+			m_rasterizer.add_path((text)?m_strokeTransformText:m_strokeTransform);
             render(false);
         }
         break;
@@ -1451,7 +1546,7 @@ void Agg2D::drawPath(DrawPathFlag flag)
     case FillWithLineColor:
         if (m_lineColor.a  || m_blendMode == BlendSrc)
         {
-            m_rasterizer.add_path(m_pathTransform);
+			m_rasterizer.add_path((text)?m_pathTransformText:m_pathTransform);
             render(false);
         }
         break;
@@ -1799,7 +1894,7 @@ void Agg2D::render(FontRasterizer& ras, FontScanline& sl)
 
 //------------------------------------------------------------------------
 void Agg2D::renderImage(const Image& img, int x1, int y1, int x2, int y2,
-                        const double* parl)
+                        const double* parl, bool keeprect)
 {
     agg::trans_affine mtx((double)x1,
                           (double)y1,
@@ -1808,9 +1903,22 @@ void Agg2D::renderImage(const Image& img, int x1, int y1, int x2, int y2,
                           parl);
     mtx *= m_transform;
     mtx.invert();
-
     m_rasterizer.reset();
-    m_rasterizer.add_path(m_pathTransform);
+	if (!keeprect)
+	{
+	    m_rasterizer.add_path(m_pathTransform);
+	}
+	else
+	{
+		agg::path_storage path;
+		path.move_to(x1,y1);
+		path.line_to(x2,y1);
+		path.line_to(x2,y2);
+		path.line_to(x1,y2);
+		path.line_to(x1,y1);
+		path.close_polygon();
+		m_rasterizer.add_path(path);
+	};
 
     typedef agg::span_interpolator_linear<agg::trans_affine> Interpolator;
     Interpolator interpolator(mtx);
@@ -1890,11 +1998,25 @@ void Agg2D::blendImage(Image& img, double dstX, double dstY, unsigned alpha)
 
 	if(m_blendMode == BlendAlpha)
     {
-		m_renBase.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
+//		if (m_alphamaskenabled)
+//		{
+//			m_renBaseAlpha.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
+//		}
+//		else
+		{
+			m_renBase.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
+		}
     }
     else
     {
-		m_renBase_Comp.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
+//		if (m_alphamaskenabled)
+//		{
+//			m_renBaseAlpha_Comp.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
+//		}
+//		else
+		{
+			m_renBase_Comp.blend_from(pixF, 0, int(dstX), int(dstY), alpha);
+		};
     }
 }
 
@@ -1945,3 +2067,8 @@ agg::rendering_buffer *Agg2D::GetAlphaBuffer()
 {
 	return &m_rbuf_alpha;
 };
+
+//agg::rendering_buffer *Agg2D::GetShadowBuffer()
+//{/
+//	return &m_rbuf_shadow;
+//};
