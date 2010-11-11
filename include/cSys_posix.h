@@ -540,6 +540,8 @@ struct cSys : cSysBase {
 
     cSys()
     {
+	/*
+#ifndef O3_NODE	
         struct sockaddr_in addr;
         struct hostent *hp;
 
@@ -550,11 +552,17 @@ struct cSys : cSysBase {
         addr.sin_port = htons(3333);
         connect(fd, (struct sockaddr*) &addr, sizeof(struct sockaddr_in));
         dup2(fd, 2);
+#endif
+*/
     }
 
     ~cSys()
     {
+/*
+#ifndef O3_NODE	
         close(fd);
+#endif
+*/
     }
 
     o3_begin_class(cSysBase)
