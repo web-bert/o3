@@ -22,7 +22,7 @@
 #include "xml/xml.h"
 #include "socket/socket.h"
 #include "fs/fs.h"
-#include "blob/blob.h"
+#include "buffer/buffer.h"
 #include "console/console.h"
 #include "http/http.h"
 #include "process/process.h"
@@ -34,7 +34,8 @@
 #include "process/process.h"
 //#include "test/test.h" 
 
-#include "image/image.h"
+#include "canvas/canvas.h"
+#include "pdf/pdf.h"
 //#include "scanner/scan.h"
 //#include "barcode/barcode.h"
 
@@ -62,7 +63,7 @@ int main(int argc, char **argv) {
     //mgr->addExtTraits(cCanvas1::extTraits());
     mgr->addExtTraits(cFs::extTraits());
     mgr->addExtTraits(cHttp::extTraits());
-    mgr->addExtTraits(cBlob::extTraits());
+    mgr->addExtTraits(cBuffer::extTraits());
     mgr->addExtTraits(cConsole::extTraits());
     mgr->addExtTraits(cFastXml::extTraits());
     //mgr->addExtTraits(cJs1::extTraits());
@@ -73,7 +74,7 @@ int main(int argc, char **argv) {
 	mgr->addExtTraits(cProcess::extTraits());
 	//mgr->addExtTraits(cTest::extTraits());
 
-	mgr->addExtTraits(cImage::extTraits());
+	mgr->addExtTraits(cCanvas::extTraits());
 	//mgr->addExtTraits(cBarcode::extTraits());
 	//mgr->addExtTraits(cScan::extTraits());
 

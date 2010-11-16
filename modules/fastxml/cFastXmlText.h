@@ -23,7 +23,7 @@ namespace o3 {
         cFastXmlText(iXmlDocument* doc, xml_node node, xml_attribute attr) 
             : cFastXmlCharacterData(doc,node,attr) 
 		{
-			o3_trace3 trace;                
+			o3_trace_scrfun("cFastXmlText");                
         }
 
 		virtual ~cFastXmlText()
@@ -39,7 +39,7 @@ namespace o3 {
 
 		siXmlText splitText(int /*offset*/) 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("splitText");
 			return siXmlText();
 		}
 	};

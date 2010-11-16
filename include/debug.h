@@ -48,6 +48,25 @@
 #define o3_trace3 struct
 #endif
 
+#define o3_trace_scrfun(name) 
+#define o3_trace_tools(name)
+#define o3_trace_combase(name)
+#define o3_trace_comglue(name)
+#define o3_trace_containers(name)
+#define o3_trace_hostglue(name)
+#define o3_trace_sys(name)
+#define o3_trace_no_trace
+
+//#define O3_LOGFILE
+//#define o3_trace_scrfun(name) O3Trace trace(name, __FILE__, __LINE__)
+//#define o3_trace_tools(name) O3Trace trace(name, __FILE__, __LINE__)
+//#define o3_trace_combase(name) O3Trace trace(name, __FILE__, __LINE__)
+//#define o3_trace_comglue(name) O3Trace trace(name, __FILE__, __LINE__)
+//#define o3_trace_containers(name) O3Trace trace(name, __FILE__, __LINE__)
+//#define o3_trace_hostglue(name) O3Trace trace(name, __FILE__, __LINE__)
+//#define o3_trace_sys(name) O3Trace trace(name, __FILE__, __LINE__)
+//#define o3_trace_no_trace
+
 #ifdef O3_ASSERT
 #define o3_assert(pred) ((void) ((pred) ? 0 \
                                         : (o3::o3assert(#pred, \
@@ -66,13 +85,25 @@
 
 namespace o3 {
 
-inline void traceEnter(const char* file, int line);
+inline void traceEnter(const char* fun, const char* file, int line);
 
 inline void traceLeave();
 
 inline void o3assert(const char* pred, const char* file, int line);
 
 inline void log(const char* format, ...);
+
+struct O3Trace {
+	O3Trace(const char* fun, const char* file, int line) 
+	{
+		traceEnter(fun,file,line);
+	}
+
+	~O3Trace() 
+	{
+		traceLeave();
+	}
+};
 
 }
 

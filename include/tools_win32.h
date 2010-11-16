@@ -1205,14 +1205,16 @@ struct iWindow : iUnk
         static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam,
                                     LPARAM lParam) 
         {
+			o3_trace_tools("WndProc");
             iCtx* ctx = (iCtx*) GetWindowLongPtr(hWnd, GWLP_USERDATA);			
             if (g_sys && ctx) {             				
                 switch (msg) {
                 case WM_TIMER:
 					// to prevent the wait function to be called again while
 					// the previous call have not returned yet...
-					SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) 0);
+					//SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) 0);
                     ctx->loop()->wait(1);
+
 #ifdef O3_WITH_LIBEVENT
 					//event_loop(EVLOOP_NONBLOCK );    
 					struct timeval t;
@@ -1228,6 +1230,7 @@ struct iWindow : iUnk
 
 #endif	                    
 					SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) ctx);
+
 					break;
                 }
 
@@ -1258,14 +1261,14 @@ struct iWindow : iUnk
 		mscom_end();
 
         //IDropTarget
-        HRESULT STDMETHODCALLTYPE DragEnter( IDataObject * pDataObject, DWORD grfKeyState, 
-            POINTL pt, DWORD * pdwEffect )
+        HRESULT STDMETHODCALLTYPE DragEnter( IDataObject * /*pDataObject*/, DWORD /*grfKeyState*/, 
+            POINTL /*pt*/, DWORD * pdwEffect )
         {
             *pdwEffect = DROPEFFECT_COPY;
             return NOERROR;
         }
 
-        HRESULT STDMETHODCALLTYPE DragOver( DWORD grfKeyState, POINTL pt, DWORD * pdwEffect )
+        HRESULT STDMETHODCALLTYPE DragOver( DWORD /*grfKeyState*/, POINTL /*pt*/, DWORD * pdwEffect )
         {
             *pdwEffect = DROPEFFECT_COPY;
             return S_OK;
@@ -1276,8 +1279,8 @@ struct iWindow : iUnk
             return E_NOTIMPL; 
         }
         
-        HRESULT STDMETHODCALLTYPE Drop( IDataObject * pDataObject, DWORD grfKeyState,
-            POINTL pt, DWORD * pdwEffect )
+        HRESULT STDMETHODCALLTYPE Drop( IDataObject * pDataObject, DWORD /*grfKeyState*/,
+            POINTL /*pt*/, DWORD * /*pdwEffect*/ )
         {
             WStr     file_names;
 

@@ -23,12 +23,12 @@ namespace o3 {
         cFastXmlNodeSet(iXmlDocument* doc, xpath_node_set set) 
 			: m_doc(doc), m_set(set)
 		{
-			o3_trace3 trace;
+			o3_trace_scrfun("cFastXmlNodeSet");
         }
 
         virtual ~cFastXmlNodeSet() 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("~cFastXmlNodeSet");
         }
 
 
@@ -43,14 +43,16 @@ namespace o3 {
 
         o3_fun bool __query__(int idx) 
 		{
-            o3_trace3 trace;
-			if (idx<0 || idx>=m_set.size())
+            o3_trace_scrfun("__query__");
+			if (idx<0 || ((size_t)idx)>=m_set.size())
 				return false;
 			return true;
         } 
         
         o3_fun siXmlNode __getter__(iCtx* ctx, int idx, siEx* ex = 0) 
 		{
+            o3_trace_scrfun("__getter__");
+            o3_unused(ctx);
             ex;
             o3_trace3 trace;
             return item(idx);
@@ -58,8 +60,8 @@ namespace o3 {
 
         virtual siXmlNode item(int index) 
 		{
-            o3_trace3 trace;
-			if (index<0 || index>=m_set.size())
+            o3_trace_scrfun("item");
+			if (index<0 || ((size_t)index)>=m_set.size())
 				return siXmlNode();
 			xpath_node ref = m_set[index];
 			if (ref.attribute())
@@ -70,7 +72,7 @@ namespace o3 {
         
         virtual o3_get int length() 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("length");
             return m_set.size();           
         }
 

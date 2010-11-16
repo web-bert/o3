@@ -38,6 +38,7 @@ struct cResourceBuilder : cScr
     // new resource builder
     static o3_ext("cO3") o3_fun siScr resourceBuilder()
     {
+        o3_trace_scrfun("resourceBuilder");
         return o3_new(cResourceBuilder)();
     }
 
@@ -45,6 +46,7 @@ struct cResourceBuilder : cScr
     o3_fun bool addAsResource(iFs* res_file,
         const char* zip_path = 0 )
     {
+        o3_trace_scrfun("addAsResource");
         if (res_file->isDir()) 
             return addDir(zip_path, res_file);
 
@@ -59,6 +61,7 @@ struct cResourceBuilder : cScr
     // to the file already it will be replaced
     o3_fun void buildAndAppend(iFs* target_file, siEx* )
     {
+        o3_trace_scrfun("buildAndAppend");
         if (!target_file)
             return; // Ex here
 
@@ -107,7 +110,7 @@ struct cResourceBuilder : cScr
             siFs fs = (*it).val;
             if (!fs) 
                 return; //ex here
-            next_file = fs.ptr()->blob();
+            next_file = fs.ptr()->buffer();
             //if (ex && *ex)
             //    return;
 
@@ -147,6 +150,7 @@ struct cResourceBuilder : cScr
 
     static o3_ext("cFs1") o3_fun bool removeResource(iFs* fs_node)
     {
+        o3_trace_scrfun("removeResource");
         siFs file(fs_node);
         if (!file || !file.ptr()->isFile())
             return false;
@@ -177,12 +181,13 @@ struct cResourceBuilder : cScr
         stream->read(original.ptr(), pos);
         stream->close();
         //siEx ex;
-        file.ptr()->setBlob(original);
+        file.ptr()->setBuffer(original);
         return true; //ex == 0;
     }
 
     bool addDir(const char* path, iFs* dir) 
     {
+        o3_trace_scrfun("addDir");
         if (!dir->exists() || !dir->hasChildren())
             return false;
         
@@ -208,6 +213,7 @@ struct cResourceBuilder : cScr
 
     bool addFile(const char* path, iFs* file) 
     {
+        o3_trace_scrfun("addFile");
         Str new_path(path);
         if (!path || !*path)            
             new_path.append( file->name());

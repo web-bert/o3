@@ -162,7 +162,7 @@ int WINAPI WinMain(HINSTANCE hi, HINSTANCE hp, LPSTR arg, int show){
 	HANDLE h = CreateMutex(
 		NULL,
 		TRUE,
-		L"Global\o3updater"
+		L"Global\\o3updater"
 	);
 
 	if (!h || GetLastError() == ERROR_ALREADY_EXISTS)

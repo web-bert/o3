@@ -29,6 +29,7 @@ namespace o3 {
 template<typename T>
 inline void o3_delete(T* ptr)
 {
+    o3_trace_tools("o3_delete");
     ptr->~T();
     memFree(ptr);
 }
@@ -39,21 +40,21 @@ inline void memFree(void* ptr);
 
 inline int memCompare(const void* ptr, const void* ptr1, size_t n)
 {
-    o3_trace0 trace;
+    o3_trace_tools("memCompare");
 
     return ::memcmp(ptr, ptr1, n);
 } 
 
 inline bool memEquals(const void* ptr, const void* ptr1, size_t n)
 {
-    o3_trace0 trace;
+    o3_trace_tools("memEquals");
 
     return memCompare(ptr, ptr1, n) ? false : true;
 }
 
 inline void* memFind(const void* ptr, const void* ptr1, size_t n, size_t n1)
 {
-    o3_trace0 trace;
+    o3_trace_tools("memFind");
     uint8_t* ptr2 = (uint8_t*) ptr;
 
     for (; n >= n1; ++ptr2, --n)
@@ -64,7 +65,7 @@ inline void* memFind(const void* ptr, const void* ptr1, size_t n, size_t n1)
 
 inline void* memFindReverse(const void* ptr, const void* ptr1, size_t n, size_t n1)
 {
-	o3_trace0 trace;
+	o3_trace_tools("memFindReverse");
 	uint8_t* ptr2 = (uint8_t*) ptr;	
 	if(n1>n)
 		return 0;
@@ -77,7 +78,7 @@ inline void* memFindReverse(const void* ptr, const void* ptr1, size_t n, size_t 
 
 inline void* memSet(void* dst, uint8_t b, size_t n)
 {
-    o3_trace0 trace;
+    o3_trace_tools("memSet");
 
     return ::memset(dst, b, n);
 }
@@ -85,7 +86,7 @@ inline void* memSet(void* dst, uint8_t b, size_t n)
 template<typename T>
 inline void* memSet(void* dst, const T& x, size_t n)
 {
-    o3_trace0 trace;
+    o3_trace_tools("memSet");
     T* dst1 = (T*) dst;
 
     for (; n > sizeof(T); n -= sizeof(T)) 
@@ -96,14 +97,14 @@ inline void* memSet(void* dst, const T& x, size_t n)
 
 inline void* memCopy(void* dst, const void* src, size_t n)
 {
-    o3_trace0 trace;
+    o3_trace_tools("memCopy");
 
     return ::memcpy(dst, src, n);
 }
 
 inline void* memMove(void* dst, const void* src, size_t n)
 {
-    o3_trace0 trace;
+    o3_trace_tools("memMove");
 
     return ::memmove(dst, src, n);
 }
@@ -111,7 +112,7 @@ inline void* memMove(void* dst, const void* src, size_t n)
 template<typename C>
 inline size_t memFromHex(void* ptr, const C* str)
 {
-    o3_trace0 trace;
+    o3_trace_tools("memFromHex");
     uint8_t* ptr1 = (uint8_t*) ptr;
     size_t size = 0;
     unsigned bits = 0;
@@ -141,7 +142,7 @@ error:
 template<typename C>
 inline size_t memFromBase64(void* ptr, const C* str)
 {
-    o3_trace0 trace;
+    o3_trace_tools("memFromBase64");
     uint8_t* ptr1 = (uint8_t*) ptr;
     size_t size = 0;
     unsigned bits = 0;

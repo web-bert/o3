@@ -46,30 +46,36 @@ struct cStaticCtrl : cWindow
     static o3_ext("cWindow") o3_fun siWindow createTextbox(o3_tgt iScr* target, const char* text, 
         int x, int y, int w, int h, int font_size = 16, int font_style = 0, int text_color = -1)
     {
+        o3_trace_scrfun("createTextbox");
         return createStatic(TYPE_TEXTBOX,target,text,x,y,w,h,font_size,font_style,text_color);
     }
 
     static o3_ext("cWindow") o3_fun siWindow createBlank(o3_tgt iScr* target,  
         int x, int y, int w, int h, int color=0)
     {
+        o3_trace_scrfun("createBlank");
         return createStatic(TYPE_BLANK,target,0,x,y,w,h,16,0,color);
     }
 
     static o3_ext("cWindow") o3_fun siWindow createSeparator(o3_tgt iScr* target, 
         int x, int y, int w)
     {
+        o3_trace_scrfun("createSeparator");
         return createStatic(TYPE_SEPARATOR,target,0,x,y,w,3);
     }
 
     static o3_ext("cWindow") o3_fun siWindow createImgbox(o3_tgt iScr* target, const char* img_name, 
         int x, int y, int w, int h)
     {
+        o3_trace_scrfun("createImgbox");
         return createStatic(TYPE_IMAGEBOX,target,img_name,x,y,w,h);
     }
 
     static siWindow createStatic(StaticType type, iScr* target,
         const char* text_data, int x, int y, int w, int h, int font_size = 16, int font_style = 0, int color = -1)
     {
+        // create component
+        o3_trace_scrfun("createStatic");
         // create component
         cStaticCtrl* ret = o3_new(cStaticCtrl)();
         ret->m_type = type;
@@ -133,11 +139,13 @@ struct cStaticCtrl : cWindow
 
     virtual LRESULT CALLBACK wndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     {
+        o3_trace_scrfun("wndProc");
         return m_def_proc(hwnd,message,wparam,lparam);
     }
 
     bool loadBitmapFromRsc(const char* name)
     {
+        o3_trace_scrfun("loadBitmapFromRsc");
         Buf img = ((cSys*) g_sys)->resource(name);
         if (img.empty())
             return false;

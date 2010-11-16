@@ -34,6 +34,8 @@ namespace o3 {
             :   m_ctx(ctx)
         {
             
+			o3_trace_scrfun("cProtocol");
+            
 			factory_t fs = ctx->mgr()->factory("fs");
 			if (fs)
 				m_source = fs(0);
@@ -66,6 +68,7 @@ namespace o3 {
         // some custom url magic if needed...
         virtual Str processURL(const char* url)
         {
+            o3_trace_scrfun("processURL");
             Str processed(url);
             if (!strCompare(processed.ptr(),"o3://"),5)
                 processed.remove(0,5);
@@ -83,6 +86,7 @@ namespace o3 {
         // starting a request and sending the necessary notifications
         virtual siStream start(const char* url, Delegate progress_cb = Delegate())
         {
+            o3_trace_scrfun("start");
             if (!m_source)
                 return siStream();
 
@@ -94,12 +98,16 @@ namespace o3 {
 
         o3_fun bool addSource(iScr* source)
         {
+            o3_trace_scrfun("addSource");
             m_source = source;
             return true;
         }
 
         o3_ext("cO3") o3_get static siScr protocolHandler(iCtx* ctx)
         {
+            // the protocol handler needs to be created and registered
+            // by the real protocol class it is used by...
+            o3_trace_scrfun("protocolHandler");
             // the protocol handler needs to be created and registered
             // by the real protocol class it is used by...
             Var v = ctx->value("protocolHandler");

@@ -27,7 +27,7 @@ struct cScrBuf : cScr, iBuf {
 
     cScrBuf(const Buf& buf = Buf()) : m_buf(buf)
     {
-        o3_trace2 trace;
+        o3_trace_scrfun("cScrBuf");
     }
 
     o3_begin_class(cScr)
@@ -46,10 +46,11 @@ struct cScrBuf : cScr, iBuf {
 
     o3_get size_t length()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("length");
 
         return m_buf.size();
     }
+
 
     //o3_set size_t setLength(size_t size)
     //{
@@ -64,11 +65,34 @@ struct cScrBuf : cScr, iBuf {
 	//	m_buf.append(other.ptr(), other.size());
 	//}
 
+    o3_set size_t setLength(size_t size)
+    {
+        o3_trace_scrfun("setLength");
+
+        m_buf.resize(size);
+        return size;
+    }
+
+	o3_fun void append(const Buf& other)
+	{
+		o3_trace_scrfun("append");
+		m_buf.append(other.ptr(), other.size());
+	}
+
+	o3_fun Buf slice(size_t start, size_t end)
+	{
+		o3_trace_scrfun("slice");
+		size_t size = m_buf.size();
+		if(start<0 || end<0 || start>size || end>size || start>end)
+			return Buf();
+
+
 	//o3_fun Buf slice(size_t start, size_t end)
 	//{
 	//	size_t size = m_buf.size();
 	//	if(start<0 || end<0 || start>size || end>size || start>end)
 	//		return Buf();
+
 
 	//	return Buf(((int8_t*)m_buf.ptr())+start, end-start);
 	//}
@@ -76,14 +100,14 @@ struct cScrBuf : cScr, iBuf {
 
     o3_fun bool __query__(size_t index)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("__query__");
 
         return (size_t) index < m_buf.size();
     }
 
     o3_fun int  __getter__(size_t index)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("__getter__");
 
         if ((size_t) index < m_buf.size())
             return ((uint8_t*) m_buf.ptr())[index];
@@ -92,7 +116,7 @@ struct cScrBuf : cScr, iBuf {
 
     o3_fun int __setter__(size_t index, int b)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("__setter__");
 
         if ((size_t) index < m_buf.size())
             return (int) (((uint8_t*) m_buf.ptr())[index] = (uint8_t)b);
@@ -101,7 +125,7 @@ struct cScrBuf : cScr, iBuf {
 
     Buf& unwrap()
     {
-        o3_trace2 trace;
+        o3_trace_scrfun("unwrap");
 
         return m_buf;
     }

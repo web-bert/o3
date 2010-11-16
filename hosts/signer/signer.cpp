@@ -16,19 +16,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#ifndef O3_WIN32
-#include <netdb.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#endif // O3_WIN32
-
 #include "o3.h"
 #include "cCtx.h"
 #include "fs/fs.h"
 #include "sha1/sha1.h"
 #include "rsa/rsa.h"
 #include "prv_key.h"
+
+#ifndef O3_WIN32
+#include <netdb.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#endif // O3_WIN32
 
 
 int main(int argc, char **argv) {

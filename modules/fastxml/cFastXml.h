@@ -31,6 +31,7 @@ namespace o3 {
 
 		static o3_ext("cO3") o3_get siXml fastxml(iCtx* ctx)
 		{
+			o3_trace_scrfun("fastxml");
 			Var val = ctx->value("xml");
 			siXml xml = val.toScr();
 			if (xml)
@@ -44,6 +45,8 @@ namespace o3 {
         
         o3_fun siXmlNode parseFromString(iCtx* ctx, const char* str, const char* contentType = "text/xml") 
 		{
+            o3_trace_scrfun("parseFromString");
+            o3_unused(ctx);
             o3_assert(str);
             o3_assert(contentType);
 			// create a new document
@@ -60,6 +63,7 @@ namespace o3 {
 
 	siXmlNode wrapXmlNode(iXmlDocument* doc, xml_node node, xml_attribute attr) 
 	{
+		o3_trace_scrfun("wrapXmlNode");
 		siXmlNode ret;
 		siWeak ref;	
 
@@ -110,6 +114,7 @@ namespace o3 {
 	}
 
 	void destroyNode(void* ref) {
+		o3_trace_scrfun("destroyNode");
 		if (iWeak* ptr = (iWeak*) ref) {
 			ptr->release();
 		}	

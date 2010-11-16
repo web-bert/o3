@@ -19,6 +19,8 @@ namespace o3 {
         cSocket(iCtx* ctx, int sock = -1, Type type = TYPE_INVALID, int state = 0) : m_sock(sock) 
 		{
             // Make socket non-blocking
+            o3_trace_scrfun("cSocket");
+            // Make socket non-blocking
             int flags = fcntl(sock, F_GETFL, 0);
             
             flags |= O_NONBLOCK;
@@ -30,6 +32,7 @@ namespace o3 {
 
         ~cSocket()
         {
+            o3_trace_scrfun("~cSocket");
             if (m_timer_listener)
                 m_timer_listener = 0;
             if (m_file_listener)
@@ -45,17 +48,20 @@ namespace o3 {
 
 		static o3_ext("cO3") o3_fun siSocket socketUDP(iCtx* ctx)
 		{			
+			o3_trace_scrfun("socketUDP");			
 			return create(ctx, TYPE_UDP);
 		}
 
 		static o3_ext("cO3") o3_fun siSocket socketTCP(iCtx* ctx) 
 		{
+			o3_trace_scrfun("socketTCP");
 			return create(ctx, TYPE_TCP);
 		}
 
         
         static siSocket create(iCtx* ctx, Type type) 
 		{		
+            o3_trace_scrfun("create");		
             int sock;            
 
             switch (type) {
@@ -74,6 +80,7 @@ namespace o3 {
         }
         
         virtual bool bind(const char* host, int port) {
+            o3_trace_scrfun("bind");
             m_addr.sin_family = AF_INET;
             hostent *hp = gethostbyname(host);
             if (!hp)
@@ -86,6 +93,11 @@ namespace o3 {
         }
         
         virtual bool connect(const char* host, int port) {
+            /*
+             * Cannot connect if an error was raised or there still is a pending
+             * connect or accept request.
+             */
+            o3_trace_scrfun("connect");
             /*
              * Cannot connect if an error was raised or there still is a pending
              * connect or accept request.
@@ -128,6 +140,11 @@ namespace o3 {
              * Cannot accept if an error was raised or there still is a pending
              * connect or accept request.
              */
+            o3_trace_scrfun("accept");
+            /*
+             * Cannot accept if an error was raised or there still is a pending
+             * connect or accept request.
+             */
             if (m_state & (STATE_ERROR | STATE_CONNECTING | STATE_ACCEPTING))
                 return false;
 
@@ -158,6 +175,7 @@ namespace o3 {
         }
         
         virtual bool send(uint8_t* data, size_t size) {
+            o3_trace_scrfun("send");
             int err;
 
             /* 
@@ -207,6 +225,11 @@ namespace o3 {
              * Cannot send to if this is not a UDP socket or an error was
              * raised.
              */
+            o3_trace_scrfun("sendTo");
+            /*
+             * Cannot send to if this is not a UDP socket or an error was
+             * raised.
+             */
             if (m_type != TYPE_UDP || (m_state & STATE_ERROR))
                 return false;
 
@@ -232,6 +255,11 @@ namespace o3 {
              * Cannot receive if an error was raised or the socket is not
              * connected.
              */
+            o3_trace_scrfun("receive");
+            /* 
+             * Cannot receive if an error was raised or the socket is not
+             * connected.
+             */
             if (m_state & STATE_ERROR || m_type == TYPE_TCP && !(m_state & STATE_CONNECTED))
                 return false;
 
@@ -248,6 +276,7 @@ namespace o3 {
         }
         
         virtual void close() {
+			o3_trace_scrfun("close");
 			if (m_timer_listener)
                 m_timer_listener = 0;
             if (m_file_listener)
@@ -258,6 +287,7 @@ namespace o3 {
         }
 
         void trigger(iUnk*) {
+            o3_trace_scrfun("trigger");
             if (m_state & STATE_ERROR || m_state & STATE_CLOSED) {
 				m_timer_listener = 0;
                 m_file_listener = 0;

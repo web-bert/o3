@@ -23,7 +23,7 @@ namespace o3 {
         cFastXmlComment(iXmlDocument* doc, xml_node node, xml_attribute attr) 
             : cFastXmlCharacterData(doc,node,attr) 
 		{
-                o3_trace3 trace;
+                o3_trace_scrfun("cFastXmlComment");
         }
 
 		virtual ~cFastXmlComment()

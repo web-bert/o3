@@ -38,6 +38,7 @@ namespace o3 {
     {
         cProtocolIE(iCtx* ctx)
         {
+            o3_trace_scrfun("cProtocolIE");
             Var v = ctx->value("protocolHandler");
             m_protocol_handler = v.toScr();
             if (!m_protocol_handler) {
@@ -66,6 +67,7 @@ namespace o3 {
 
 		static void registerProtocol(IProtocolIE* protocol_handler) 
 		{
+			o3_trace_scrfun("registerProtocol");
 			IInternetSecurityManager *pSecurityManager = NULL;
 			if (SUCCEEDED(CoCreateInstance( CLSID_InternetSecurityManager, NULL, 
 				CLSCTX_INPROC_SERVER,IID_IInternetSecurityManager,(void **)&pSecurityManager )))
@@ -85,6 +87,7 @@ namespace o3 {
 
 		static void unregisterProtocol(IProtocolIE* protocol_handler) 
 		{
+			o3_trace_scrfun("unregisterProtocol");
 			IInternetSession *ses;
 			CoInternetGetSession( 0, &ses, 0 );			
 
@@ -97,12 +100,15 @@ namespace o3 {
         HRESULT ClassImplementsCategory( const CLSID& /*clsid*/, const CATID& /*catid*/ )
         {
             // TODO: double check this...
+            o3_trace_scrfun("ClassImplementsCategory");
+            // TODO: double check this...
             return S_OK;
         }
 
         HRESULT STDMETHODCALLTYPE CreateInstance( IUnknown __RPC_FAR* /*pUnkOuter*/, 
             REFIID riid, void __RPC_FAR *__RPC_FAR *ppvObject)
 	    {
+            o3_trace_scrfun("CreateInstance");
             cProtocolIE* instance = o3_new(cProtocolIE)(m_protocol_handler);
 
 		    if( instance->QueryInterface( riid, ppvObject ) != S_OK )
@@ -115,6 +121,7 @@ namespace o3 {
 
 	    HRESULT STDMETHODCALLTYPE LockServer(BOOL /*fLock*/) 
         {
+            o3_trace_scrfun("LockServer");
             return S_OK;
         }
 
@@ -123,6 +130,7 @@ namespace o3 {
             IInternetBindInfo __RPC_FAR *pOIBindInfo,
             DWORD grfPI, DWORD /*dwReserved*/ )
         {
+		    o3_trace_scrfun("Start");
 		    if (grfPI & PI_PARSE_URL) {
 			    return S_OK;
 		    }    
@@ -166,17 +174,20 @@ namespace o3 {
 
 	    HRESULT STDMETHODCALLTYPE Continue( PROTOCOLDATA __RPC_FAR* /*pProtocolData*/ )
         {
+            o3_trace_scrfun("Continue");
             return S_OK;
         }
 
 	    HRESULT STDMETHODCALLTYPE Abort( HRESULT /*hrReason*/, DWORD /*dwOptions*/ )
 	    {
+		    o3_trace_scrfun("Abort");
 		    m_proto_sink->ReportResult(S_OK,S_OK,NULL);
 		    return S_OK;
 	    }
 
 	    HRESULT STDMETHODCALLTYPE Terminate( DWORD /*dwOptions*/ )
         {
+            o3_trace_scrfun("Terminate");
             m_stream = 0;
             m_proto_sink = 0;
             return S_OK;
@@ -184,17 +195,20 @@ namespace o3 {
 
 	    HRESULT STDMETHODCALLTYPE Suspend()
         {
+            o3_trace_scrfun("Suspend");
             return E_NOTIMPL;
         }
     	
         HRESULT STDMETHODCALLTYPE Resume()
         {
+            o3_trace_scrfun("Resume");
             return E_NOTIMPL;
         }
     	
         HRESULT STDMETHODCALLTYPE Read( void __RPC_FAR *pv, ULONG cb, 
             ULONG __RPC_FAR *pcbRead)
         {
+            o3_trace_scrfun("Read");
             if (!m_stream)
                 return S_FALSE;
 
@@ -206,6 +220,7 @@ namespace o3 {
 	    HRESULT STDMETHODCALLTYPE Seek( LARGE_INTEGER dlibMove, 
             DWORD /*dwOrigin*/, ULARGE_INTEGER __RPC_FAR *plibNewPosition)
         {
+            o3_trace_scrfun("Seek");
             if(!m_stream)
                 return S_FALSE;
     		
@@ -215,11 +230,13 @@ namespace o3 {
 
         HRESULT STDMETHODCALLTYPE LockRequest( DWORD /*dwOptions*/)
         {
+            o3_trace_scrfun("LockRequest");
             return S_OK;
         }
 
 	    HRESULT STDMETHODCALLTYPE UnlockRequest()
         {
+            o3_trace_scrfun("UnlockRequest");
             return S_OK;
         }
 
@@ -236,6 +253,11 @@ namespace o3 {
             //pwzResult = blah;
 		    //*pcchResult=strLen(blah)*2+2;
 		    
+            o3_trace_scrfun("ParseUrl");
+            //static wchr* blah = L"o3"; 
+            //pwzResult = blah;
+		    //*pcchResult=strLen(blah)*2+2;
+		    
             return INET_E_DEFAULT_ACTION; 
         }
 
@@ -248,6 +270,7 @@ namespace o3 {
 		    /* [out] */ DWORD* /*pcchResult*/,
 		    /* [in] */ DWORD /*dwReserved*/)
 	    {
+		    o3_trace_scrfun("CombineUrl");
 		    return E_NOTIMPL;
 	    }
 
@@ -257,6 +280,7 @@ namespace o3 {
 		    /* [in] */ LPCWSTR /*pwzUrl2*/,
 		    /* [in] */ DWORD /*dwCompareFlags*/) 
 	    {
+		    o3_trace_scrfun("CompareUrl");
 		    return E_NOTIMPL;
 	    }
 
@@ -270,6 +294,7 @@ namespace o3 {
 		    /* [out][in] */ DWORD *pcbBuf,
 		    /* [in] */ DWORD /*dwReserved*/) 
 	    {
+           o3_trace_scrfun("QueryInfo");
            return INET_E_DEFAULT_ACTION;
 
 

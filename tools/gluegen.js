@@ -650,6 +650,8 @@ var Parser = {
                                 // macro was not in a comment block...
                                 break
                             default : 
+								if (typename[0].indexOf("o3_trace") == 0)
+									break;
                                 // report error
                                 Reporter.error("tokenizer: found unknown o3_tag : ",typename[0],"\n");
                         }

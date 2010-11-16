@@ -23,7 +23,7 @@ namespace o3 {
         cFastXmlCharacterData(iXmlDocument* doc, xml_node node, xml_attribute attr) 
             : cFastXmlNode(doc,node,attr) 
 		{
-                o3_trace3 trace;
+                o3_trace_scrfun("cFastXmlCharacterData");
         }
 
 		virtual ~cFastXmlCharacterData()
@@ -39,26 +39,28 @@ namespace o3 {
 
         virtual o3_get Str data() 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("data");
             return m_node.value();
 		}
 
         virtual o3_set void setData(const char* data) 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("setData");
             o3_assert(data);
 			m_node.set_value(data);
 		}
 
         virtual o3_get int length() 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("length");
 			const char_t* v = m_node.value();
 			return v ? strLen(v) : 0;
 		}
 
         virtual o3_fun Str substringData(int offset, int count, siEx* ex) 
 		{
+            o3_trace_scrfun("substringData");
+            o3_unused(ex);
 			o3_trace3 trace;
 			if (offset + count > length() || offset < 0 || count < 0) {
 				//o3_set_ex("Invalid offset and/or count");                
@@ -72,7 +74,7 @@ namespace o3 {
 
         virtual o3_fun void appendData(const char* arg)
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("appendData");
             o3_assert(arg);
 			Str data = this->data();
 
@@ -82,6 +84,7 @@ namespace o3 {
         
         virtual o3_fun void insertData(int offset, const char* arg, siEx* ex = 0) 
 		{
+			o3_trace_scrfun("insertData");
 			ex;
 			o3_trace3 trace;
 			o3_assert(arg);
@@ -98,6 +101,7 @@ namespace o3 {
         
 		virtual o3_fun void deleteData(int offset, int count, siEx* ex = 0)
 		{
+			o3_trace_scrfun("deleteData");
 			ex;
 			o3_trace3 trace;
 			if (offset + count > length() || offset < 0 || count < 0) {
@@ -114,6 +118,7 @@ namespace o3 {
         
 		virtual o3_fun void replaceData(int offset, int count, const char* arg, siEx* ex = 0)
 		{
+			o3_trace_scrfun("replaceData");
 			ex;
 			o3_trace3 trace;            
 			o3_assert(arg);

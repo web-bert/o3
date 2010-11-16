@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="sh"
 	ProjectGUID="{A909D85D-3EB5-433B-8C13-2A698B6E354D}"
 	RootNamespace="sh"
@@ -91,7 +91,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="call &quot;../../tools/win32/o3.exe&quot; sh_resources.js debug"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -137,9 +137,9 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="libcurl.lib wldap32.lib ws2_32.lib libxml2.lib"
+				AdditionalDependencies="libcurld.lib wldap32.lib ws2_32.lib libxml2d.lib"
 				OutputFile="$(OutDir)\o3.exe"
-				AdditionalLibraryDirectories="../../deps/win32"
+				AdditionalLibraryDirectories="../../deps/win32lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)intermediate\$(TargetName).pdb"
 				OptimizeReferences="2"

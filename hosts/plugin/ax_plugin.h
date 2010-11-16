@@ -60,11 +60,13 @@ namespace o3 {
 	mscom_ptr(IHTMLElementCollection);
 
     int incWrapperCount() {
+        o3_trace_hostglue("incWrapperCount");
         int ret = atomicInc(g_win32_outstanding_objects);
         return ret;
     }
 
     int decWrapperCount() {
+		o3_trace_hostglue("decWrapperCount");
 		int ret = atomicDec(g_win32_outstanding_objects);
         return ret;
     }
@@ -105,11 +107,13 @@ namespace o3 {
 
         virtual ComTrack** track()
         {
+           o3_trace_hostglue("track");
            return &m_track;
         }
 
         virtual void tear() 
         {
+            o3_trace_hostglue("tear");
             for (ComTrack *i = m_track, *j = 0; i; i = j) {
                 j = i->m_next;
                 i->m_phead = 0;
@@ -119,16 +123,19 @@ namespace o3 {
 
 		virtual void approve()
 		{
+			o3_trace_hostglue("approve");
 			openPage("approve.html");
 		}
 
 		virtual void settings()
 		{
+			o3_trace_hostglue("settings");
 			openPage("settings.html");
 		}
 
 		void openPage(const char* page)
 		{
+			o3_trace_hostglue("openPage");
 			siCtx tmpCtx = o3_new(cCtx1);
 			HostIE* host = o3_new(HostIE)(tmpCtx);
 
@@ -160,6 +167,7 @@ namespace o3 {
 
 		virtual bool isIE()
 		{
+			o3_trace_hostglue("isIE");
 			return true;
 		}
     };
@@ -178,6 +186,7 @@ namespace o3 {
     public:
 		CJAxCtrl() 
 		{               
+			o3_trace_hostglue("CJAxCtrl");               
 			m_blocked = false;	
 			m_ctx = o3_new(cCtx1)();			
 			siScr root = o3_new(cO3)(m_ctx, 0,0,0);          
@@ -189,6 +198,7 @@ namespace o3 {
         
         virtual ~CJAxCtrl()
 		{          
+			o3_trace_hostglue("~CJAxCtrl");          
 			if (m_proto_factory) {
 				cProtocolIE::unregisterProtocol(m_proto_factory.ptr());
 				m_proto_factory = 0;
@@ -226,10 +236,12 @@ namespace o3 {
         mscom_end();
 
         ULONG STDMETHODCALLTYPE AddRef() {
+            o3_trace_hostglue("AddRef");
             int32_t ret = atomicInc(_m_com.ref_count);
             return (ULONG)ret;
         } 
         ULONG STDMETHODCALLTYPE Release() {              
+            o3_trace_hostglue("Release");              
             int ret = atomicDec(_m_com.ref_count);
             if( ret == 0){ 
                 this->~CJAxCtrl(); 
@@ -248,19 +260,21 @@ namespace o3 {
 
         // IDispatch
         HRESULT STDMETHODCALLTYPE CJAxCtrl::GetTypeInfoCount(unsigned int FAR*  pctinfo){
+            o3_trace_hostglue("GetTypeInfoCount");
             *pctinfo = 0;
             return(S_OK);
         }
 
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetTypeInfo(unsigned int  iTInfo, LCID  lcid, ITypeInfo FAR* FAR*  ppTInfo ){ return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetTypeInfo(unsigned int  iTInfo, LCID  lcid, ITypeInfo FAR* FAR*  ppTInfo ){ o3_trace_hostglue("GetTypeInfo"); return E_NOTIMPL; }
         HRESULT STDMETHODCALLTYPE CJAxCtrl::GetIDsOfNames(REFIID  riid, OLECHAR FAR* FAR*  rgszNames, 
-            unsigned int  cNames, LCID   lcid, DISPID FAR*  rgDispId ){ return E_NOTIMPL; }
+            unsigned int  cNames, LCID   lcid, DISPID FAR*  rgDispId ){ o3_trace_hostglue("GetIDsOfNames"); return E_NOTIMPL; }
         HRESULT STDMETHODCALLTYPE CJAxCtrl::Invoke(DISPID  dispIdMember, REFIID  riid, LCID  lcid, WORD  wFlags,
-            DISPPARAMS FAR*  pDispParams, VARIANT FAR*  pVarResult, EXCEPINFO FAR*  pExcepInfo, unsigned int FAR*  puArgErr){ return E_NOTIMPL; }
+            DISPPARAMS FAR*  pDispParams, VARIANT FAR*  pVarResult, EXCEPINFO FAR*  pExcepInfo, unsigned int FAR*  puArgErr){ o3_trace_hostglue("Invoke"); return E_NOTIMPL; }
 
 
         //IDispatchEx
         HRESULT STDMETHODCALLTYPE DeleteMemberByDispID(DISPID id){
+            o3_trace_hostglue("DeleteMemberByDispID");
             if (m_blocked)
 				return E_NOTIMPL;
 			else
@@ -268,6 +282,7 @@ namespace o3 {
         }
 
         HRESULT STDMETHODCALLTYPE DeleteMemberByName(BSTR bstrName, DWORD grfdex){
+			o3_trace_hostglue("DeleteMemberByName");
 			if (m_blocked)
 				return E_NOTIMPL;
 			else
@@ -275,6 +290,7 @@ namespace o3 {
         }
 
         HRESULT STDMETHODCALLTYPE GetDispID(BSTR bstrName, DWORD grfdex, DISPID *pid){
+			o3_trace_hostglue("GetDispID");
 			if (m_blocked)
 				return E_NOTIMPL;
 			else            
@@ -282,6 +298,7 @@ namespace o3 {
         }
 
         HRESULT STDMETHODCALLTYPE GetMemberName(DISPID id, BSTR *pbstrName){
+			o3_trace_hostglue("GetMemberName");
 			if (m_blocked)
 				return E_NOTIMPL;
 			else
@@ -289,6 +306,7 @@ namespace o3 {
         }
      
         HRESULT STDMETHODCALLTYPE GetMemberProperties(DISPID id, DWORD grfdexFetch, DWORD *pgrfdex){
+			o3_trace_hostglue("GetMemberProperties");
 			if (m_blocked)
 				return E_NOTIMPL;
 			else
@@ -296,6 +314,7 @@ namespace o3 {
         }
         
         HRESULT STDMETHODCALLTYPE GetNameSpaceParent(IUnknown **ppunk){
+			o3_trace_hostglue("GetNameSpaceParent");
 			if (m_blocked)
 				return E_NOTIMPL;
 			else
@@ -303,6 +322,7 @@ namespace o3 {
         }
 
         HRESULT STDMETHODCALLTYPE GetNextDispID(DWORD grfdex, DISPID id, DISPID *pid){
+			o3_trace_hostglue("GetNextDispID");
 			if (m_blocked)
 				return E_NOTIMPL;
 			else
@@ -310,6 +330,7 @@ namespace o3 {
         }
 
         HRESULT STDMETHODCALLTYPE InvokeEx(DISPID id, LCID lcid, WORD wFlags, DISPPARAMS *pdp, VARIANT *pVarRes, EXCEPINFO *pei, IServiceProvider *pspCaller){
+			o3_trace_hostglue("InvokeEx");
 			if (m_blocked)
 				return E_NOTIMPL;
 			else
@@ -319,34 +340,38 @@ namespace o3 {
         //IPointerInactive
         HRESULT STDMETHODCALLTYPE GetActivationPolicy( DWORD* pdwPolicy ){
             //*pdwPolicy = POINTERINACTIVE_ACTIVATEONENTRY;
+            o3_trace_hostglue("GetActivationPolicy");
+            //*pdwPolicy = POINTERINACTIVE_ACTIVATEONENTRY;
             return E_NOTIMPL;
         }
 
-        HRESULT STDMETHODCALLTYPE OnInactiveMouseMove( LPCRECT pRectBounds, LONG x, LONG y, DWORD grfKeyState ){ return E_NOTIMPL; }
-        HRESULT STDMETHODCALLTYPE OnInactiveSetCursor( LPCRECT pRectBounds, LONG x, LONG y, DWORD dwMouseMsg, BOOL fSetAlways ){ return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE OnInactiveMouseMove( LPCRECT pRectBounds, LONG x, LONG y, DWORD grfKeyState ){ o3_trace_hostglue("OnInactiveMouseMove"); return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE OnInactiveSetCursor( LPCRECT pRectBounds, LONG x, LONG y, DWORD dwMouseMsg, BOOL fSetAlways ){ o3_trace_hostglue("OnInactiveSetCursor"); return E_NOTIMPL; }
         
 
         // IPersist
         HRESULT STDMETHODCALLTYPE CJAxCtrl::GetClassID( CLSID * pClassID){
+            o3_trace_hostglue("GetClassID");
             *pClassID = CLSID_IJAxCtrl;
             return(S_OK);
         }
 
         //IPersistStreamInit
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::IsDirty(void){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::Load(LPSTREAM pStm){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::Save(LPSTREAM pStm, BOOL fClearDirty){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetSizeMax(ULARGE_INTEGER * pcbSize){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::InitNew(void){ return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::IsDirty(void){ o3_trace_hostglue("IsDirty"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::Load(LPSTREAM pStm){ o3_trace_hostglue("Load"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::Save(LPSTREAM pStm, BOOL fClearDirty){ o3_trace_hostglue("Save"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetSizeMax(ULARGE_INTEGER * pcbSize){ o3_trace_hostglue("GetSizeMax"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::InitNew(void){ o3_trace_hostglue("InitNew"); return(E_NOTIMPL); }
 
         //IOleControl
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetControlInfo(CONTROLINFO* pCI){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::OnMnemonic(LPMSG pMsg){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::OnAmbientPropertyChange(DISPID dispID){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::FreezeEvents(BOOL bFreeze){ return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetControlInfo(CONTROLINFO* pCI){ o3_trace_hostglue("GetControlInfo"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::OnMnemonic(LPMSG pMsg){ o3_trace_hostglue("OnMnemonic"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::OnAmbientPropertyChange(DISPID dispID){ o3_trace_hostglue("OnAmbientPropertyChange"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::FreezeEvents(BOOL bFreeze){ o3_trace_hostglue("FreezeEvents"); return(E_NOTIMPL); }
 
         //IOleObject
         HRESULT STDMETHODCALLTYPE CJAxCtrl::SetClientSite(IOleClientSite *pClientSite){
+            o3_trace_hostglue("SetClientSite");
             if (!pClientSite) 
                 return (S_OK);
 
@@ -440,10 +465,12 @@ namespace o3 {
 
 
 
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetClientSite(IOleClientSite **ppClientSite){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetHostNames(LPCOLESTR szContainerApp,LPCOLESTR szContainerObj){ return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetClientSite(IOleClientSite **ppClientSite){ o3_trace_hostglue("GetClientSite"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetHostNames(LPCOLESTR szContainerApp,LPCOLESTR szContainerObj){ o3_trace_hostglue("SetHostNames"); return(E_NOTIMPL); }
 
         HRESULT STDMETHODCALLTYPE CJAxCtrl::Close(DWORD dwSaveOption){
+			
+			o3_trace_hostglue("Close");
 			
 			if (m_proto_factory) {
 				cProtocolIE::unregisterProtocol(m_proto_factory.ptr());
@@ -463,92 +490,97 @@ namespace o3 {
             return(S_OK);
         }
 
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetMoniker(DWORD dwWhichMoniker,IMoniker *pmk){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetMoniker(DWORD dwAssign,DWORD dwWhichMoniker,IMoniker **ppmk){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::InitFromData(IDataObject *pDataObject,BOOL fCreation,DWORD dwReserved){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetClipboardData(DWORD dwReserved,IDataObject **ppDataObject){ return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetMoniker(DWORD dwWhichMoniker,IMoniker *pmk){ o3_trace_hostglue("SetMoniker"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetMoniker(DWORD dwAssign,DWORD dwWhichMoniker,IMoniker **ppmk){ o3_trace_hostglue("GetMoniker"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::InitFromData(IDataObject *pDataObject,BOOL fCreation,DWORD dwReserved){ o3_trace_hostglue("InitFromData"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetClipboardData(DWORD dwReserved,IDataObject **ppDataObject){ o3_trace_hostglue("GetClipboardData"); return(E_NOTIMPL); }
         HRESULT STDMETHODCALLTYPE CJAxCtrl::DoVerb(LONG iVerb,LPMSG lpmsg,IOleClientSite *pActiveSite,LONG lindex,
-            HWND hwndParent,LPCRECT lprcPosRect){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::EnumVerbs(IEnumOLEVERB **ppEnumOleVerb){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::Update(){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::IsUpToDate(){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetUserClassID(CLSID *pClsid){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetUserType(DWORD dwFormOfType,LPOLESTR *pszUserType){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetExtent(DWORD dwDrawAspect,SIZEL  *psizel){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetExtent(DWORD dwDrawAspect,SIZEL *psizel){ return E_NOTIMPL; }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::Advise(IAdviseSink *pAdvSink,DWORD *pdwConnection){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::Unadvise(DWORD dwConnection){ return(E_NOTIMPL); }
+            HWND hwndParent,LPCRECT lprcPosRect){ o3_trace_hostglue("DoVerb"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::EnumVerbs(IEnumOLEVERB **ppEnumOleVerb){ o3_trace_hostglue("EnumVerbs"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::Update(){ o3_trace_hostglue("Update"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::IsUpToDate(){ o3_trace_hostglue("IsUpToDate"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetUserClassID(CLSID *pClsid){ o3_trace_hostglue("GetUserClassID"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetUserType(DWORD dwFormOfType,LPOLESTR *pszUserType){ o3_trace_hostglue("GetUserType"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetExtent(DWORD dwDrawAspect,SIZEL  *psizel){ o3_trace_hostglue("SetExtent"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetExtent(DWORD dwDrawAspect,SIZEL *psizel){ o3_trace_hostglue("GetExtent"); return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::Advise(IAdviseSink *pAdvSink,DWORD *pdwConnection){ o3_trace_hostglue("Advise"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::Unadvise(DWORD dwConnection){ o3_trace_hostglue("Unadvise"); return(E_NOTIMPL); }
 
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::EnumAdvise(IEnumSTATDATA **ppenumAdvise){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetMiscStatus(DWORD dwAspect,DWORD *pdwStatus){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetColorScheme(LOGPALETTE *pLogpal){ return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::EnumAdvise(IEnumSTATDATA **ppenumAdvise){ o3_trace_hostglue("EnumAdvise"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetMiscStatus(DWORD dwAspect,DWORD *pdwStatus){ o3_trace_hostglue("GetMiscStatus"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetColorScheme(LOGPALETTE *pLogpal){ o3_trace_hostglue("SetColorScheme"); return(E_NOTIMPL); }
 
 
         //IViewObject
         HRESULT STDMETHODCALLTYPE CJAxCtrl::Draw(DWORD dwAspect,LONG lindex,void* pvAspect,DVTARGETDEVICE* ptd,HDC hicTargetDev,
-            HDC hdcDraw, LPCRECTL lprcBounds, LPCRECTL lprcWBounds,bfpointerdw pfnContinue,ULONG_PTR dwContinue){ return(E_NOTIMPL); }
+            HDC hdcDraw, LPCRECTL lprcBounds, LPCRECTL lprcWBounds,bfpointerdw pfnContinue,ULONG_PTR dwContinue){ o3_trace_hostglue("Draw"); return(E_NOTIMPL); }
         HRESULT STDMETHODCALLTYPE CJAxCtrl::GetColorSet(DWORD dwAspect, LONG lindex, void * pvAspect, DVTARGETDEVICE * ptd,
-            HDC hicTargetDev, LOGPALETTE ** ppColorSet){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::Freeze(DWORD dwAspect,LONG lindex,void* pvAspect,DWORD* pdwFreeze){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetAdvise(DWORD* pdwAspect,DWORD* padvf,IAdviseSink** ppAdvSink){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetAdvise(DWORD dwAspect,DWORD advf,IAdviseSink* pAdvSink){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::Unfreeze(DWORD dwFreeze){ return(E_NOTIMPL); }
+            HDC hicTargetDev, LOGPALETTE ** ppColorSet){ o3_trace_hostglue("GetColorSet"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::Freeze(DWORD dwAspect,LONG lindex,void* pvAspect,DWORD* pdwFreeze){ o3_trace_hostglue("Freeze"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetAdvise(DWORD* pdwAspect,DWORD* padvf,IAdviseSink** ppAdvSink){ o3_trace_hostglue("GetAdvise"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetAdvise(DWORD dwAspect,DWORD advf,IAdviseSink* pAdvSink){ o3_trace_hostglue("SetAdvise"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::Unfreeze(DWORD dwFreeze){ o3_trace_hostglue("Unfreeze"); return(E_NOTIMPL); }
 
         //IViewObject2
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetExtent(DWORD dwAspect,LONG lindex,DVTARGETDEVICE* ptd,LPSIZEL lpsizel){ return E_NOTIMPL; }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetExtent(DWORD dwAspect,LONG lindex,DVTARGETDEVICE* ptd,LPSIZEL lpsizel){ o3_trace_hostglue("GetExtent"); return E_NOTIMPL; }
 
         //IViewObjectEx
         HRESULT STDMETHODCALLTYPE CJAxCtrl::GetNaturalExtent(DWORD dwAspect,LONG lindex,DVTARGETDEVICE* ptd,HDC hicTargetDev,
-            DVEXTENTINFO* pExtentInfo,LPSIZEL pSizel){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetRect(DWORD dwAspect,LPRECTL pRect){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetViewStatus(DWORD* pdwStatus){ return(E_NOTIMPL); }
+            DVEXTENTINFO* pExtentInfo,LPSIZEL pSizel){ o3_trace_hostglue("GetNaturalExtent"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetRect(DWORD dwAspect,LPRECTL pRect){ o3_trace_hostglue("GetRect"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetViewStatus(DWORD* pdwStatus){ o3_trace_hostglue("GetViewStatus"); return(E_NOTIMPL); }
 
         HRESULT STDMETHODCALLTYPE CJAxCtrl::QueryHitPoint(DWORD dwAspect,LPCRECT pRectBounds,POINT ptlLoc,LONG lCloseHint,DWORD* pHitResult){
+            //*pHitResult = HITRESULT_HIT;
+            o3_trace_hostglue("QueryHitPoint");
             //*pHitResult = HITRESULT_HIT;
             return(E_NOTIMPL);
         }
 
         HRESULT STDMETHODCALLTYPE CJAxCtrl::QueryHitRect(DWORD dwAspect,LPCRECT pRectBounds,LPCRECT pRectLoc,
-            LONG lCloseHint,DWORD* pHitResult){ return(E_NOTIMPL); }
+            LONG lCloseHint,DWORD* pHitResult){ o3_trace_hostglue("QueryHitRect"); return(E_NOTIMPL); }
 
         //IQuickActivate
         HRESULT STDMETHODCALLTYPE CJAxCtrl::QuickActivate(QACONTAINER* pQaContainer,QACONTROL* pQaControl){        
+            o3_trace_hostglue("QuickActivate");        
             SetClientSite(pQaContainer->pClientSite);
             return(S_OK);
         }
 
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetContentExtent(LPSIZEL psizel){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetContentExtent(LPSIZEL psizel){ return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetContentExtent(LPSIZEL psizel){ o3_trace_hostglue("SetContentExtent"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetContentExtent(LPSIZEL psizel){ o3_trace_hostglue("GetContentExtent"); return(E_NOTIMPL); }
 
         //IOleWindow
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetWindow(HWND * phwnd){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::ContextSensitiveHelp(BOOL fEnterMode){ return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetWindow(HWND * phwnd){ o3_trace_hostglue("GetWindow"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::ContextSensitiveHelp(BOOL fEnterMode){ o3_trace_hostglue("ContextSensitiveHelp"); return(E_NOTIMPL); }
 
         //IOleInPlaceActiveObject
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::TranslateAccelerator(LPMSG lpmsg){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::OnFrameWindowActivate(BOOL fActivate){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::OnDocWindowActivate(BOOL fActivate){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::ResizeBorder(LPCRECT prcBorder,IOleInPlaceUIWindow* pUIWindow,BOOL fFrameWindow){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::EnableModeless(BOOL fEnable){ return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::TranslateAccelerator(LPMSG lpmsg){ o3_trace_hostglue("TranslateAccelerator"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::OnFrameWindowActivate(BOOL fActivate){ o3_trace_hostglue("OnFrameWindowActivate"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::OnDocWindowActivate(BOOL fActivate){ o3_trace_hostglue("OnDocWindowActivate"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::ResizeBorder(LPCRECT prcBorder,IOleInPlaceUIWindow* pUIWindow,BOOL fFrameWindow){ o3_trace_hostglue("ResizeBorder"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::EnableModeless(BOOL fEnable){ o3_trace_hostglue("EnableModeless"); return(E_NOTIMPL); }
 
         //IOleInPlaceObject
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::InPlaceDeactivate(){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::UIDeactivate(){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetObjectRects(LPCRECT lprcPosRect,LPCRECT lprcClipRect){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::ReactivateAndUndo(){ return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::InPlaceDeactivate(){ o3_trace_hostglue("InPlaceDeactivate"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::UIDeactivate(){ o3_trace_hostglue("UIDeactivate"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::SetObjectRects(LPCRECT lprcPosRect,LPCRECT lprcClipRect){ o3_trace_hostglue("SetObjectRects"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::ReactivateAndUndo(){ o3_trace_hostglue("ReactivateAndUndo"); return(E_NOTIMPL); }
 
         //IOleInPlaceObjectWindowless
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::OnWindowMessage(UINT msg,WPARAM wParam,LPARAM lParam,LRESULT* plResult){ return(E_NOTIMPL);}
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetDropTarget(IDropTarget** ppDropTarget){ return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::OnWindowMessage(UINT msg,WPARAM wParam,LPARAM lParam,LRESULT* plResult){ o3_trace_hostglue("OnWindowMessage"); return(E_NOTIMPL);}
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::GetDropTarget(IDropTarget** ppDropTarget){ o3_trace_hostglue("GetDropTarget"); return(E_NOTIMPL); }
 
         //IObjectSafety
         HRESULT STDMETHODCALLTYPE CJAxCtrl::GetInterfaceSafetyOptions(REFIID riid,DWORD *pdwSupportedOptions,DWORD *pdwEnabledOptions){
+            o3_trace_hostglue("GetInterfaceSafetyOptions");
             *pdwSupportedOptions = INTERFACESAFE_FOR_UNTRUSTED_DATA|INTERFACESAFE_FOR_UNTRUSTED_CALLER;
             *pdwEnabledOptions   = INTERFACESAFE_FOR_UNTRUSTED_DATA|INTERFACESAFE_FOR_UNTRUSTED_CALLER;
             return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE CJAxCtrl::SetInterfaceSafetyOptions(REFIID riid,DWORD dwOptionSetMask,DWORD dwEnabledOptions){
+            o3_trace_hostglue("SetInterfaceSafetyOptions");
             if (riid == IID_IDispatchEx || riid == IID_IDispatch || riid == IID_IPersistPropertyBag)
                 return(S_OK);//E_NOTIMPL);
             else
@@ -557,12 +589,13 @@ namespace o3 {
 
         //IPersistPropertyBag
         //HRESULT STDMETHODCALLTYPE CJAxCtrl::InitNew(VOID){}
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::Load(IPropertyBag *pPropBag,IErrorLog *pErrorLog){ return(E_NOTIMPL); }
-        HRESULT STDMETHODCALLTYPE CJAxCtrl::Save(IPropertyBag *pPropBag,BOOL fClearDirty,BOOL fSaveAllProperties){ return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::Load(IPropertyBag *pPropBag,IErrorLog *pErrorLog){ o3_trace_hostglue("Load"); return(E_NOTIMPL); }
+        HRESULT STDMETHODCALLTYPE CJAxCtrl::Save(IPropertyBag *pPropBag,BOOL fClearDirty,BOOL fSaveAllProperties){ o3_trace_hostglue("Save"); return(E_NOTIMPL); }
 
 
-		HRESULT STDMETHODCALLTYPE QueryStatus(const GUID *pguidCmdGroup,ULONG cCmds,OLECMD prgCmds[],OLECMDTEXT *pCmdText){return(E_NOTIMPL);}
+		HRESULT STDMETHODCALLTYPE QueryStatus(const GUID *pguidCmdGroup,ULONG cCmds,OLECMD prgCmds[],OLECMDTEXT *pCmdText){o3_trace_hostglue("QueryStatus");return(E_NOTIMPL);}
 		HRESULT STDMETHODCALLTYPE Exec(const GUID *pguidCmdGroup,DWORD nCmdID,DWORD nCmdexecopt,VARIANT *pvaIn, VARIANT *pvaOut){
+			o3_trace_hostglue("Exec");
 			if (!m_webbrowser)
 				m_ctx->mgr()->settings();
 			return S_OK;
@@ -574,6 +607,7 @@ namespace o3 {
 
 	BOOL CALLBACK FindIEServerWindow(HWND hwnd, LPARAM lParam) 
 	{
+		o3_trace_hostglue("FindIEServerWindow");
 		CJAxCtrl* pthis = (CJAxCtrl*)lParam;
 		WStr clsName; clsName.reserve(256);
 		int s = GetClassNameW(hwnd, clsName.ptr(), 256);
@@ -610,10 +644,12 @@ namespace o3 {
         mscom_end();
 
         ULONG STDMETHODCALLTYPE AddRef() {
+            o3_trace_hostglue("AddRef");
             int32_t ret = atomicInc(_m_com.ref_count);
             return (ULONG)ret;
         } 
         ULONG STDMETHODCALLTYPE Release() {              
+            o3_trace_hostglue("Release");              
             int ret = atomicDec(_m_com.ref_count);
             if( ret == 0){ 
                 this->~CJAxCtrlClassFactory(); 
@@ -625,6 +661,7 @@ namespace o3 {
         HRESULT STDMETHODCALLTYPE CreateInstance(IUnknown* pUnkOuter,
                                                                  REFIID    riid,
                                                                  void**    ppv) {    
+        o3_trace_hostglue("CreateInstance");    
         HRESULT hrRet;
         CJAxCtrl* pJAxCtrl;
 
@@ -646,6 +683,7 @@ namespace o3 {
         }
 
         HRESULT STDMETHODCALLTYPE LockServer(BOOL flock) {
+            o3_trace_hostglue("LockServer");
             if (flock) atomicInc(g_win32_lock_count);
             else atomicDec(g_win32_lock_count);
 
@@ -660,12 +698,14 @@ namespace o3 {
 /****************************/
 
 STDAPI DllCanUnloadNow(void) {
+    o3_trace_no_trace;
     using namespace o3;
     HRESULT ret = (!g_win32_outstanding_objects && !g_win32_lock_count) ? S_OK : S_FALSE;
     return ret;
 }
 
 STDAPI DllGetClassObject(REFCLSID objGuid, REFIID factoryGuid, void **factoryHandle) {
+    o3_trace_no_trace;
     using namespace o3;
     register HRESULT        hr;
     if (IsEqualCLSID(objGuid, CLSID_IJAxCtrl)) {
@@ -687,6 +727,7 @@ STDAPI DllGetClassObject(REFCLSID objGuid, REFIID factoryGuid, void **factoryHan
 
 
 STDAPI DllRegisterServerCust(bool all_usr, wchar_t* path) {
+    o3_trace_no_trace;
     using namespace o3;
     HKEY base_reg = all_usr ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER ;
     #define __retiferror(X) if( ERROR_SUCCESS != X ) goto reg_error;
@@ -812,10 +853,12 @@ reg_error:
 }
 
 STDAPI DllRegisterServer() {
+    o3_trace_no_trace;
     return DllRegisterServerCust(false, 0);
 }
 
 STDAPI DllUnregisterServerCust(bool all_usr) {
+    o3_trace_no_trace;
     using namespace o3;
     HKEY base_reg = all_usr ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER ;
     
@@ -840,10 +883,12 @@ STDAPI DllUnregisterServerCust(bool all_usr) {
 }
 
 STDAPI DllUnregisterServer() {
+    o3_trace_no_trace;
     return DllUnregisterServerCust(false);
 }
 
 BOOL WINAPI DllMain(HINSTANCE instance, DWORD fdwReason, LPVOID lpvReserved) {
+    o3_trace_no_trace;
     using namespace o3;
     switch (fdwReason) {
         case DLL_PROCESS_ATTACH:
@@ -855,7 +900,7 @@ BOOL WINAPI DllMain(HINSTANCE instance, DWORD fdwReason, LPVOID lpvReserved) {
                 g_sys = //::new( HeapAlloc(GetProcessHeap(), 0, sizeof(cSys)) ) cSys;
                         new cSys();
                 
-            }
+			}
             g_win32_hinst = instance;     
         } break;
 

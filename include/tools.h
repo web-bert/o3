@@ -25,7 +25,7 @@ namespace o3 {
 template<typename T>
 inline T min(T x, T y)
 {
-    o3_trace0 trace;
+    o3_trace_tools("min");
 
     return x < y ? x : y;
 }
@@ -33,7 +33,7 @@ inline T min(T x, T y)
 template<typename T>
 inline T max(T x, T y)
 {
-    o3_trace0 trace;
+    o3_trace_tools("max");
 
     return x < y ? y : x;
 }
@@ -41,7 +41,7 @@ inline T max(T x, T y)
 template<typename T>
 inline void swap(T& x, T& y)
 {
-    o3_trace0 trace;
+    o3_trace_tools("swap");
     uint8_t z[sizeof(T)];
  
     memCopy(z, &x, sizeof(T));
@@ -51,12 +51,15 @@ inline void swap(T& x, T& y)
 
 __inline int DoubleToInt(double d)
 {
+	o3_trace_tools("DoubleToInt");
 	const double magic = 6755399441055744.0; // 2^51 + 2^52
 	double tmp = (d-0.5) + magic;
 	return *(int*) &tmp;
 }
 
 }
+
+#define o3_unused(x)     ((void)x)
 
 #include "tools_atomic.h"
 #include "tools_chr.h"

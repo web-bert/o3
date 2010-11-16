@@ -21,7 +21,9 @@
 
 namespace o3 {
   struct cXmlNode : cScr, iXmlNode2 {
-       cXmlNode(xmlNodePtr node, iXmlNode2* owner_node, NodeMap* node_map) {
+       cXmlNode(xmlNodePtr node, iXmlNode2* owner_node, NodeMap* node_map) 
+	   {
+            o3_trace_scrfun("cXmlNode");
             m_node = node;
             m_owner_node = owner_node;
             m_node_map = node_map;
@@ -29,8 +31,9 @@ namespace o3 {
 			//printf("create %p %p\n", m_node, this);
         }
 
-        virtual ~cXmlNode() {
-            o3_trace3 trace;
+        virtual ~cXmlNode() 
+		{
+            o3_trace_scrfun("~cXmlNode");
 			//printf("destroy %p %p\n", m_node, this);
 			if (m_node)
 				m_node_map->remove(m_node);
@@ -56,14 +59,17 @@ namespace o3 {
 				DOCUMENT = 9
 		);
 
-        o3_fun siXmlNode2 replaceNode(iCtx* ctx, iXmlNode2* new_child, siEx* ex = 0) {
+        o3_fun siXmlNode2 replaceNode(iCtx* ctx, iXmlNode2* new_child, siEx* ex = 0)
+		{
+			o3_trace_scrfun("replaceNode");
 			if (!new_child)
 				return siXmlNode2();
             return parentNode(ctx)->replaceChild(ctx, new_child, this, ex);
         }
 
-        o3_get Str xml() {
-            o3_trace3 trace;
+        o3_get Str xml() 
+		{
+            o3_trace_scrfun("xml");
 
             xmlBufferPtr buf = xmlBufferCreate();
             xmlNodeDump(buf, m_node->doc, m_node, 0, 0);
@@ -72,13 +78,22 @@ namespace o3 {
             return ret;
         }
                 
-        virtual o3_get Str nodeName() {
-            o3_trace3 trace;
+        virtual o3_get Str nodeName() 
+		{
+            o3_trace_scrfun("nodeName");
             return Str((const char*) m_node->name);
         }
+
+		virtual o3_set Str setNodeName(const char* value) 
+		{
+			o3_trace_scrfun("setNodeName");
+			xmlNodeSetName(m_node, BAD_CAST value);
+			return value;
+		}
         
-        virtual o3_get Str nodeValue() {
-            o3_trace3 trace;
+        virtual o3_get Str nodeValue() 
+		{
+            o3_trace_scrfun("nodeValue");
             char* value = (char*) xmlNodeGetContent(m_node);
             Str result(value);
             //! TODO xmlFree is not a function
@@ -86,48 +101,57 @@ namespace o3 {
             return result;
         }
         
-        virtual o3_set void setNodeValue(const char* value) {
-            o3_trace3 trace;
+        virtual o3_set void setNodeValue(const char* value)
+		{
+            o3_trace_scrfun("setNodeValue");
             xmlNodeSetContent(m_node, BAD_CAST value);
         }
         
-        virtual o3_get Type nodeType() {
-            o3_trace3 trace;
+        virtual o3_get Type nodeType()
+		{
+            o3_trace_scrfun("nodeType");
             return (Type) m_node->type;
         }
         
-        virtual o3_get siXmlNode2 parentNode(iCtx* ctx) {
-            o3_trace3 trace;
+        virtual o3_get siXmlNode2 parentNode(iCtx* ctx)
+		{
+            o3_trace_scrfun("parentNode");
             return wrapNode(ctx, m_node->parent, m_owner_node ? m_owner_node : this);
         }
         
-		virtual o3_get siXmlNodeList2 childNodes() {
-            o3_trace3 trace;
+		virtual o3_get siXmlNodeList2 childNodes() 
+		{
+            o3_trace_scrfun("childNodes");
             return siXmlNodeList2(o3_new(cXmlNodeList)(this));
 		}
         
-        virtual o3_get siXmlNode2 firstChild(iCtx* ctx) {
-            o3_trace3 trace;
+        virtual o3_get siXmlNode2 firstChild(iCtx* ctx) 
+		{
+            o3_trace_scrfun("firstChild");
             return wrapNode(ctx, m_node->children, m_owner_node ? m_owner_node : this);
         }
         
-        virtual o3_get siXmlNode2 lastChild(iCtx* ctx) {
-            o3_trace3 trace;
+        virtual o3_get siXmlNode2 lastChild(iCtx* ctx) 
+		{
+            o3_trace_scrfun("lastChild");
             return wrapNode(ctx, m_node->last, m_owner_node ? m_owner_node : this);
         }
         
-        virtual o3_get siXmlNode2 previousSibling(iCtx* ctx) {
-            o3_trace3 trace;
+        virtual o3_get siXmlNode2 previousSibling(iCtx* ctx) 
+		{
+            o3_trace_scrfun("previousSibling");
             return wrapNode(ctx, m_node->prev, m_owner_node ? m_owner_node : this);
         }
         
-        virtual o3_get siXmlNode2 nextSibling(iCtx* ctx) {
-            o3_trace3 trace;
+        virtual o3_get siXmlNode2 nextSibling(iCtx* ctx) 
+		{
+            o3_trace_scrfun("nextSibling");
             return wrapNode(ctx, m_node->next, m_owner_node ? m_owner_node : this);
         }
        
-		virtual o3_get siXmlNamedNodeMap2 attributes() {
-			o3_trace3 trace;
+		virtual o3_get siXmlNamedNodeMap2 attributes() 
+		{
+			o3_trace_scrfun("attributes");
 			siXmlElement2 elem(this);
 			if (!elem)
 				return elem;
@@ -135,8 +159,9 @@ namespace o3 {
 			return o3_new(cXmlNamedNodeMap)(elem);
 		}
         
-        virtual o3_get siXmlDocument2 ownerDocument(iCtx* ctx) {
-            o3_trace3 trace;
+        virtual o3_get siXmlDocument2 ownerDocument(iCtx* ctx) 
+		{
+            o3_trace_scrfun("ownerDocument");
             return wrapNode(ctx, (xmlNodePtr) m_node->doc, m_owner_node ? m_owner_node : this);
         }
         
@@ -163,13 +188,14 @@ namespace o3 {
 
             // Check if node is to be inserted is not a descendant of itself
             xmlNodePtr node = m_node;
-            do
+            do {
                 if (node == new_child2->m_node) {
                     if (ex)
                         *ex = o3_new(cEx)("Cannot insert node as descendant of itself");
                     return 0;
                 }
-            while (node = node->parent);
+                node = node->parent;
+            }while (node);
             
 			siXmlNode2 removed;
 			if (siXmlNode2 parent = new_child->parentNode(ctx)) {
@@ -187,8 +213,9 @@ namespace o3 {
         }
         
         virtual o3_fun siXmlNode2 replaceChild(iCtx* ctx, iXmlNode2* new_child,
-                iXmlNode2* old_child, siEx* ex = 0) {
-            o3_trace3 trace;
+                iXmlNode2* old_child, siEx* ex = 0) 
+		{
+            o3_trace_scrfun("replaceChild");
 			if (!new_child || !new_child) {
 				return siXmlNode2();
             }
@@ -219,8 +246,9 @@ namespace o3 {
 			return old_child2;
         }
         
-        virtual o3_fun siXmlNode2 removeChild(iXmlNode2* old_child, siEx* ex = 0) {
-            o3_trace3 trace;
+        virtual o3_fun siXmlNode2 removeChild(iXmlNode2* old_child, siEx* ex = 0) 
+		{
+            o3_trace_scrfun("removeChild");
 
             // Check arguments
             if (!old_child) {
@@ -240,8 +268,9 @@ namespace o3 {
         }
         
         virtual o3_fun siXmlNode2 appendChild(iCtx* ctx, iXmlNode2* new_child,
-                                             siEx* ex = 0) {
-            o3_trace3 trace;
+                                             siEx* ex = 0) 
+		{
+            o3_trace_scrfun("appendChild");
 
 			if (!new_child)
 				return siXmlNode2();
@@ -259,13 +288,14 @@ namespace o3 {
 
             // Check if node is to be inserted is not a descendant of itself
             xmlNodePtr node = m_node;
-            do
+            do {
                 if (node == new_child2->m_node) {
                     if (ex)
                         *ex = o3_new(cEx)("Cannot append node as descendant of itself");
                     return 0;
                 }
-            while (node = node->parent);
+                node = node->parent;
+            } while (node);
 
 			siXmlNode2 removed;
 			if (siXmlNode2 parent = new_child->parentNode(ctx)) {
@@ -284,13 +314,15 @@ namespace o3 {
             return new_child2;
         }
         
-        virtual o3_get bool hasChildNodes() {
-            o3_trace3 trace;
+        virtual o3_get bool hasChildNodes() 
+		{
+            o3_trace_scrfun("hasChildNodes");
             return m_node->children != 0;
         }
         
-		virtual o3_fun siXmlNode2 cloneNode(iCtx* ctx, bool deep) {
-            o3_trace3 trace;
+		virtual o3_fun siXmlNode2 cloneNode(iCtx* ctx, bool deep)
+		{
+            o3_trace_scrfun("cloneNode");
 			xmlNodePtr root;
             
             if (deep)
@@ -303,6 +335,7 @@ namespace o3 {
 
 		o3_get Str namespaceURI() 
 		{
+			o3_trace_scrfun("namespaceURI");
 			if (!m_node)
 				return "";
 			
@@ -313,8 +346,28 @@ namespace o3 {
 			return Str((const char*) ns->href);
 		}
 
+		o3_get Str prefix() 
+		{
+			o3_trace_scrfun("prefix");
+			if (!m_node)
+				return "";
+
+			xmlNs* ns = m_node->ns;
+			if (!ns)
+				return "";
+
+			return Str((const char*) ns->prefix);
+		}
+
+		o3_fun Str toString()
+		{
+			o3_trace_scrfun("toString");
+			return xml();
+		}
+
         virtual siXmlNode2 ownerNode()
         {            
+            o3_trace_scrfun("ownerNode");            
             return m_owner_node;
         }
 

@@ -40,7 +40,7 @@ namespace o3
 
 		static o3_ext("cO3") o3_get siScr barcode(iCtx* ctx)
 		{
-			o3_trace3 trace;
+			o3_trace_scrfun("barcode");
 			Var blob = ctx->value("barcode");
 
 			if (blob.type() == Var::TYPE_VOID)
@@ -50,12 +50,13 @@ namespace o3
 
 		o3_fun siScr __self__()
 		{
-			o3_trace3 trace;
+			o3_trace_scrfun("__self__");
 			return o3_new(cBarcode)();
 		}
 
 		static o3_ext("cImage1") o3_fun tVec<Str> scanbarcodes(o3_tgt iScr* sourceimage)
 		{
+			o3_trace_scrfun("scanbarcodes");
 			tVec<Str> Results;
 			tSi<iImage> img = sourceimage;
 

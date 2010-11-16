@@ -121,7 +121,7 @@ o3_iid(iSys, 0xE8E2E0B6,
              0x92, 0xDC, 0xEB, 0x1F, 0xFB, 0xAB, 0x2F, 0x23);
 
 struct iSys : iAlloc {
-    virtual void traceEnter(const char* file, int line) = 0;
+    virtual void traceEnter(const char* fun, const char* file, int line) = 0;
 
     virtual void traceLeave() = 0;
 
@@ -167,16 +167,18 @@ private:
     siMutex m_mutex;
 };
 
-iSys* g_sys;
+iSys* g_sys=0;
 
-inline void traceEnter(const char* file, int line)
+inline void traceEnter(const char* fun, const char* file, int line)
 {
-    return g_sys->traceEnter(file, line);
+	if (g_sys)
+    g_sys->traceEnter(fun, file, line);
 }
 
 inline void traceLeave()
 {
-    return g_sys->traceLeave();
+	if(g_sys)
+    g_sys->traceLeave();
 }
 
 inline void o3assert(const char* pred, const char* file, int line)

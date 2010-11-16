@@ -189,6 +189,7 @@
 					 document.createElement("div")).innerHTML = objHtml;        
 				  
 					o3 = document.getElementById(id);
+					setInterval(function () { o3.wait(1); }, 500);
 				}	
 				
 				var fileref=document.createElement('script');

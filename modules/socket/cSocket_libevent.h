@@ -32,6 +32,7 @@ namespace o3 {
         cSocket(iCtx* ctx, HSOCKET sock = -1, Type type = TYPE_INVALID, int state = 0) 
 			: m_sock(sock) 
 		{
+		    o3_trace_scrfun("cSocket");
             // Make socket non-blocking
 #ifdef O3_WIN32
 			unsigned long iMode = 1;
@@ -58,11 +59,13 @@ namespace o3 {
 
 		static o3_ext("cO3") o3_fun siSocket socketUDP(iCtx* ctx)
 		{			
+			o3_trace_scrfun("socketUDP");			
 			return create(ctx, TYPE_UDP);
 		}
 
 		static o3_ext("cO3") o3_fun siSocket socketTCP(iCtx* ctx) 
 		{
+			o3_trace_scrfun("socketTCP");
 			return create(ctx, TYPE_TCP);
 		}
 
@@ -79,6 +82,7 @@ namespace o3 {
 
         static siSocket create(iCtx* ctx, Type type) 
 		{		
+            o3_trace_scrfun("create");		
             int sock;            
 
             switch (type) {
@@ -98,6 +102,7 @@ namespace o3 {
         
         virtual bool bind(const char* host, int port) 
 		{
+            o3_trace_scrfun("bind");
             m_addr.sin_family = AF_INET;
             hostent *hp = gethostbyname(host);
             if (!hp)
@@ -111,6 +116,11 @@ namespace o3 {
         
         virtual bool connect(const char* host, int port)
 		{
+            /*
+             * Cannot connect if an error was raised or there still is a pending
+             * connect or accept request.
+             */
+            o3_trace_scrfun("connect");
             /*
              * Cannot connect if an error was raised or there still is a pending
              * connect or accept request.
@@ -156,6 +166,11 @@ namespace o3 {
              * Cannot accept if an error was raised or there still is a pending
              * connect or accept request.
              */
+            o3_trace_scrfun("accept");
+            /*
+             * Cannot accept if an error was raised or there still is a pending
+             * connect or accept request.
+             */
             if (m_state & (STATE_ERROR | STATE_CONNECTING | STATE_ACCEPTING))
                 return false;
 
@@ -188,6 +203,7 @@ namespace o3 {
         
         virtual bool send(uint8_t* data, size_t size) 
 		{
+            o3_trace_scrfun("send");
             int err;
 
             /* 
@@ -223,11 +239,17 @@ namespace o3 {
         
         virtual bool sendTo(uint8_t* data, size_t size, const char* host, int port)
         {
+            o3_trace_scrfun("sendTo");
             return true;
         }
         
         virtual bool receive() 
 		{
+            /* 
+             * Cannot receive if an error was raised or the socket is not
+             * connected.
+             */
+            o3_trace_scrfun("receive");
             /* 
              * Cannot receive if an error was raised or the socket is not
              * connected.
@@ -249,6 +271,7 @@ namespace o3 {
         
         virtual void close() 
 		{
+			o3_trace_scrfun("close");
 			if (m_sock)
 #ifdef O3_WIN32
 			::closesocket(m_sock);
@@ -261,6 +284,12 @@ namespace o3 {
 
 		static void onread(int fd, short ev, void *arg) 
 		{			
+            /*
+             * The socket is ready for reading, we receive 
+			 * at most m_packet_size bytes from the
+             * socket to the input buf.
+             */
+			o3_trace_scrfun("onread");			
             /*
              * The socket is ready for reading, we receive 
 			 * at most m_packet_size bytes from the
@@ -322,6 +351,12 @@ namespace o3 {
              * writing, we send at most m_packet_size bytes from the
              * output buf to the socket.
              */
+            o3_trace_scrfun("onwrite");
+            /*
+             * If the sending flag is set and the socket is ready for
+             * writing, we send at most m_packet_size bytes from the
+             * output buf to the socket.
+             */
             cSocket* pthis = (cSocket*)arg;
 			void*   data = pthis->m_out_buf.ptr();
             int size = min(pthis->m_out_buf.size(), pthis->m_packet_size);
@@ -352,6 +387,7 @@ namespace o3 {
 
 		static void onaccept(int fd, short ev, void *arg) 
 		{            
+            o3_trace_scrfun("onaccept");            
             cSocket* pthis = (cSocket*)arg;
 			socklen_t addr_len = sizeof(sockaddr_in);
             int sock = ::accept(pthis->m_sock, (sockaddr*) &pthis->m_addr,
@@ -382,6 +418,7 @@ namespace o3 {
 
 		static void onconnect(int fd, short ev, void *arg) 
 		{
+			o3_trace_scrfun("onconnect");
 			cSocket* pthis = (cSocket*)arg;
             int err = ::connect(pthis->m_sock, (sockaddr*) &pthis->m_addr,
                                 sizeof(sockaddr_in));

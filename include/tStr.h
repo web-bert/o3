@@ -86,6 +86,7 @@ class tStr {
 
     tStr(const tStr& left, const tStr& right)
     {
+        o3_trace_containers("tStr");
         m_u.alloc = left.alloc();
         m_u.alloc->addRef();
         m_u.concat = o3_new(Concat)(left, right);
@@ -94,6 +95,7 @@ class tStr {
 
     tStr(const tStr& str, size_t pos, size_t n)
     {
+        o3_trace_containers("tStr");
         m_u.alloc = str.alloc();
         m_u.alloc->addRef();
         m_u.substr = o3_new(Substr)(str, pos, n);
@@ -149,12 +151,14 @@ class tStr {
 
     void setConcat() 
     {
+        o3_trace_containers("setConcat");
         m_u.alloc = (iAlloc*) ((uintptr_t) m_u.alloc  | 0x3);
         m_u.concat = (Concat*) ((uintptr_t) m_u.concat | 0x1);
     }
 
     void setSubstr()
     {
+        o3_trace_containers("setSubstr");
         m_u.alloc = (iAlloc*) ((uintptr_t) m_u.alloc  | 0x3);
         m_u.substr = (Substr*) ((uintptr_t) m_u.substr | 0x2);
     }
@@ -162,7 +166,7 @@ class tStr {
 public:
     static tStr fromBool(bool val, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("fromBool");
         const C STR_TRUE[]  = { 't', 'r', 'u', 'e', '\0' };
         const C STR_FALSE[] = { 'f', 'a', 'l', 's', 'e', '\0' };
 
@@ -171,7 +175,7 @@ public:
 
     static tStr fromInt32(int32_t val, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("fromInt32");
         const C STR_FORMAT[] = { '%', 'l', 'd', '\0' };
         tStr str(alloc);
 
@@ -181,7 +185,7 @@ public:
 
     static tStr fromInt64(int64_t val, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("fromInt64");
         const C STR_FORMAT[] = { '%', 'l', 'l', 'd', '\0' };
         tStr str(alloc);
 
@@ -191,7 +195,7 @@ public:
 
     static tStr fromDouble(double val, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("fromDouble");
         const C STR_FORMAT[] = { '%', 'f', '\0' };
         tStr str(alloc);
 
@@ -201,7 +205,7 @@ public:
 
     static tStr fromHex(const void* ptr, size_t size)
     {
-        o3_trace1 trace;
+        o3_trace_containers("fromHex");
         tStr str(strFromHex((C*) 0, ptr, size));
 
         str.resize(strFromHex(str.ptr(), ptr, size));
@@ -210,7 +214,7 @@ public:
 
     static tStr fromBase64(const void* ptr, size_t size)
     {
-        o3_trace1 trace;
+        o3_trace_containers("fromBase64");
         tStr str(strFromBase64((C*) 0, ptr, size));
 
         str.resize(strFromBase64(str.ptr(), ptr, size));
@@ -219,7 +223,7 @@ public:
 
     explicit tStr(size_t capacity, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("tStr");
 
         new (m_buf) Buf((capacity + 1) * sizeof(C), alloc);
         resize(0);
@@ -227,14 +231,14 @@ public:
 
     explicit tStr(iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("tStr");
 
         new(this) tStr((size_t) 0, alloc);
     }
 
     tStr(const C* str, size_t len, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("tStr");
 
         new(m_buf) Buf((len + 1) * sizeof(C), alloc);
         buf().copy(str, len * sizeof(C));
@@ -243,7 +247,7 @@ public:
 
     tStr(const C* str, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("tStr");
 
         new(this) tStr(str, str ? strLen(str) : 0, alloc);
     }
@@ -251,7 +255,7 @@ public:
     template<typename C1>
     tStr(const C1* str, size_t len, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("tStr");
         tStr tmp(alloc);
 
         tmp.reserve(strFromStr((C*) 0, str, len));
@@ -262,13 +266,14 @@ public:
     template<typename C1>
     tStr(const C1* str, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("tStr");
 
         new(this) tStr(str, strLen(str), alloc);
     }
 
     tStr(const Buf& buf)
     {
+        o3_trace_containers("tStr");
         size_t size = buf.size() / sizeof(C);
 
         new (m_buf) Buf(buf);
@@ -280,13 +285,14 @@ public:
 
     tStr(const tStr& that)
     {
+        o3_trace_containers("tStr");
         new (m_buf) Buf(that.buf());
     }
 
     template<typename C1>
     tStr(const tStr<C1>& that)
     {
-        o3_trace1 trace;
+        o3_trace_containers("tStr");
 
         new(this) tStr(that.ptr(), that.alloc());
     }
@@ -303,6 +309,7 @@ public:
 
     ~tStr()
     {
+        o3_trace_containers("~tStr");
         if (isConcat()) {
             o3_delete(concat());
             alloc()->release();
@@ -386,14 +393,14 @@ public:
 
     void reserve(size_t new_capacity)
     {
-        o3_trace1 trace;
+        o3_trace_containers("reserve");
 
         buf().reserve((new_capacity + 1) * sizeof(C));
     }
 
     void resize(size_t new_size)
     {
-        o3_trace1 trace;
+        o3_trace_containers("resize");
 
         buf().resize((new_size + 1) * sizeof(C));
         if (((const tStr*) this)->ptr()[size()])
@@ -402,7 +409,7 @@ public:
 
     C* ptr()
     {
-        o3_trace1 trace;
+        o3_trace_containers("ptr");
 
         return (C*) buf().ptr();
     }
@@ -516,28 +523,28 @@ public:
 
     void insert(size_t pos, C c, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
 
         buf().insertPattern(pos * sizeof(C), c, n * sizeof(C));
     }
 
     void insert(size_t pos, const C* str, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
 
         buf().insert(pos * sizeof(C), str, n * sizeof(C));
     }
 
     void insert(size_t pos, const C* str)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
 
         insert(pos, str, strLen(str));
     }
 
     void insertfv(size_t pos, const C* format, va_list ap)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insertfv");
         size_t n = strPrintfv((C*) 0, format, ap);
         C* str;
         C  c;
@@ -551,7 +558,7 @@ public:
 
     void insertf(size_t pos, const C* format, ...)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insertf");
         va_list ap;
 
         va_start(ap, format);
@@ -561,35 +568,35 @@ public:
 
     void append(C c, size_t n = 1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("append");
 
         insert(size(), c, n);
     }
 
     void append(const C* str, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("append");
 
         insert(size(), str, n);
     }
 
     void append(const C* str)
     {
-        o3_trace1 trace;
+        o3_trace_containers("append");
 
         insert(size(), str);
     }
 
     void appendfv(const C* format, va_list ap)
     {
-        o3_trace1 trace;
+        o3_trace_containers("appendfv");
 
         insertfv(size(), format, ap);
     }
 
     void appendf(const C* format, ...)
     {
-        o3_trace1 trace;
+        o3_trace_containers("appendf");
         va_list ap;
 
         va_start(ap, format);
@@ -599,7 +606,7 @@ public:
 
     tStr& concat(const tStr& right)
     {
-        o3_trace1 trace;
+        o3_trace_containers("concat");
         tStr str(*this, right);
 
         swap(*this, str);
@@ -629,42 +636,42 @@ public:
 
     void remove(size_t pos, size_t n = 1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("remove");
 
         buf().remove(pos * sizeof(C), n * sizeof(C));
     }
 
     void clear()
     {
-        o3_trace1 trace;
+        o3_trace_containers("clear");
 
         remove(0, size());
     }
 
     void replace(size_t pos, size_t n, C c, size_t n1 = 1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("replace");
 
         buf().replace(pos * sizeof(C), n * sizeof(C), c, n1 * sizeof(C));
     }
 
     void replace(size_t pos, size_t n, const C* str, size_t n1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("replace");
 
         buf().replace(pos * sizeof(C), n * sizeof(C), str, n1 * sizeof(C));
     }
 
     void replace(size_t pos, size_t n, const C* str)
     {
-        o3_trace1 trace;
+        o3_trace_containers("replace");
 
         replace(pos, n, str, strLen(str));
     }
 
     void replacefv(size_t pos, size_t n, const C* format, va_list ap)
     {
-        o3_trace1 trace;
+        o3_trace_containers("replacefv");
         size_t n1 = strPrintf((C*) 0, format, ap); 
         const C* str;
         C c;
@@ -681,7 +688,7 @@ public:
 
     void replacef(size_t pos, size_t n, const C* format, ...)
     {
-        o3_trace1 trace;
+        o3_trace_containers("replacef");
         va_list ap;
 
         va_start(ap, format);
@@ -691,6 +698,7 @@ public:
 
 	void findAndReplaceAll(const C* orig, const C* to)
 	{
+		o3_trace_containers("findAndReplaceAll");
 		buf().findAndReplaceAll(orig,strLen(orig)*sizeof(C), to, strLen(to)*sizeof(C));
 	}
 };

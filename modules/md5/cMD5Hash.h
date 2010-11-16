@@ -33,6 +33,7 @@ namespace o3 {
 
 		static o3_ext("cO3") o3_get siScr md5(iCtx* ctx)
 		{
+			o3_trace_scrfun("md5");
 			Var var = ctx->value("md5");
 			siScr md5 = var.toScr();
 			if (md5)
@@ -44,16 +45,19 @@ namespace o3 {
 
         o3_fun Buf hash(const Buf& buf) 
 		{			
+			o3_trace_scrfun("hash");			
 			return md5((const uint8_t*)buf.ptr(), buf.size());
         }
 
 		o3_fun Buf hash(const Str& str) 
 		{			
+			o3_trace_scrfun("hash");			
 			return md5((const uint8_t*)str.ptr(), str.size());
 		}
 
 		Buf md5( const uint8_t* in, size_t in_len ) 
 		{
+			o3_trace_scrfun("md5");
 			size_t size = MD5_SIZE;
 			Buf out;
 

@@ -66,7 +66,7 @@
 				AdditionalDependencies="Ws2_32.lib winmm.lib libcurld.lib wldap32.lib urlmon.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="../../deps"
+				AdditionalLibraryDirectories="../../deps/win32lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)intermediate\$(TargetName).pdb"
 				SubSystem="2"
@@ -94,7 +94,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="call &quot;../../tools/win32/o3.exe&quot; ssb_resources.js debug"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration

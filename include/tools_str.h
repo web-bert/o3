@@ -27,28 +27,28 @@ namespace o3 {
 
 inline size_t strLen(const char* str)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strLen");
 
     return ::strlen(str);
 }
 
 inline size_t strLen(const wchar_t* str)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strLen");
 
     return ::wcslen(str);
 }
 
 inline int strCompare(const char* str, const char* str1, size_t n)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strCompare");
 
     return ::strncmp(str, str1, n);
 }
 
 inline int strCompare(const wchar_t* str, const wchar_t* str1, size_t n)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strCompare");
 
     return ::wcsncmp(str, str1, n);
 }
@@ -56,7 +56,7 @@ inline int strCompare(const wchar_t* str, const wchar_t* str1, size_t n)
 template<typename C>
 inline int strCompare(const C* str, const C* str1)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strCompare");
     size_t n1 = strLen(str);
     size_t n2 = strLen(str1);
     return strCompare(str, str1, max(n1, n2));
@@ -65,7 +65,7 @@ inline int strCompare(const C* str, const C* str1)
 template<typename C>
 inline bool strEquals(const C* str, const C* str1)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strEquals");
 
     return strCompare(str, str1) == 0;
 }
@@ -73,14 +73,14 @@ inline bool strEquals(const C* str, const C* str1)
 template<typename C>
 inline bool strEquals(const C* str, const C* str1, size_t n)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strEquals");
 
     return strCompare(str, str1, n) == 0;
 }
 
 inline int strCaseCompare(const char* str, const char* str1, size_t n)
 {
-	o3_trace0 trace;
+	o3_trace_tools("strCaseCompare");
 #ifdef O3_WIN32
 	return ::_strnicmp(str, str1, n);
 #else
@@ -90,7 +90,7 @@ inline int strCaseCompare(const char* str, const char* str1, size_t n)
 
 inline int strCaseCompare(const wchar_t* str, const wchar_t* str1, size_t n)
 {
-	o3_trace0 trace;
+	o3_trace_tools("strCaseCompare");
 #ifdef O3_WIN32
 	return ::_wcsnicmp(str, str1, n);
 #else
@@ -103,7 +103,7 @@ inline int strCaseCompare(const wchar_t* str, const wchar_t* str1, size_t n)
 template<typename C>
 inline int strCaseCompare(const C* str, const C* str1)
 {
-	o3_trace0 trace;
+	o3_trace_tools("strCaseCompare");
 	size_t n1 = strLen(str);
 	size_t n2 = strLen(str1);
 	return strCaseCompare(str, str1, max(n1, n2));
@@ -112,7 +112,7 @@ inline int strCaseCompare(const C* str, const C* str1)
 template<typename C>
 inline bool strCaseEquals(const C* str, const C* str1)
 {
-	o3_trace0 trace;
+	o3_trace_tools("strCaseEquals");
 
 	return strCaseCompare(str, str1) == 0;
 }
@@ -120,25 +120,27 @@ inline bool strCaseEquals(const C* str, const C* str1)
 template<typename C>
 inline bool strCaseEquals(const C* str, const C* str1, size_t n)
 {
-	o3_trace0 trace;
+	o3_trace_tools("strCaseEquals");
 
 	return strCaseCompare(str, str1, n) == 0;
 }
 
 inline char* strCopy(char* dst, const char* src)
 {
+	o3_trace_tools("strCopy");
 	return ::strcpy(dst, src);
 }
 	
 inline wchar_t* strCopy(wchar_t* dst, const wchar_t* src)
 {
+	o3_trace_tools("strCopy");
 	return ::wcscpy(dst, src);
 }
 
 template<typename C>
 inline bool strToBool(const C* str)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strToBool");
     const C STR_TRUE[] = { 't', 'r', 'u', 'e', '\0' };
 
     return strEquals(str, STR_TRUE) || strToInt32(str);
@@ -146,21 +148,21 @@ inline bool strToBool(const C* str)
 
 inline int32_t strToInt32(const char* str)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strToInt32");
 
     return ::strtol(str, 0, 0);
 }
 
 inline int32_t strToInt32(const wchar_t* str)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strToInt32");
 
     return ::wcstol(str, 0, 0);
 }
 
 inline int64_t strToInt64(const char* str)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strToInt64");
 
 #ifdef O3_WIN32
     return ::_strtoi64(str, 0, 0);
@@ -171,7 +173,7 @@ inline int64_t strToInt64(const char* str)
 
 inline int64_t strToInt64(const wchar_t* str)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strToInt64");
 
 #ifdef O3_WIN32
     return ::_wcstoi64(str, 0, 0);
@@ -182,21 +184,21 @@ inline int64_t strToInt64(const wchar_t* str)
 
 inline double strToDouble(const char* str)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strToDouble");
 
     return ::strtod(str, 0);
 }
 
 inline double strToDouble(const wchar_t* str)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strToDouble");
 
     return ::wcstod(str, 0);
 }
 
 inline size_t strPrintfv(char* str, const char* format, va_list ap)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strPrintfv");
 
 	size_t n = ::vsnprintf(str, str ? 0x7FFFFFFF : 0, format, ap);
 	o3_log("### %d\n", n);
@@ -205,7 +207,7 @@ inline size_t strPrintfv(char* str, const char* format, va_list ap)
 
 inline size_t strPrintfv(wchar_t* str, const wchar_t* format, va_list ap) 
 {
-    o3_trace0 trace;
+    o3_trace_tools("strPrintfv");
 
 #ifdef O3_WIN32
     return ::vswprintf(str,  str ? (size_t) -1 : 0, format, ap);
@@ -217,7 +219,7 @@ inline size_t strPrintfv(wchar_t* str, const wchar_t* format, va_list ap)
 template<typename C>
 inline size_t strFromHex(C* str, const void* ptr, size_t size)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strFromHex");
     uint8_t* ptr1 = (uint8_t*) ptr;
     size_t len = 0;
 
@@ -243,7 +245,7 @@ inline size_t strFromHex(C* str, const void* ptr, size_t size)
 template<typename C>
 inline size_t strFromBase64(C* str, const void* ptr, size_t size)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strFromBase64");
     uint8_t* ptr1 = (uint8_t*) ptr;
     size_t len = 0;
     unsigned bits = 0;
@@ -287,7 +289,7 @@ inline size_t strFromBase64(C* str, const void* ptr, size_t size)
 
 inline size_t strFromStr(char* str1, const wchar_t* str, size_t len)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strFromStr");
     size_t len1 = 0;
 
     while (len--) {
@@ -335,7 +337,7 @@ error:
 
 inline size_t strFromStr(wchar_t* str1, const char* str, size_t len)
 {
-    o3_trace0 trace;
+    o3_trace_tools("strFromStr");
     size_t len1 = 0;
 
     while (len--) {
@@ -378,6 +380,7 @@ error:
 template<typename C>
 inline void strSkipSpace(const C** in)
 {    
+    o3_trace_tools("strSkipSpace");    
     while (chrIsSpace(**in))
         ++*in;
 }
@@ -385,6 +388,7 @@ inline void strSkipSpace(const C** in)
 template<typename C>
 inline bool strAcceptChr(const C** in, C c)
 {
+    o3_trace_tools("strAcceptChr");
     strSkipSpace(in);
     if (**in != c)
         return false;
@@ -395,6 +399,7 @@ inline bool strAcceptChr(const C** in, C c)
 template<typename C>
 inline bool strParseList(const C** in, bool (*f)(const C**, void*), void* ctx)
 {
+    o3_trace_tools("strParseList");
     if (!strAcceptChr(in, '['))
         return false;
     while (**in && **in != ']') {

@@ -36,6 +36,7 @@ struct cJs : cJsBase {
 
         ~cScrObj()
         {
+            o3_trace_hostglue("~cScrObj");
             m_object.Dispose();
         }
 
@@ -45,16 +46,19 @@ struct cJs : cJsBase {
 
         virtual int enumerate(iCtx* ctx, int index)
         {
+            o3_trace_hostglue("enumerate");
             return -1;
         }
 
         virtual Str name(iCtx* ctx, int index)
         {
+            o3_trace_hostglue("name");
             return Str();
         }
 
         virtual int resolve(iCtx* ctx, const char* name, bool set)
         {
+            o3_trace_hostglue("resolve");
             if (strEquals(name, "__self__"))
                 return 0;
             return -1;
@@ -63,6 +67,7 @@ struct cJs : cJsBase {
         virtual siEx invoke(iCtx* ctx, Access access, int index, int argc,
                             const Var* argv, Var* rval)
         {
+            o3_trace_hostglue("invoke");
             if (index == 0) {
                 Local<Object> object = Local<Object>::New(m_object);
                 Local<Function> function = Local<Function>::Cast(object);
@@ -78,11 +83,13 @@ struct cJs : cJsBase {
 
     static void* cast(Local<Value> value)
     {
+        o3_trace_hostglue("cast");
         return Local<External>::Cast(value)->Value();
     }
 
     static Handle<Value> invocation(const Arguments& args)
     {
+        o3_trace_hostglue("invocation");
         cJs* pthis = (cJs*) cast(args.Data());
         iScr* scr = (iScr*) cast(args.This()->GetInternalField(0));
         int self = scr->resolve(pthis, "__self__");
@@ -102,6 +109,7 @@ struct cJs : cJsBase {
     static Handle<Value> namedGetter(Local<String> property,
                                      const AccessorInfo& info)
     {
+        o3_trace_hostglue("namedGetter");
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
         Str name = *String::Utf8Value(property);
@@ -119,6 +127,7 @@ struct cJs : cJsBase {
                                      Local<Value> value,
                                      const AccessorInfo& info)
     {
+        o3_trace_hostglue("namedSetter");
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
         Str name = *String::Utf8Value(property);
@@ -136,19 +145,21 @@ struct cJs : cJsBase {
     static Handle<Integer> namedQuery(Local<String> property,
                                       const AccessorInfo& info)
     {
+        o3_trace_hostglue("namedQuery");
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
         Str name = *String::Utf8Value(property);
         int index = scr->resolve(pthis, name);
 
         //return index >= 0 ? True() : False();
-		return index >= 0 ? v8::Integer::New(v8::DontEnum)
+		return index >= 0 ? v8::Integer::New(v8::None)
 			: v8::Handle<v8::Integer>();		
 	}
 
     static Handle<Boolean> namedDeleter(Local<String> property,
                                         const AccessorInfo& info)
     {
+        o3_trace_hostglue("namedDeleter");
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
         Str name = *String::Utf8Value(property);
@@ -166,6 +177,7 @@ struct cJs : cJsBase {
 
     static Handle<Array> namedEnumerator(const AccessorInfo& info)
     {
+        o3_trace_hostglue("namedEnumerator");
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
         Handle<Array> names;
@@ -188,6 +200,7 @@ struct cJs : cJsBase {
     static Handle<Value> indexedGetter(uint32_t index,
                                        const AccessorInfo& info)
     {
+        o3_trace_hostglue("indexedGetter");
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
         int getter = scr->resolve(pthis, "__getter__");
@@ -204,6 +217,7 @@ struct cJs : cJsBase {
     static Handle<Value> indexedSetter(uint32_t index, Local<Value> value,
                                        const AccessorInfo& info)
     {
+        o3_trace_hostglue("indexedSetter");
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
         int setter = scr->resolve(pthis, "__setter__");
@@ -222,6 +236,7 @@ struct cJs : cJsBase {
     static Handle<Integer> indexedQuery(uint32_t index,
                                         const AccessorInfo& info)
     {
+        o3_trace_hostglue("indexedQuery");
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
         int query = scr->resolve(pthis, "__query__");
@@ -242,6 +257,7 @@ struct cJs : cJsBase {
     static Handle<Boolean> indexedDeleter(uint32_t index,
                                           const AccessorInfo& info)
     {
+        o3_trace_hostglue("indexedDeleter");
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
         int deleter = scr->resolve(pthis, "__deleter__");
@@ -260,46 +276,38 @@ struct cJs : cJsBase {
 
     static Handle<Array> indexedEnumerator(const AccessorInfo& info)
     {
+        o3_trace_hostglue("indexedEnumerator");
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
-        int enumerator = scr->resolve(pthis, "__enumerator__");
-        Var arg((iAlloc*) pthis);
+        siCtx ctx(pthis);
+		Var arg((iAlloc*) pthis);
         Var rval((iAlloc*) pthis);
-        Handle<Array> names;
+        Handle<Array> names_out;
         size_t length;
         int key;
+		int next_id = -1;
+		tVec<Str> names;
 
-        length = 0;
-        arg = -1;
-        if (siEx ex = scr->invoke(pthis, ACCESS_CALL, enumerator, 1, &arg,
-                                  &rval)) {
-            ThrowException(String::New(ex->message()));
-            return Handle<Array>();
-        }
-        for (int index = rval.toInt32(); index >= 0; index = rval.toInt32()) {
-            ++length;
-            arg = index;
-            scr->invoke(pthis, ACCESS_CALL, enumerator, 1, &arg, &rval);
-        }
-        names = Array::New(length);
-        key = 0;
-        arg = -1;
-        if (siEx ex = scr->invoke(pthis, ACCESS_CALL, enumerator, 1, &arg,
-                                  &rval)) {
-            ThrowException(String::New(ex->message()));
-            return Handle<Array>();
-        }
-        for (int index = rval.toInt32(); index >= 0; index = rval.toInt32()) {
-            names->Set(Number::New(key++),
-                       String::New(scr->name(pthis, index)));
-            arg = index;
-            scr->invoke(pthis, ACCESS_CALL, enumerator, 1, &arg, &rval);
-        }
-        return names;
+		while (true) {
+			next_id = scr->enumerate(ctx,next_id);
+			if (next_id == -1)
+				break;			
+			names.push(scr->name(ctx,next_id));
+		}
+
+		length = names.size();
+		names_out = Array::New(length);
+		for (size_t i=0; i<length; i++) {
+			names_out->Set(Number::New(i),
+				String::New(names[i]));
+		}
+		
+        return names_out;
     }
 
     static void finalize(Persistent<Value> value, void* parameter)
     {
+		o3_trace_hostglue("finalize");
 		if (!value.IsNearDeath())
 			return;
 
@@ -318,6 +326,7 @@ struct cJs : cJsBase {
 #ifdef O3_NODE
 	static void cleanup(Persistent<Value> value, void *parameter)
 	{
+		o3_trace_hostglue("cleanup");
 		cJs* pthis = (cJs*) parameter;
 		pthis->release();
 	}
@@ -333,6 +342,7 @@ struct cJs : cJsBase {
 
     Handle<Object> createObject(iScr* scr)
     { 
+        o3_trace_hostglue("createObject"); 
         Persistent<Object> object;
 
 		tMap<iScr*, Handle<Object> >::Iter it = 
@@ -352,6 +362,7 @@ struct cJs : cJsBase {
 
     Var toVar(Handle<Value> value)
     {
+        o3_trace_hostglue("toVar");
         if (value->IsUndefined())
             return Var((iAlloc*) this);
         else if (value->IsNull())
@@ -376,6 +387,7 @@ struct cJs : cJsBase {
  
     Handle<Value> toValue(const Var& val)
     {
+        o3_trace_hostglue("toValue");
         switch (val.type()) {
         case Var::TYPE_VOID:
             return Undefined();
@@ -400,10 +412,11 @@ struct cJs : cJsBase {
     }
 
 public:
+#ifndef O3_NODE
     cJs(iMgr* mgr, int argc, char** argv, char** envp)
     :   m_context(Context::New())
     {
-        o3_trace2 trace;
+        o3_trace_hostglue("cJs");
         Context::Scope context_scope(m_context);
         HandleScope handle_scope;
         Local<ObjectTemplate> handle;
@@ -426,10 +439,11 @@ public:
         object = createObject(o3_new(cO3)(this, argc, argv, envp));
         m_context->Global()->Set(String::New("o3"), object);
     }
+#endif
 
     cJs(Handle<Object> target, iMgr* mgr, int argc, char** argv, char** envp)
     {
-        o3_trace2 trace;
+        o3_trace_hostglue("cJs");
         HandleScope handle_scope;
         Local<ObjectTemplate> handle;
         Local<External> data;       
@@ -459,7 +473,7 @@ public:
 	}
     ~cJs()
     {
-        o3_trace2 trace;
+        o3_trace_hostglue("~cJs");
 #ifndef O3_NODE		
         Context::Scope context_scope(m_context);
 #endif		
@@ -487,59 +501,64 @@ public:
 
     static o3_ext("cO3") o3_get siScr js(iCtx* ctx)
     {
-        o3_trace3 trace;
+o3_trace_hostglue("js");
+#ifndef O3_NODE
+        o3_trace_hostglue("js", __FILE__, __LINE__);
         Var js = ctx->value("js");
 
         if (js.type() == Var::TYPE_VOID)
             js = ctx->setValue("js", (iScr*) o3_new(cJs)(ctx->mgr(), 0, 0, 0));
         return js.toScr();
+#else
+		return siScr();	
+#endif
     }
 
     void* alloc(size_t size)
     {
-        o3_trace2 trace;
+        o3_trace_hostglue("alloc");
 
         return memAlloc(size);
     }
 
     void free(void* ptr)
     {
-        o3_trace2 trace;
+        o3_trace_hostglue("free");
 
         memFree(ptr);
     }
 
     siMgr mgr()
     {
-        o3_trace2 trace;
+        o3_trace_hostglue("mgr");
 
         return m_mgr;
     }
 
     siMessageLoop loop()
     {
-        o3_trace2 trace;
+        o3_trace_hostglue("loop");
 
         return m_loop;
     }
 
     Var value(const char* key)
     {
-        o3_trace2 trace;
+        o3_trace_hostglue("value");
 
         return m_values[key];
     }
 
     Var setValue(const char* key, const Var& val)
     {
-        o3_trace2 trace;
+        o3_trace_hostglue("setValue");
 
         return m_values[key] = val;
     }
 
     o3_fun Var eval(const char* str, siEx* ex)
     {
-        o3_trace3 trace;
+        o3_trace_hostglue("eval");
 #ifndef O3_NODE		
         Context::Scope context_scope(m_context);
 #endif	
@@ -580,6 +599,7 @@ public:
 
 	virtual bool isIE()
 	{
+		o3_trace_hostglue("isIE");
 		return false;
 	}
 };

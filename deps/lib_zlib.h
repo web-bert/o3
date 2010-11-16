@@ -13,7 +13,7 @@
 namespace o3 {
     namespace ZLib {
 #ifdef O3_LINUX
-        typedef unsigned int ptrint_t;
+        typedef unsigned long ptrint_t;
 #endif
 
 #ifdef O3_APPLE
@@ -858,7 +858,7 @@ namespace o3 {
                 deflateInit2_((strm),(level),(method),(windowBits),(memLevel),\
                               (strategy),           ZLIB_VERSION, sizeof(z_stream))
         #define inflateInit2(strm, windowBits) \
-                inflateInit2_((strm), (windowBits), ZLIB_VERSION, sizeof(z_stream))
+                inflateInit2_((strm), (windowBits), ZLIB_VERSION, sizeof(::o3::ZLib::z_stream))
         #define inflateBackInit(strm, windowBits, window) \
                 inflateBackInit_((strm), (windowBits), (window), \
                 ZLIB_VERSION, sizeof(z_stream))

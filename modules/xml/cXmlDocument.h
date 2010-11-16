@@ -26,6 +26,8 @@ namespace o3 {
         cXmlDocument(xmlDocPtr doc, NodeMap* node_map) 
             : cXmlNode((xmlNodePtr) doc, 0, node_map), m_doc(doc) { 
 				
+				o3_trace_scrfun("cXmlDocument"); 
+				
 				m_counter = counter++;
 				//printf("DOCUMENT IS CREATED: %d\n", m_counter);
 				//xmlDocDump(stdout, m_doc);
@@ -33,6 +35,13 @@ namespace o3 {
 
         virtual ~cXmlDocument()
         {
+			//printf("DOCUMENT IS BEING DESTRUCTED: %d\n", m_counter);
+			//printf("dest doc %p %p", m_doc, this);
+			//xmlDocDump(stdout, m_doc);
+
+
+			//xmlMemoryDump();
+            o3_trace_scrfun("~cXmlDocument");
 			//printf("DOCUMENT IS BEING DESTRUCTED: %d\n", m_counter);
 			//printf("dest doc %p %p", m_doc, this);
 			//xmlDocDump(stdout, m_doc);
@@ -62,12 +71,12 @@ namespace o3 {
         //}
             
         virtual o3_get siXmlElement2 documentElement(iCtx* ctx) {
-            o3_trace3 trace;
+            o3_trace_scrfun("documentElement");
             return wrapNode(ctx, xmlDocGetRootElement(m_doc), this);
         }
         
         virtual o3_fun siXmlElement2 createElement(iCtx* ctx, const char* tagName) {
-            o3_trace3 trace;
+            o3_trace_scrfun("createElement");
             o3_assert(tagName);
             xmlNodePtr node = xmlNewDocNode(m_doc, 0, BAD_CAST tagName, 0);
 
@@ -75,7 +84,7 @@ namespace o3 {
         }
         
 		virtual o3_fun siXmlText2 createTextNode(iCtx* ctx, const char* data) {
-            o3_trace3 trace;
+            o3_trace_scrfun("createTextNode");
             o3_assert(data);
             xmlNodePtr node = xmlNewDocText(m_doc, BAD_CAST data);
 
@@ -83,7 +92,7 @@ namespace o3 {
         }
 
 		virtual o3_fun siXmlComment2 createComment(iCtx* ctx, const char* data) {
-            o3_trace3 trace;
+            o3_trace_scrfun("createComment");
             o3_assert(data);
 			xmlNodePtr node = xmlNewDocComment(m_doc, BAD_CAST data);
 
@@ -91,7 +100,7 @@ namespace o3 {
 		}
         
 		virtual o3_fun siXmlCDATASection2 createCDATASection(iCtx* ctx, const char* data) {
-            o3_trace3 trace;
+            o3_trace_scrfun("createCDATASection");
             o3_assert(data);
             size_t length = strLen(data);
 			xmlNodePtr node = xmlNewCDataBlock(m_doc, BAD_CAST data, length);
@@ -100,7 +109,7 @@ namespace o3 {
 		}
         
         virtual o3_fun siXmlAttr2 createAttribute(iCtx* ctx, const char* name) {
-            o3_trace3 trace;
+            o3_trace_scrfun("createAttribute");
             o3_assert(name);
             xmlAttrPtr attr = xmlNewDocProp(m_doc, BAD_CAST name, 0);
 
@@ -108,19 +117,20 @@ namespace o3 {
         }
 
 		virtual o3_fun siXmlNodeList2 getElementsByTagName(iCtx* ctx, const char* tagName) {
-            o3_trace3 trace;
+            o3_trace_scrfun("getElementsByTagName");
             o3_assert(tagName);
 			return documentElement(ctx)->getElementsByTagName(tagName);
 		}
 
 		virtual o3_fun siXmlElement2 getElementById(iCtx* ctx, const char* id) {
-            o3_trace3 trace;
+            o3_trace_scrfun("getElementById");
             o3_assert(id);
 			return documentElement(ctx)->getElementById(ctx, id);
 		}
 
 		o3_fun siXmlNode2 importNode(iCtx* ctx, iXmlNode2* externalNode, bool deep) 
 		{
+			o3_trace_scrfun("importNode");
 			if (!externalNode)
 				return siXmlNode2();
 
@@ -136,7 +146,7 @@ namespace o3 {
 		}
 
         virtual xmlDocPtr docPtr() {
-            o3_trace3 trace;
+            o3_trace_scrfun("docPtr");
             return m_doc;
         }
 
@@ -144,6 +154,7 @@ namespace o3 {
 //			"xmlns:wrox='http://www.wrox.com/' xmlns='http://www.amazon.com/'");
 
 		o3_fun bool setProperty(const Str& prop, const Str& val) {
+			o3_trace_scrfun("setProperty");
 			if (!strEquals(prop.ptr(), "SelectionNamespaces"))
 				return false;
 
@@ -153,10 +164,12 @@ namespace o3 {
 		}
 
 		const tMap<Str,Str>& nameSpaces() {
+			o3_trace_scrfun("nameSpaces");
 			return m_ns;
 		}
 
 		const char* parseNextNS(const char* p) {
+			o3_trace_scrfun("parseNextNS");
 			if (!p || !*p)
 				return 0;
 

@@ -36,6 +36,7 @@ struct cResource : cScr
     // get the resource comp singleton, that handles appended resource files
     static o3_ext("cO3") o3_get siScr resources(iCtx* ctx)
     {
+        o3_trace_scrfun("resources");
         Var v = ctx->value("resources");
         siScr ret = v.toScr();
         if (ret)
@@ -53,33 +54,38 @@ struct cResource : cScr
     // (the dir structure will be the same)
     o3_fun void unpack(iCtx* ctx, iFs* fs, siEx* ex)
     {
+        o3_trace_scrfun("unpack");
         ctx; fs; ex;
     }
 
     // returns a list with the appended files
     virtual o3_fun tVec<Str> list()
     {
+        o3_trace_scrfun("list");
         return ((cSys*) g_sys)->resourcePaths();
     }
 
     // get the data from an appended file specified by the path
     o3_fun Buf get(const Str& path)
     {
+        o3_trace_scrfun("get");
         return ((cSys*) g_sys)->resource(path);
     }
 
 	o3_fun bool get(const Str& path, iFs* to)
 	{
+		o3_trace_scrfun("get");
 		if (!to || !to->createFile())
 			return false;
 
 		Buf data = ((cSys*) g_sys)->resource(path);
-		to->setBlob(data);
+		to->setBuffer(data);
 		return (data.size() > 0);
 	}
 
     o3_fun siStream protocolOpen(const char* path)
     {
+        o3_trace_scrfun("protocolOpen");
         Buf data = ((cSys*) g_sys)->resource(path);
         return o3_new(cBufStream)(data);
     }

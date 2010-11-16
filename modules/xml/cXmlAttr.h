@@ -22,7 +22,7 @@ namespace o3 {
     struct cXmlAttr : cXmlNode, iXmlAttr2 {
         cXmlAttr(xmlAttrPtr attr, iXmlNode2* owner_node, NodeMap* node_map) 
             : cXmlNode((xmlNodePtr)attr, owner_node, node_map), m_attr(attr) {
-            o3_trace3 trace;            
+            o3_trace_scrfun("cXmlAttr");            
         }
 
 		virtual ~cXmlAttr()
@@ -37,7 +37,7 @@ namespace o3 {
         o3_glue_gen()
 
         o3_get Str name() {
-            o3_trace3 trace;
+            o3_trace_scrfun("name");
             return Str((const char*) m_attr->name);
         }
 
@@ -47,12 +47,12 @@ namespace o3 {
         }
 
         virtual o3_get Str value() {
-            o3_trace3 trace;
+            o3_trace_scrfun("value");
             return nodeValue();
         }
 
         virtual o3_set void setValue(const char* value) {
-            o3_trace3 trace;
+            o3_trace_scrfun("setValue");
             setNodeValue(value);
         }
 

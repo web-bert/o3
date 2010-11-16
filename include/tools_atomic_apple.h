@@ -24,16 +24,19 @@ namespace o3 {
 
 inline int atomicTas(volatile int& x)
 {
+    o3_trace_tools("atomicTas");
     return OSAtomicTestAndSet(1, &x);
 }
 
 inline int atomicInc(volatile int& x)
 {
+    o3_trace_tools("atomicInc");
     return OSAtomicIncrement32(&x);    
 }
 
 inline int atomicDec(volatile int& x)
 {
+    o3_trace_tools("atomicDec");
     return OSAtomicDecrement32(&x);
 }
 

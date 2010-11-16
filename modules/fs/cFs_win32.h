@@ -26,6 +26,7 @@ namespace o3 {
 
     //utility:
     Str flattenPath(const char* path) {        
+        o3_trace_scrfun("flattenPath");        
         Str result;
         size_t from(0),del_from,l = strLen(path);
         bool after_dotdot(false);    
@@ -73,6 +74,8 @@ namespace o3 {
 
     bool validateWinPath(const char*) {
         //TODO: implement
+        o3_trace_scrfun("validateWinPath");
+        //TODO: implement
         return true;
     }
 
@@ -84,6 +87,7 @@ namespace o3 {
         cFs(const char* local_path, const char* root_path) 
             : m_root_path(root_path),m_local_path()
         {
+            o3_trace_scrfun("cFs");
             Str full_path;
 			if (local_path && local_path[0] == '/')
 				full_path = ++local_path;
@@ -105,6 +109,7 @@ private:
             , m_local_path(parent->m_local_path)
             , m_valid(true)
         {
+            o3_trace_scrfun("cFs");
             if (!m_local_path.empty())
                 m_local_path.append("/");
             m_local_path.append(Str(name));
@@ -130,6 +135,7 @@ public:
 
 
         bool parseFullPath(const char* full_path) {
+            o3_trace_scrfun("parseFullPath");
             if (!validateWinPath(full_path)) {                
                 return false;
             }
@@ -153,6 +159,7 @@ public:
         }
 
         inline WStr winPath() {
+            o3_trace_scrfun("winPath");
             if (m_win_path.empty()) {
                (!m_root_path.empty() && !m_local_path.empty()) ? 
                     m_win_path.appendf(L"%s%s%s", WStr(m_root_path).ptr(), L"/", WStr(m_local_path).ptr())
@@ -169,6 +176,7 @@ public:
         }
 
         bool createParents() {            
+            o3_trace_scrfun("createParents");            
             if (exists())
                 return true;
 
@@ -191,6 +199,7 @@ public:
 
         bool getAttributes(FAttrib& fa) 
         {            
+            o3_trace_scrfun("getAttributes");            
             return ::GetFileAttributesExW( 
                 winPath().ptr(),GetFileExInfoStandard, &fa) ? true : false;
         }
@@ -198,12 +207,14 @@ public:
 public:
 		static o3_ext("cO3") o3_get siFs fs(iCtx* ctx)
 		{
+			o3_trace_scrfun("fs");
 			ctx;
 			return o3_new(cFs("", ""));
 		}
 
         static o3_ext("cO3") o3_get siFs fsSafe(iCtx* ctx) 
         {     
+			o3_trace_scrfun("fsSafe");     
 			siFs ret = o3_new(cFs("", ctx->mgr()->root()));
 			if (!ret->exists()) {
 				// if the root folder does not exists yet, let's
@@ -222,6 +233,7 @@ public:
 
         static o3_ext("cO3") o3_get siFs cwd() 
         {
+			o3_trace_scrfun("cwd");
 			siFs ret;
 #ifndef O3_PLUGIN
             Str cwd = cwdPath();
@@ -233,6 +245,7 @@ public:
 
         static o3_ext("cO3") o3_get siFs programFiles() 
         {
+			o3_trace_scrfun("programFiles");
 			siFs ret;
 #ifndef O3_PLUGIN            
 			Str path = programFilesPath();
@@ -244,6 +257,7 @@ public:
 
         static o3_ext("cO3") o3_get siFs appData() 
         {
+			o3_trace_scrfun("appData");
 			siFs ret;
 #ifndef O3_PLUGIN
             Str path = appDataPath();
@@ -255,6 +269,7 @@ public:
 
 		static o3_ext("cO3") o3_get siFs tmpDir()
 		{
+			o3_trace_scrfun("tmpDir");
 			siFs ret;
 #ifndef O3_PLUGIN
 			Str path = tmpPath();
@@ -268,6 +283,7 @@ public:
 
 		static siUnk settingsDir(iCtx*) 
 		{
+			o3_trace_scrfun("settingsDir");
 			Str path = tmpPath();
 			path.findAndReplaceAll("\\", "/");
 			path.appendf("o3_%s%s", O3_VERSION_STRING, "/settings");						
@@ -287,6 +303,7 @@ public:
 
 		static o3_ext("cO3") o3_fun siFs selectFolder()
 		{
+			o3_trace_scrfun("selectFolder");
 			siFs ret;
 			Str path = openFolderDialog();
 			path.findAndReplaceAll("\\", "/");
@@ -298,6 +315,7 @@ public:
 
 		static o3_ext("cO3") o3_fun siFs openFileDialog(const Str& filter) 
 		{		
+			o3_trace_scrfun("openFileDialog");		
 			siFs ret;
 			Str path = openFileByDialog( filter );
 			path.findAndReplaceAll("\\", "/");
@@ -309,14 +327,17 @@ public:
 
 		static o3_ext("cO3") o3_fun Str saveAsFile(const Str& data, const Str& defaultFile) 
 		{		
+			o3_trace_scrfun("saveAsFile");		
 			return saveAsByDialog( data, "All [*.*]", defaultFile );
 		}
 
         virtual bool valid() {
+            o3_trace_scrfun("valid");
             return m_valid;
         }
 	    
         virtual bool exists() {
+            o3_trace_scrfun("exists");
             if (!m_valid) 
                 return false;
 
@@ -325,6 +346,7 @@ public:
         }		    
         
         virtual int64_t accessedTime() {
+            o3_trace_scrfun("accessedTime");
             FAttrib fa; 			
 		    if ( !m_valid || !getAttributes(fa)) 
                 return -1;
@@ -336,6 +358,7 @@ public:
         }
 	    
         virtual int64_t createdTime() {
+            o3_trace_scrfun("createdTime");
             FAttrib fa; 			
 		    if ( !m_valid || !getAttributes(fa)) 
                 return -1;
@@ -358,6 +381,7 @@ public:
         }
         
 	    virtual size_t size() {
+            o3_trace_scrfun("size");
             FAttrib fa;
 		    if ( !m_valid || !getAttributes(fa)) 
                 return 0;
@@ -370,6 +394,7 @@ public:
 
 		HANDLE writeAttribute()
 		{
+			o3_trace_scrfun("writeAttribute");
 			return  CreateFileW(	winPath(),
 				FILE_GENERIC_WRITE,
 				FILE_SHARE_READ,
@@ -382,6 +407,7 @@ public:
 
 		virtual int64_t setAccessedTime(int64_t time)
 		{
+			o3_trace_scrfun("setAccessedTime");
 			FAttrib fa;
 			if (!m_valid || !getAttributes(fa))
 				return time; // exception here...
@@ -424,6 +450,7 @@ public:
 
 		virtual int64_t setCreatedTime(int64_t time)
 		{
+			o3_trace_scrfun("setCreatedTime");
 			FAttrib fa;
 			if (!m_valid || !getAttributes(fa))
 				return time; // exception here...
@@ -444,12 +471,14 @@ public:
 		}
 
         virtual Str path() {
+            o3_trace_scrfun("path");
             Str path("/");
             path.append(m_local_path);
             return path;
         }
 
 		Str fullPath() {
+			o3_trace_scrfun("fullPath");
 			Str ret(winPath());
 			ret.findAndReplaceAll("\\", "/");
 			return ret;
@@ -458,10 +487,13 @@ public:
 
         virtual int permissions() {
             //!TODO: implement
+            o3_trace_scrfun("permissions");
+            //!TODO: implement
             return 0;
         }
   
 	    virtual Type type() {
+            o3_trace_scrfun("type");
             FAttrib fa;
 		    if ( !m_valid || !getAttributes(fa)) 
                 return TYPE_INVALID;
@@ -473,6 +505,7 @@ public:
         }
 
         virtual siStream open(const char* mode, siEx* ex) {
+            o3_trace_scrfun("open");
             if (!m_valid)
                 return siStream();
 
@@ -523,15 +556,19 @@ public:
         }
         
         virtual siFs parent() {
+            o3_trace_scrfun("parent");
             return get("..");
         }
 
 	    virtual bool hasChildren() {
+            o3_trace_scrfun("hasChildren");
             return listChildren<tVec<Str>>(true).size() 
                 ? true : false;
         }
 
     	inline void getNextChild(WIN32_FIND_DATAW find_data, tVec<siFs>& vect) {
+			
+		    o3_trace_scrfun("getNextChild");
 			
 		    if (	!strEquals(find_data.cFileName, L".") 
 				    && !strEquals(find_data.cFileName, L".."))
@@ -541,6 +578,8 @@ public:
 	    }
 
       	inline void getNextChild(WIN32_FIND_DATAW find_data, tVec<Str>& vect) {
+			
+		    o3_trace_scrfun("getNextChild");
 			
 		    if (	!strEquals(find_data.cFileName, L".") 
 				    && !strEquals(find_data.cFileName, L".."))
@@ -552,6 +591,7 @@ public:
         //if only_first is set it find only the first real child
         template<typename T>
         inline T listChildren(bool only_first = false) {
+	        o3_trace_scrfun("listChildren");
 	        T ret;
             if (type() != TYPE_DIR)
                 return ret;
@@ -578,10 +618,12 @@ public:
         }
 
         virtual tVec<siFs> children() {
+            o3_trace_scrfun("children");
             return listChildren<tVec<siFs>>();
         }
 
         virtual tVec<Str> scandir(const char* path = 0) {            
+            o3_trace_scrfun("scandir");            
             if (path)
                 return ((cFs*) get(path).ptr())->scandir();
             else
@@ -589,6 +631,7 @@ public:
         }
         
         virtual siFs get(const char* path) {
+            o3_trace_scrfun("get");
             if (!m_valid)
                 return siFs();
 
@@ -609,6 +652,7 @@ public:
         }
 
 	    virtual bool createFile() {
+            o3_trace_scrfun("createFile");
             if (!createParents())
                 return false;
 
@@ -628,6 +672,7 @@ public:
         }
 
 	    virtual bool createDir() {
+            o3_trace_scrfun("createDir");
             if (exists())
                 return type() == TYPE_DIR;
             if (!m_local_path.empty() && !createParents())
@@ -638,11 +683,14 @@ public:
         }
 
 	    virtual bool createLink(iFs* to) {
+            o3_trace_scrfun("createLink");
             to;
             return false;
         }
 
 		virtual siFs move(iFs* to, siEx* ex=0) {
+			
+			o3_trace_scrfun("move");
 			
 			tVec<siFs> nodes;
 			siFs to1=to;
@@ -674,6 +722,7 @@ public:
 		}
 
 	    virtual bool remove(bool deep = false) {
+            o3_trace_scrfun("remove");
             const size_t max_children = 20;
             switch (type()) {
                 case TYPE_FILE:
@@ -741,6 +790,7 @@ public:
 
         void startListening() 
         {
+            o3_trace_scrfun("startListening");
             if (!valid()) {
                 // o3_set_ex(ex_file_not_found);
                 return;
@@ -783,6 +833,7 @@ public:
 
         void stopListening() 
         {
+            o3_trace_scrfun("stopListening");
             m_listener = 0;
             m_change = 0;
             m_mod_time = 0;            
@@ -790,6 +841,7 @@ public:
 
 		static siUnk rootDir(iCtx*) 
 		{
+			o3_trace_scrfun("rootDir");
 			Str path = tmpPath();
 			path.findAndReplaceAll("\\", "/");
 			path.appendf("o3_%s", O3_VERSION_STRING);			
@@ -809,6 +861,8 @@ public:
 
         static siUnk installerDir(iCtx* ctx)
         {
+            o3_trace_scrfun("installerDir");
+            o3_unused(ctx);
 			Str path = tmpPath();
 			path.resize(path.size()-1);
 			path.findAndReplaceAll("\\", "/");
@@ -828,6 +882,7 @@ public:
 
 		static siUnk pluginDir(iCtx*) 
 		{
+			o3_trace_scrfun("pluginDir");
 			Str path = installDirPath();
 			path.findAndReplaceAll("\\", "/");
 			//path.appendf("o3_%s", O3_VERSION_STRING);			
@@ -838,6 +893,7 @@ public:
 			DWORD,DWORD,LPCWSTR,LPCWSTR,LPWSTR,DWORD*);
 
 		o3_fun void openDoc() {
+			o3_trace_scrfun("openDoc");
 			wchar_t buf1[1024];
 			WStr  buf2, buf3;
 			// reserve

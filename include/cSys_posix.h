@@ -46,12 +46,13 @@ struct cModule : cUnk, iModule {
 
     cModule(void* handle)
     {
-        o3_trace2 trace;
+        o3_trace_sys("cModule");
         m_handle = handle;
     }
 
     ~cModule()
     {
+        o3_trace_sys("~cModule");
         typedef void (*o3_deinit_t)();
 
         o3_trace2 trace;
@@ -68,7 +69,7 @@ struct cModule : cUnk, iModule {
 
     void* symbol(const char* name)
     {
-        o3_trace2 trace;
+        o3_trace_sys("symbol");
 
         return dlsym(m_handle, name);
     }
@@ -79,7 +80,7 @@ o3_cls(cThread);
 struct cThread : cUnk, iThread {
     static void* start_routine(void* arg)
     {
-        o3_trace2 trace;
+        o3_trace_sys("start_routine");
         cThread* pthis = (cThread*) arg;
 
         pthis->m_run(pthis);
@@ -96,12 +97,12 @@ struct cThread : cUnk, iThread {
     cThread(const Delegate& run) : m_run(run), m_running(false),
         m_cancelled(false), m_joined(true)
     {
-        o3_trace2 trace;
+        o3_trace_sys("cThread");
     }
 
     ~cThread()
     {
-        o3_trace2 trace;
+        o3_trace_sys("~cThread");
 
         if (!m_joined) {
             if (!m_cancelled) {
@@ -119,21 +120,21 @@ struct cThread : cUnk, iThread {
 
     bool running()
     {
-        o3_trace2 trace;
+        o3_trace_sys("running");
 
         return m_running;
     }
 
     bool cancelled()
     {
-        o3_trace2 trace;
+        o3_trace_sys("cancelled");
 
         return m_cancelled;
     }
 
     void run()
     {
-        o3_trace2 trace;
+        o3_trace_sys("run");
 
         if (pthread_create(&m_thread, 0, start_routine, this) == 0)
             m_running = true;
@@ -141,14 +142,14 @@ struct cThread : cUnk, iThread {
 
     void cancel()
     {
-        o3_trace2 trace;
+        o3_trace_sys("cancel");
 
         m_cancelled = true;
     }
 
     void join()
     {
-        o3_trace2 trace;
+        o3_trace_sys("join");
 
         m_cancelled = true;
         pthread_join(m_thread, 0);
@@ -163,12 +164,12 @@ struct cMutex : cUnk, iMutex {
 
     cMutex(const pthread_mutex_t& mutex) : m_mutex(mutex)
     {
-        o3_trace2 trace;
+        o3_trace_sys("cMutex");
     }
 
     virtual ~cMutex()
     {
-        o3_trace2 trace;
+        o3_trace_sys("~cMutex");
 
         pthread_mutex_destroy(&m_mutex);
     }
@@ -179,14 +180,14 @@ struct cMutex : cUnk, iMutex {
 
     void lock()
     {
-        o3_trace2 trace;
+        o3_trace_sys("lock");
 
         pthread_mutex_lock(&m_mutex);
     }
 
     void unlock()
     {
-        o3_trace2 trace;
+        o3_trace_sys("unlock");
 
         pthread_mutex_unlock(&m_mutex);
     }
@@ -199,12 +200,12 @@ struct cEvent : cUnk, iEvent {
 
     cEvent(const pthread_cond_t& cond) : m_cond(cond)
     {
-        o3_trace2 trace;
+        o3_trace_sys("cEvent");
     }
 
     ~cEvent()
     {
-        o3_trace2 trace;
+        o3_trace_sys("~cEvent");
 
         pthread_cond_destroy(&m_cond);
     }
@@ -215,21 +216,21 @@ struct cEvent : cUnk, iEvent {
 
     void wait(iMutex* mutex)
     {
-        o3_trace2 trace;
+        o3_trace_sys("wait");
 
         pthread_cond_wait(&m_cond, &((cMutex*) mutex)->m_mutex);
     }
 
     void signal()
     {
-        o3_trace2 trace;
+        o3_trace_sys("signal");
 
         pthread_cond_signal(&m_cond);
     }
 
     void broadcast()
     {
-        o3_trace2 trace;
+        o3_trace_sys("broadcast");
 
         pthread_cond_broadcast(&m_cond);
     }
@@ -249,6 +250,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
         cListener(cMessageLoop* loop, const Delegate& fun, int fd,
                   unsigned oflag) : m_weak(loop), m_fun(fun)
         {
+            o3_trace_sys("cListener");
             m_fd = fd;
             m_oflag = oflag;
             loop->addListener(this);
@@ -256,6 +258,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
         ~cListener()
         {
+            o3_trace_sys("~cListener");
             if (siMessageLoop loop = m_weak)
                 ((cMessageLoop*) loop.ptr())->removeListener(this);
         }
@@ -266,11 +269,13 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
         void* handle()
         {
+            o3_trace_sys("handle");
             return &m_fd;
         }
 
         void signal()
         {
+            o3_trace_sys("signal");
             m_fun(this);
         }
     };
@@ -284,11 +289,13 @@ struct cMessageLoop : cUnk, iMessageLoop {
         cTimer(cMessageLoop* loop, const Delegate& fun, int timeout)
             : m_weak(loop), m_fun(fun)
         {
+            o3_trace_sys("cTimer");
             start(timeout);
         }
 
         ~cTimer()
         {
+            o3_trace_sys("~cTimer");
             stop();
         }
 
@@ -298,12 +305,14 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
         void restart(int timeout)
         {
+            o3_trace_sys("restart");
             stop();
             start(timeout);
         }
 
         void start(int timeout)
         {
+            o3_trace_sys("start");
             if (siMessageLoop loop = m_weak) {
                 time_t tv_msec;
 
@@ -317,6 +326,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
         void stop()
         {
+            o3_trace_sys("stop");
             if (!m_iter.valid())
                 return;
             if (siMessageLoop loop = m_weak)
@@ -326,6 +336,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
         void signal()
         {
+            o3_trace_sys("signal");
             stop();
             m_fun(this);
         }
@@ -360,6 +371,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
     cMessageLoop(int in, int out) : m_mutex(g_sys->createMutex())
     {
+        o3_trace_sys("cMessageLoop");
         m_nfds = in + 1;
         FD_ZERO(&m_readfds);
         FD_ZERO(&m_writefds);
@@ -372,6 +384,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
     ~cMessageLoop()
     {
+        o3_trace_sys("~cMessageLoop");
         close(m_out);
         close(m_in);
     }
@@ -382,16 +395,19 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
     siListener createListener(void* handle, unsigned oflag, const Delegate& fun)
     {
+        o3_trace_sys("createListener");
         return o3_new(cListener)(this, fun, *(int*) handle, oflag);
     }
 
     siTimer createTimer(int timeout, const Delegate& fun)
     {
+        o3_trace_sys("createTimer");
         return o3_new(cTimer)(this, fun, timeout);
     }
 
     void post(const Delegate& fun, iUnk* src)
     {
+        o3_trace_sys("post");
         uint8_t msg[sizeof(Message)];
 
         new (msg) Message(m_seq, fun, src);
@@ -400,6 +416,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
     void wait(int timeout)
     {
+        o3_trace_sys("wait");
         do {
             bool empty;
             int  nfds;
@@ -484,6 +501,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
     tList<cTimer*>::Iter addTimer(cTimer* timer)
     {
+        o3_trace_sys("addTimer");
         Lock lock(m_mutex);
         tList<cTimer*>::Iter i;
 
@@ -495,6 +513,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
     void removeTimer(cTimer* timer)
     {
+        o3_trace_sys("removeTimer");
         Lock lock(m_mutex);
 
         m_timers.remove(timer->m_iter);
@@ -502,6 +521,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
     void addListener(cListener* listener)
     {
+        o3_trace_sys("addListener");
         Lock lock(m_mutex);
         int fd = listener->m_fd;
         unsigned oflag = listener->m_oflag;
@@ -517,6 +537,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
     void removeListener(cListener* listener)
     {
+        o3_trace_sys("removeListener");
         Lock lock(m_mutex);
         int fd = listener->m_fd;
 
@@ -535,26 +556,43 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
 o3_cls(cSys);
 
-struct cSys : cSysBase {
+struct cSys : cSysBase, file(0) {
     int fd;
+	size_t m_overall;
+	struct sockaddr_in addr;
+	FILE* file;
 
     cSys()
     {
-        struct sockaddr_in addr;
-        struct hostent *hp;
+		o3_trace_no_trace;
+		m_overall = 0;
+#ifdef O3_LOGFILE
+		removeLogFile();
+		file = fopen("c:/log/o3log.txt", "a");
+#endif
+//#ifndef O3_NODE	      
+        //struct hostent *hp;
 
-        fd = socket(AF_INET, SOCK_DGRAM, 0);
-        addr.sin_family = AF_INET;
-        hp = gethostbyname("localhost");
-        memcpy(&addr.sin_addr.s_addr, hp->h_addr, hp->h_length);
-        addr.sin_port = htons(3333);
-        connect(fd, (struct sockaddr*) &addr, sizeof(struct sockaddr_in));
-        dup2(fd, 2);
+        //fd = socket(AF_INET, SOCK_DGRAM, 0);
+        //addr.sin_family = AF_INET;
+        //hp = gethostbyname("localhost");
+        //memcpy(&addr.sin_addr.s_addr, hp->h_addr, hp->h_length);
+        //addr.sin_port = htons(3333);
+        //connect(fd, (struct sockaddr*) &addr, sizeof(struct sockaddr_in));
+        //dup2(fd, 2);
+//#endif
+
     }
 
     ~cSys()
-    {
-        close(fd);
+    {		
+//#ifndef O3_NODE	
+        o3_trace_sys("~cSys");
+		fclose(file);
+//#ifndef O3_NODE	
+        //close(fd);
+//#endif
+
     }
 
     o3_begin_class(cSysBase)
@@ -562,6 +600,7 @@ struct cSys : cSysBase {
 
     void* alloc(size_t size)
     {
+	o3_trace_sys("alloc");
 	#ifdef O3_NODE
 		size += sizeof (size_t);
 		void *ptr = ::malloc(size);
@@ -576,6 +615,7 @@ struct cSys : cSysBase {
 
     void free(void* ptr)
     {
+	o3_trace_sys("free");
 	#ifdef O3_NODE
 		v8::V8::AdjustAmountOfExternalAllocatedMemory(- * (((size_t *) ptr) - 1));		
 		m_overall-= *(((size_t *) ptr)-1);
@@ -586,17 +626,42 @@ struct cSys : cSysBase {
 
     void o3assert(const char* pred, const char* file, int line)
     {
+        o3_trace_sys("o3assert");
         o3::log("Assertion %s failed in file %s on line %d\n", pred, file, line);
         abort();
     }
 
-    void logfv(const char* format, va_list ap)
-    {
-        vfprintf(stderr, format, ap);
-    }
+	//char logbuf[1024];
+ //   void logfv(const char* format, va_list ap)
+ //   {
+ //       o3_trace_no_trace;
+ //       size_t l = vsprintf(logbuf, format, ap);
+	//	::sendto(fd, logbuf, l, 0,
+	//		(sockaddr*) &addr, sizeof(sockaddr_in));
+
+ //   }
     
+	bool removeLogFile()
+	{
+		o3_trace_no_trace;
+		remove("c:/log/o3log.txt");
+		return true;
+	}
+
+	virtual void logfv(const char* format, va_list ap)
+	{
+		//format;ap;
+		//vfprintf(stderr, format, ap);
+		o3_trace_no_trace;
+		//format;ap;
+		//vfprintf(stderr, format, ap);
+		if (file)
+		vfprintf(file, format, ap);
+	}
+
     siModule loadModule(const char* name)
     {
+        o3_trace_sys("loadModule");
         typedef bool (*o3_init_t)(iSys*);
 
         void* handle;
@@ -632,7 +697,7 @@ struct cSys : cSysBase {
     
     siThread createThread(const Delegate& run)
     {
-        o3_trace2 trace;
+        o3_trace_sys("createThread");
         scThread thread = o3_new(cThread)(run);
 
         thread->run();
@@ -643,7 +708,7 @@ struct cSys : cSysBase {
 
     siMutex createMutex()
     {
-        o3_trace2 trace;
+        o3_trace_sys("createMutex");
         pthread_mutex_t mutex;
 
         if (pthread_mutex_init(&mutex, 0) < 0)
@@ -653,7 +718,7 @@ struct cSys : cSysBase {
 
     siEvent createEvent()
     {
-        o3_trace2 trace;
+        o3_trace_sys("createEvent");
         pthread_cond_t cond;
 
         if (pthread_cond_init(&cond, 0) < 0)
@@ -663,7 +728,7 @@ struct cSys : cSysBase {
 
     siMessageLoop createMessageLoop()
     {
-        o3_trace2 trace;
+        o3_trace_sys("createMessageLoop");
         int fd[2];
 
         if (pipe(fd) < 0)
@@ -674,6 +739,7 @@ struct cSys : cSysBase {
 	
 	void sleep(int time)
 	{
+        o3_trace_sys("sleep");
         struct timespec ts;
 
         ts.tv_sec = time / 1000;
@@ -683,9 +749,11 @@ struct cSys : cSysBase {
 
 	bool approvalBox(const char* msg, const char* caption)
 	{
+o3_trace_sys("approvalBox");
 #ifdef O3_OSX
 		MessageBox( char* header, char* msg, unsigned long msg_type )
 		{
+			o3_trace_sys("MessageBox");
 			CFStringRef caption_ref = 
 				CFStringCreateWithCString(NULL, caption, strLen(caption));
 			

@@ -26,20 +26,24 @@ namespace o3 {
 	xmlStrdupFunc xmlstrdup;
 
 	void o3xmlFreeFunc(void *mem) {
+		o3_trace_scrfun("o3xmlFreeFunc");
 		memFree(mem); 
 		//xmlfree(mem);		
 	}
 	void* o3xmlMallocFunc(size_t size) {
+		o3_trace_scrfun("o3xmlMallocFunc");
 		return memAlloc(size);
 		//xmlmalloc(size);
 	}
 	void* o3xmlReallocFunc(void *mem, size_t size) {
+		o3_trace_scrfun("o3xmlReallocFunc");
 		memFree(mem);
 		return memAlloc(size);
 		//return xmlrealloc(mem, size);
 	
 	}
 	char* o3xmlStrdupFunc(const char *str) {
+		o3_trace_scrfun("o3xmlStrdupFunc");
 		char *d = (char *)(memAlloc(strlen (str) + 1));
 		if (d != NULL)
 			strcpy (d,str);
@@ -73,6 +77,7 @@ namespace o3 {
 
         static o3_ext("cO3") o3_get siXml2 xml(iCtx* ctx)
         {
+            o3_trace_scrfun("xml");
             Var val = ctx->value("xml");
             siXml2 xml = val.toScr();
             if (xml)
@@ -96,18 +101,28 @@ namespace o3 {
         //    return parseFromString(data, type);
         //}        
 
-        o3_fun siXmlNode2 parseFromString(iCtx* ctx, const char* str, const char* contentType = "text/xml") {
+        o3_fun siXmlNode2 parseFromString(iCtx* ctx, const char* str, const char* contentType = "text/xml", siEx* ex = 0) {
+            o3_trace_scrfun("parseFromString");
             o3_assert(str);
             o3_assert(contentType);
 
             if (!strEquals(contentType, "text/xml"))
                 return siXmlNode2();
 
-            return wrapNode(ctx, (xmlNodePtr) xmlParseDoc(BAD_CAST str), 0);            
-        }
+			xmlNodePtr result = (xmlNodePtr) xmlParseDoc(BAD_CAST str);
+			if (result)
+				return wrapNode(ctx, (xmlNodePtr) xmlParseDoc(BAD_CAST str), 0);            
+			
+			xmlErrorPtr error = xmlGetLastError();
+			if (ex) {
+				*ex = o3_new(cEx)(error->message);
+			}
+			return siXmlNode2();
+		}
     };
     
     siXmlNode2 wrapNode(iCtx* ctx, xmlNodePtr node, iXmlNode2* owner_node) {
+        o3_trace_scrfun("wrapNode");
         if (!node)
             return siXmlNode2();
 
@@ -140,6 +155,7 @@ namespace o3 {
     }
 
 	void swapNode(iCtx* ctx, iXmlNode2* old_node, xmlNodePtr new_node, iXmlNode2* new_owner_node) {
+		o3_trace_scrfun("swapNode");
 		if (!old_node || !new_node)
 			return;
 

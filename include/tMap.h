@@ -51,12 +51,14 @@ class tMap {
 
         void updateHeight()
         {
+            o3_trace_containers("updateHeight");
             height = max(left  ? left->height  : 0,
                          right ? right->height : 0) + 1;
         }
 
         void rotateLeft()
         {
+            o3_trace_containers("rotateLeft");
             Node* pivot = right;
             Node* left = pivot->left;
 
@@ -78,6 +80,7 @@ class tMap {
 
         void rotateRight()
         {
+            o3_trace_containers("rotateRight");
             Node* pivot = left;
             Node* right = pivot->right;
 
@@ -99,6 +102,7 @@ class tMap {
 
         void rebalance()                                                                 
         {
+            o3_trace_containers("rebalance");
             int balance;
             Node* parent;
 
@@ -132,6 +136,7 @@ class tMap {
         Impl() : ref_count(1), size(0), head((Node*) /*malloc*/ memAlloc(sizeof(Node))),
                  tail(head)
         {
+            o3_trace_containers("Impl");
             head->parent = 0;
             head->left = 0;
             head->right = 0;
@@ -157,6 +162,7 @@ class tMap {
 	
     void makeUnique()
     {
+        o3_trace_containers("makeUnique");
         if (m_impl->ref_count > 1) {
             tMap tmp;
 			
@@ -168,6 +174,7 @@ class tMap {
 
     Node* insertImpl(Node* parent, const Entry& x)
     {
+        o3_trace_containers("insertImpl");
         Node* new_node = o3_new(Node)(parent, x);
 
         ++m_impl->size;
@@ -188,7 +195,7 @@ public:
     public:
         ConstIter(typename tMap::Node* node = 0) : m_node(node)
         {
-            o3_trace1 trace;
+            o3_trace_containers("ConstIter");
         }
 
         bool operator==(const ConstIter& that) const
@@ -291,7 +298,7 @@ public:
     public:
         Iter(typename tMap::Node* node = 0) : m_node(node)
         {
-            o3_trace1 trace;
+            o3_trace_containers("Iter");
         }
 
         bool operator==(const Iter& that) const
@@ -395,12 +402,12 @@ public:
 
     tMap() : m_impl(o3_new(Impl)())
     {
-        o3_trace1 trace;
+        o3_trace_containers("tMap");
     }
 
     tMap(const tMap& that) : m_impl(that.m_impl)
     {
-        o3_trace1 trace;
+        o3_trace_containers("tMap");
 
         ++m_impl->ref_count;
     }
@@ -416,7 +423,7 @@ public:
 
     ~tMap()
     {
-        o3_trace1 trace;
+        o3_trace_containers("~tMap");
 
         if (--m_impl->ref_count == 0) {
             clear();
@@ -461,7 +468,7 @@ public:
 
     Iter begin()
     {
-        o3_trace1 trace;
+        o3_trace_containers("begin");
 
 		makeUnique();
         return m_impl->head;
@@ -469,7 +476,7 @@ public:
 
     Iter end()
     {
-        o3_trace1 trace;
+        o3_trace_containers("end");
 
 		makeUnique();
         return m_impl->tail;
@@ -477,14 +484,14 @@ public:
 
     Iter find(const K& k)
     {
-        o3_trace1 trace;
+        o3_trace_containers("find");
 
         return findImpl(k);
     }
 
     Iter insert(const Entry& x)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
         Node* node;
         Node* parent  = 0;
         bool lt = false;
@@ -517,7 +524,7 @@ public:
 
     Iter insert(Iter pos, const Entry& x)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
         Node* node = pos.m_node;
         Iter iter;
 
@@ -545,7 +552,7 @@ public:
 
     void insert(Iter pos, const Entry& x, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
 
         while (n--)
             pos = insert(pos, x);
@@ -553,7 +560,7 @@ public:
 
     void insert(Iter pos, ConstIter first, ConstIter last)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
 
         while (last != first)
             pos = insert(pos, *--last);
@@ -561,21 +568,21 @@ public:
 
 	void append(const Entry& x, size_t n = 1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("append");
 		
         insert(end(), x, n);
     }
 	
     void append(ConstIter first, ConstIter last)
     {
-        o3_trace1 trace;
+        o3_trace_containers("append");
 		
         insert(end(), first, last);
     }
 	
     bool remove(const K& key)
     {
-        o3_trace1 trace;
+        o3_trace_containers("remove");
         Iter iter = find(key);
 
         if (iter == end())
@@ -586,7 +593,7 @@ public:
 
     Iter remove(Iter pos)
     {
-        o3_trace1 trace;
+        o3_trace_containers("remove");
         Node* node;
         Node* parent;
         Node* child;
@@ -617,7 +624,7 @@ public:
 
     void remove(Iter first, Iter last)
     {
-        o3_trace1 trace;
+        o3_trace_containers("remove");
 
         while (first != last)
             first = remove(first);
@@ -625,7 +632,7 @@ public:
 
     void clear()
     {
-        o3_trace1 trace;
+        o3_trace_containers("clear");
 
         remove(begin(), end());
     }

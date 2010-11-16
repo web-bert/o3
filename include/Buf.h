@@ -53,11 +53,13 @@ class Buf {
 
     void setAuto()
     {
+        o3_trace_containers("setAuto");
         m_alloc = (iAlloc*) ((uintptr_t) m_alloc | 0x1);
     }
 
     void setWrap()
     {
+        o3_trace_containers("setWrap");
         m_u1.ptr = (void*) ((uintptr_t) m_u1.ptr | 0x1);
     }
 
@@ -67,7 +69,7 @@ public:
     template<typename C>
     static Buf fromHex(const C* str, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("fromHex");
         Buf buf(memFromHex(0, str), alloc);
 
         buf.resize(memFromHex(buf.ptr(), str));
@@ -77,7 +79,7 @@ public:
     template<typename C>
     static Buf fromBase64(const C* str, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("fromBase64");
         Buf buf(memFromBase64(0, str), alloc);
 
         buf.resize(memFromBase64(buf.ptr(), str));
@@ -86,7 +88,7 @@ public:
 
     explicit Buf(size_t capacity, iAlloc* alloc = g_sys) : m_alloc(alloc)
     {
-        o3_trace1 trace;
+        o3_trace_containers("Buf");
 
         m_alloc->addRef();
         if (capacity <= (size_t) O3_AUTO_CAPACITY) {
@@ -104,14 +106,14 @@ public:
 
     explicit Buf(iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("Buf");
 
         new(this) Buf((size_t) 0, alloc);
     }
 
     Buf(void* ptr, size_t size, iAlloc* alloc = g_sys) : m_alloc(alloc)
     {
-        o3_trace1 trace;
+        o3_trace_containers("Buf");
 
         m_alloc->addRef();
         m_u1.capacity = size;
@@ -122,14 +124,14 @@ public:
 
     Buf(iBuf* buf)
     {
-        o3_trace1 trace;
+        o3_trace_containers("Buf");
 
         new(this) Buf(buf->unwrap());
     }
 
     Buf(iStream* stream, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("Buf");
         const size_t SIZE = 1024;
         uint8_t data[SIZE];
         size_t size;
@@ -143,7 +145,7 @@ public:
 
     Buf(iStream* stream, size_t n, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("Buf");
 
         new(this) Buf(n, alloc);
         stream->read(ptr(), n);
@@ -152,7 +154,7 @@ public:
 
     Buf(const Buf& that)
     {
-        o3_trace1 trace;
+        o3_trace_containers("Buf");
 
         memCopy(this, &that, sizeof(Buf));
         alloc()->addRef();
@@ -174,7 +176,7 @@ public:
 
     ~Buf()
     {
-        o3_trace1 trace;
+        o3_trace_containers("~Buf");
 
         if (!isAuto() && !isWrap() &&
             atomicDec((volatile int&) refCount()) == 0)
@@ -280,7 +282,7 @@ public:
 
     void reserve(size_t new_capacity)
     {
-        o3_trace1 trace;
+        o3_trace_containers("reserve");
 
         if (new_capacity > capacity()) {
             Buf tmp(new_capacity, alloc());
@@ -292,7 +294,7 @@ public:
 
     void resize(size_t new_size)
     {
-        o3_trace1 trace;
+        o3_trace_containers("resize");
 
         if (new_size > capacity())
             reserve(new_size);
@@ -304,7 +306,7 @@ public:
 
     void* ptr() 
     {
-        o3_trace1 trace;
+        o3_trace_containers("ptr");
 
         if (!isAuto() && !isWrap() && refCount() > 1) {
             Buf tmp(capacity(), alloc());
@@ -317,6 +319,7 @@ public:
 
     void* detach()
     {
+        o3_trace_containers("detach");
         void* ptr = this->ptr();
 
         setWrap();
@@ -326,28 +329,28 @@ public:
     template<typename T>
     void* set(size_t pos, const T& x, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("set");
 
         return memSet((uint8_t*) this->ptr() + pos, x, n);
     }
 
     void* copy(size_t pos, const void* ptr, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("copy");
 
         return memCopy((uint8_t*) this->ptr() + pos, ptr, n);
     }
 
     void* copy(const void* ptr, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("copy");
 
         return copy(0, ptr, n);
     }
 
     void* move(size_t pos, size_t pos1, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("move");
 
         return memMove((uint8_t*) ptr() + pos, (uint8_t*) ptr() + pos1, n);
     }
@@ -373,7 +376,7 @@ public:
     template<typename T>
     void insertPattern(size_t pos, const T& x, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insertPattern");
 
         shift(pos, n);
         set(pos, x, n);
@@ -381,7 +384,7 @@ public:
 
     void insert(size_t pos, const void* ptr, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
 
         shift(pos, n);
         copy(pos, ptr, n);
@@ -390,21 +393,21 @@ public:
     template<typename T>
     void appendPattern(const T& x, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("appendPattern");
 
         insertPattern(size(), x, n);
     }
 
     void append(const void* ptr, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("append");
 
         insert(size(), ptr, n);
     }
 
     void remove(size_t pos, size_t n = 1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("remove");
         size_t pos1 = pos + n;
 
         move(pos, pos1, size() - pos1);
@@ -413,7 +416,7 @@ public:
 
     void clear()
     {
-        o3_trace1 trace;
+        o3_trace_containers("clear");
 
         remove(0, size());
     }
@@ -421,7 +424,7 @@ public:
     template<typename T>
     void replace(size_t pos, size_t n, const T& x, size_t n1 = 1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("replace");
 
         if (n < n1)
             shift(pos, n1 - n);
@@ -432,7 +435,7 @@ public:
 
     void replace(size_t pos, size_t n, const void* ptr, size_t n1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("replace");
 
         if (n < n1)
             shift(pos, n1 - n);
@@ -444,21 +447,21 @@ public:
     template<typename T>
     void replace(size_t n, const T& x, size_t n1 = 1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("replace");
 
         replace(0, n, x, n1);
     }
 
     void replace(size_t n, const void* ptr, size_t n1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("replace");
 
         replace(0, n, ptr, n1);
     }
 
     void findAndReplaceAll(const void* from, size_t n1, const void* to, size_t n2)
     {
-        o3_trace1 trace;
+        o3_trace_containers("findAndReplaceAll");
 
         size_t next_match = 0;
         while ( (next_match = find(next_match, from, n1)) != NOT_FOUND) {

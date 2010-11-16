@@ -25,10 +25,12 @@ namespace o3{
     volatile int32_t g_outerComponents = 0;
 
     int incWrapperCount() {
+        o3_trace_hostglue("incWrapperCount");
         return atomicInc(g_outerComponents);
     }
 
     int decWrapperCount() {
+        o3_trace_hostglue("decWrapperCount");
         return atomicDec(g_outerComponents);
     } 
 
@@ -63,6 +65,7 @@ namespace o3{
 			}
 
 			virtual ~CAScript() {
+                o3_trace_hostglue("~CAScript");
                 deinit();
 			}
 
@@ -87,6 +90,7 @@ namespace o3{
             bool                            m_debug;
 
 			bool init(cJs *ipthis, bool debug) {
+                o3_trace_hostglue("init");
                 m_debug = debug;
 				m_pthis = ipthis;
 				HRESULT hr = S_OK;
@@ -143,6 +147,7 @@ namespace o3{
 			}
 
             void deinit(){
+                o3_trace_hostglue("deinit");
                 m_activeScript->Close();
             
                 if (m_debug) {
@@ -155,16 +160,18 @@ namespace o3{
 
 			public:
 			// IActiveScriptSite
-			HRESULT STDMETHODCALLTYPE GetLCID(LCID *){ return E_NOTIMPL; }
+			HRESULT STDMETHODCALLTYPE GetLCID(LCID *){ o3_trace_hostglue("GetLCID"); return E_NOTIMPL; }
 			HRESULT STDMETHODCALLTYPE GetDocVersionString(BSTR *) {
+                o3_trace_hostglue("GetDocVersionString");
                 return E_NOTIMPL; }
 			HRESULT STDMETHODCALLTYPE OnScriptTerminate(const VARIANT *,
-												const EXCEPINFO *){ return E_NOTIMPL; }
-			HRESULT STDMETHODCALLTYPE OnStateChange(SCRIPTSTATE ){ return E_NOTIMPL;}
-			HRESULT STDMETHODCALLTYPE OnEnterScript(void){ return E_NOTIMPL; }
-			HRESULT STDMETHODCALLTYPE OnLeaveScript(void){ return E_NOTIMPL; }
+												const EXCEPINFO *){ o3_trace_hostglue("OnScriptTerminate"); return E_NOTIMPL; }
+			HRESULT STDMETHODCALLTYPE OnStateChange(SCRIPTSTATE ){ o3_trace_hostglue("OnStateChange"); return E_NOTIMPL;}
+			HRESULT STDMETHODCALLTYPE OnEnterScript(void){ o3_trace_hostglue("OnEnterScript"); return E_NOTIMPL; }
+			HRESULT STDMETHODCALLTYPE OnLeaveScript(void){ o3_trace_hostglue("OnLeaveScript"); return E_NOTIMPL; }
 
 			HRESULT STDMETHODCALLTYPE OnScriptError(IActiveScriptError *error){	
+                o3_trace_hostglue("OnScriptError");	
                 EXCEPINFO excepinfo;
                 error->GetExceptionInfo(&excepinfo);
                 
@@ -192,6 +199,7 @@ namespace o3{
 															 IUnknown **item,
 															 ITypeInfo **)
             {							
+                o3_trace_hostglue("GetItemInfo");							
                 if (strEquals(m_root_name.ptr(), name)){
                     *item = m_bridge;
                     m_bridge->AddRef();
@@ -203,6 +211,9 @@ namespace o3{
 
 			// Inject the root object
 			HRESULT STDMETHODCALLTYPE Inject(const WCHAR *name, IUnknown *unkn) {
+				// db_assert(name != NULL);
+
+				o3_trace_hostglue("Inject");
 				// db_assert(name != NULL);
 
 				if (name == NULL)
@@ -217,6 +228,8 @@ namespace o3{
 
 			// Evaluation routine.
 			HRESULT STDMETHODCALLTYPE Eval(const WCHAR *source, VARIANT *result) {
+				// db_assert(source != NULL);
+				o3_trace_hostglue("Eval");
 				// db_assert(source != NULL);
 				if (source == NULL)
 					return E_POINTER;
@@ -256,6 +269,7 @@ namespace o3{
 			HRESULT STDMETHODCALLTYPE GetDocumentContextFromPosition( DWORD dwSourceContext,
 				  ULONG uCharacterOffset, ULONG uNumChars, IDebugDocumentContext **ppsc)
 			{
+			   o3_trace_hostglue("GetDocumentContextFromPosition");
 			   ULONG ulStartPos = 0;
 			   HRESULT hr;
 
@@ -272,6 +286,7 @@ namespace o3{
 
 			HRESULT STDMETHODCALLTYPE GetApplication(IDebugApplication **ppda)
 			{
+			   o3_trace_hostglue("GetApplication");
 			   if (!ppda)
 				  return E_INVALIDARG;
 			  			   
@@ -288,6 +303,7 @@ namespace o3{
 
 			HRESULT STDMETHODCALLTYPE GetRootApplicationNode(IDebugApplicationNode **ppdanRoot)
 			{
+			   o3_trace_hostglue("GetRootApplicationNode");
 			   if (!ppdanRoot)
 				  return E_INVALIDARG;
 			   if (m_debug_doc_helper)
@@ -298,6 +314,7 @@ namespace o3{
 			HRESULT STDMETHODCALLTYPE OnScriptErrorDebug( IActiveScriptErrorDebug *, 				  
 				  BOOL*pfEnterDebugger, BOOL *pfCallOnScriptErrorWhenContinuing)
 			{
+			   o3_trace_hostglue("OnScriptErrorDebug");
 			   if (pfEnterDebugger)
 			   	  *pfEnterDebugger = TRUE;		
 
@@ -311,12 +328,15 @@ namespace o3{
         cJs(iMgr* mgr = o3_new(cMgr)(), int argc=0, char** argv=0, char** envp=0, bool debug = false) 
             : m_mgr(mgr), m_track(0), m_loop(g_sys->createMessageLoop())
         {
+            o3_trace_hostglue("cJs");
             m_root = o3_new(cO3)(this, argc,argv,envp);
             initEngine(debug);
         }
 
         void initEngine(bool debug)
         {
+            //bridge
+            o3_trace_hostglue("initEngine");
             //bridge
             CDispBridge* bridge = o3_new( CDispBridge )(this,m_root);
             m_ascript = o3_new(CAScript)();
@@ -330,6 +350,7 @@ namespace o3{
         }
 
 		virtual ~cJs(){
+            o3_trace_hostglue("~cJs");
             if (m_ascript)
                 m_ascript.Release();
         }		
@@ -346,11 +367,15 @@ namespace o3{
         {
             // TODO: this should be created only once per ctx
             // siJs js = o3_new(cJs)(ctx->mgr());            
+            o3_trace_hostglue("js");
+            // TODO: this should be created only once per ctx
+            // siJs js = o3_new(cJs)(ctx->mgr());            
             return siScr(ctx);
         }
 
         virtual o3_fun Var include(const char* path, siEx* ex = 0) 
         {
+            o3_trace_hostglue("include");
             Str str = eval(Str("o3.cwd.get(\"") + path + "\").data", ex).toStr();
             Var res = eval(str, ex);
 
@@ -363,6 +388,7 @@ namespace o3{
 
 		virtual o3_fun Var eval(const char* src, siEx* ex)
         {
+            o3_trace_hostglue("eval");
             ex;
             Var vret;
             VARIANT result;
@@ -386,39 +412,47 @@ namespace o3{
 
         void* alloc(size_t size)
         {
+            o3_trace_hostglue("alloc");
             return g_sys->alloc(size);
         }
 
         void free(void* ptr)
         {
+            o3_trace_hostglue("free");
             return g_sys->free(ptr);
         }
 
         siMgr mgr()
         {
+            o3_trace_hostglue("mgr");
             return m_mgr;
         }
 
         virtual ComTrack** track() {
+           o3_trace_hostglue("track");
            return &m_track;
         }
 
         virtual siMessageLoop loop()
         {
+            o3_trace_hostglue("loop");
             return m_loop;
         }
 
         virtual Var value(const char* key) 
         {
+            o3_trace_hostglue("value");
             return m_values[key];
         }
 
         virtual Var setValue(const char* key, const Var& val)
         {
+            o3_trace_hostglue("setValue");
             return m_values[key] = val;
         }
 
         virtual void tear() {
+            o3_trace_hostglue("tear");
             for (ComTrack *i = m_track, *j = 0; i; i = j) {
                 j = i->m_next;
                 i->m_phead = 0;
@@ -428,6 +462,7 @@ namespace o3{
 
         virtual Str fsRoot()
         {
+            o3_trace_hostglue("fsRoot");
             return Str();
         }
 
@@ -438,6 +473,7 @@ namespace o3{
 
         virtual void* appWindow()
         {
+            o3_trace_hostglue("appWindow");
             return 0;
         }
 
@@ -448,11 +484,13 @@ namespace o3{
 
 		bool scriptError() 
 		{
+			o3_trace_hostglue("scriptError");
 			return m_error.size() > 0;
 		}
 		
 		bool isIE()
 		{
+			o3_trace_hostglue("isIE");
 			return false;
 		}
 

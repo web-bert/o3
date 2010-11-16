@@ -32,6 +32,7 @@ struct cKeyboardBase : cScr {
     
     virtual o3_fun void sendKeyPressed(int key)
     {
+        o3_trace_scrfun("sendKeyPressed");
         sendKeyDown(key);
         sendKeyUp(key);
     }
