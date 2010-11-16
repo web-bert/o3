@@ -1,35 +1,54 @@
 #ifndef O3_cSocket_LIBEVENT_H
 #define O3_cSocket_LIBEVENT_H
-
+#ifndef O3_WIN32
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <unistd.h>
 #include <netdb.h>
-#include <fcntl.h>
-//#include <event.h>
+#include <unistd.h>
+#define HSOCKET SOCKET
+#define SOCKETDATA void*
+#define SOCKETERROR errno
+#else
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <Mswsock.h>
+#define HSOCKET int
+#define SOCKETDATA char*
+#define SOCKETERROR WSAGetLastError()
+#define EWOULDBLOCK WSAEWOULDBLOCK
+#define EALREADY WSAEALREADY
+#define EISCONN WSAEISCONN
+#define EINPROGRESS WSAEINPROGRESS 
+#endif
+#include <event.h>
 
 namespace o3 {
     struct cSocket : cSocketBase {
         cSocket() {
 
         }
-
-        cSocket(iCtx* ctx, int sock = -1, Type type = TYPE_INVALID, int state = 0) : m_sock(sock) 
+ 
+        cSocket(iCtx* ctx, HSOCKET sock = -1, Type type = TYPE_INVALID, int state = 0) 
+			: m_sock(sock) 
 		{
             // Make socket non-blocking
-            int flags = fcntl(sock, F_GETFL, 0);
-            
-            flags |= O_NONBLOCK;
-            fcntl(sock, F_SETFL, flags);
-            m_type = type;
+#ifdef O3_WIN32
+			unsigned long iMode = 1;
+			ioctlsocket(sock, FIONBIO, &iMode);
+#else
+			int flags = fcntl(sock, F_GETFL, 0);            
+			flags |= O_NONBLOCK;
+			fcntl(sock, F_SETFL, flags);	
+#endif 
+			m_type = type;
             m_state = state;
 			m_ctx = ctx;
         }
 
         ~cSocket()
         {
-
+			close();
         }
 
         o3_begin_class(cSocketBase)
@@ -47,7 +66,17 @@ namespace o3 {
 			return create(ctx, TYPE_TCP);
 		}
 
-        
+		static o3_ext("cO3") o3_get siSocket socket(iCtx* ctx) 
+		{
+			return create(ctx, TYPE_TCP);
+		}
+
+		o3_fun siSocket createSocket(iCtx* ctx) 
+		{
+			return create(ctx, TYPE_TCP);
+		}
+
+
         static siSocket create(iCtx* ctx, Type type) 
 		{		
             int sock;            
@@ -114,6 +143,7 @@ namespace o3 {
             m_state = STATE_CONNECTING;
 
 			event_set(&m_ev_connect, m_sock, EV_WRITE|EV_PERSIST, onconnect, this);
+			event_base_set(siCtx(m_ctx)->eventBase(),&m_ev_connect);
 			event_add(&m_ev_connect, NULL);
 
 			::connect(m_sock, (sockaddr*) &m_addr,sizeof(sockaddr_in));
@@ -151,6 +181,7 @@ namespace o3 {
 
             // Set up a timer listener so that the callback will be called
 			event_set(&m_ev_accept, m_sock, EV_READ|EV_PERSIST, onaccept, this);
+			event_base_set(siCtx(m_ctx)->eventBase(),&m_ev_accept);
 			event_add(&m_ev_accept, NULL);
 			return true;
 		}
@@ -179,6 +210,7 @@ namespace o3 {
 					m_state |= STATE_SENDING;
             
 					event_set(&m_ev_write, m_sock, EV_WRITE|EV_PERSIST, onwrite, this);
+					event_base_set(siCtx(m_ctx)->eventBase(),&m_ev_write);
 					event_add(&m_ev_write, NULL);
 				}
 				break;
@@ -209,6 +241,7 @@ namespace o3 {
 			if ( !(m_state & STATE_RECEIVING)) {
 				m_state |= STATE_RECEIVING;				
 				event_set(&m_ev_read, m_sock, EV_READ|EV_PERSIST, onread, this);
+				event_base_set(siCtx(m_ctx)->eventBase(),&m_ev_read);
 				event_add(&m_ev_read, NULL);
 			}
 			return true;
@@ -216,8 +249,14 @@ namespace o3 {
         
         virtual void close() 
 		{
-            ::close(m_sock);
+			if (m_sock)
+#ifdef O3_WIN32
+			::closesocket(m_sock);
+#else			
+			::close(m_sock);
+#endif
             m_state = STATE_CLOSED;
+			m_sock = 0;
         }
 
 		static void onread(int fd, short ev, void *arg) 
@@ -232,11 +271,11 @@ namespace o3 {
             buf.reserve(pthis->m_packet_size);
             sockaddr_in addr;
             socklen_t addrlen = sizeof(struct sockaddr_in);
-            size_t size = ::recvfrom(pthis->m_sock, buf.ptr(), buf.capacity(), 0,
+            int size = ::recvfrom(pthis->m_sock, (SOCKETDATA)buf.ptr(), buf.capacity(), 0,
                                       (sockaddr*) &addr, &addrlen);
             //pthis->m_src_address = Str(inet_ntoa(addr.sin_addr));
             if (size < 0) {
-                switch (errno) {
+                switch (SOCKETERROR) {
                 case EINTR:
                     /*
                      * If the call to recv() was interrupted, the socket
@@ -247,6 +286,8 @@ namespace o3 {
                 default:
                     // In all other cases, we set the error flag
                     pthis->m_state |= STATE_ERROR;
+					Delegate(siCtx(pthis->m_ctx), pthis->m_on_error)(
+						siScr(pthis));
                 }
             } else if (size == 0) {
                 /*
@@ -257,6 +298,8 @@ namespace o3 {
                  * connection in an erroneous state.
                  */
                 pthis->m_state |= STATE_ERROR;
+				Delegate(siCtx(pthis->m_ctx), pthis->m_on_error)(
+					siScr(pthis));
             } else {
                 /*
                  * If the call to recv() succeeds, we append the
@@ -281,11 +324,13 @@ namespace o3 {
              */
             cSocket* pthis = (cSocket*)arg;
 			void*   data = pthis->m_out_buf.ptr();
-            size_t size = min(pthis->m_out_buf.size(), pthis->m_packet_size);
+            int size = min(pthis->m_out_buf.size(), pthis->m_packet_size);
 
-            size = ::send(pthis->m_sock, data, size, 0);
+            size = ::send(pthis->m_sock, (SOCKETDATA)data, size, 0);
             if (size < 0) {
                 pthis->m_state |= STATE_ERROR;
+				Delegate(siCtx(pthis->m_ctx), pthis->m_on_error)(
+					siScr(pthis));
             } else {
 
                 /*
@@ -313,7 +358,7 @@ namespace o3 {
                                   &addr_len);
             
             if (sock < 0) {
-                switch (errno) {
+                switch (SOCKETERROR) {
                 case EWOULDBLOCK:
                     /*
                      * If the call to accept() would block because no
@@ -324,6 +369,8 @@ namespace o3 {
                 default:
                     // In all other cases, we set the error flag
                     pthis->m_state |= STATE_ERROR;
+					Delegate(siCtx(pthis->m_ctx), pthis->m_on_error)(
+						siScr(pthis));
                 }
             } else {
                 siScr scr = o3_new(cSocket)(siCtx(pthis->m_ctx), sock, 
@@ -340,7 +387,7 @@ namespace o3 {
                                 sizeof(sockaddr_in));
 
             if (err < 0) {
-                switch (errno) {
+                switch (SOCKETERROR) {
                 case EALREADY:
                     /*
                      * If a previous call to connect was already done, we
@@ -366,6 +413,8 @@ namespace o3 {
                     break;
                 default:// In all other cases, we set the error flag
                     pthis->m_state |= STATE_ERROR;
+					Delegate(siCtx(pthis->m_ctx), pthis->m_on_error)(
+						siScr(pthis));
                 }
 				
             } else {
@@ -380,7 +429,7 @@ namespace o3 {
             }
 		}
 
-		int         m_sock;
+		HSOCKET     m_sock;
 		sockaddr_in m_addr;
 		Buf         m_out_buf;
 		siWeak		m_ctx;
@@ -388,198 +437,6 @@ namespace o3 {
 		struct event m_ev_connect;
 		struct event m_ev_read;
 		struct event m_ev_write;	
-
-    //    void trigger(iUnk*) {
-    //        if (m_state & STATE_ERROR || m_state & STATE_CLOSED) {
-				//m_timer_listener = 0;
-    //            m_file_listener = 0;
-    //        } else if (m_state & STATE_CONNECTING) {
-    //            /*
-    //             * If the connecting flag is set, we try to call connect() on
-    //             * each callback.
-    //             */
-    //            int err = ::connect(m_sock, (sockaddr*) &m_addr,
-    //                                sizeof(sockaddr_in));
-
-    //            if (err < 0) {
-    //                switch (errno) {
-    //                case EALREADY:
-    //                    /*
-    //                     * If a previous call to connect was already done, we
-    //                     * just retry on the next callback.
-    //                     */
-    //                    break;
-    //                case EISCONN:
-    //                    /*
-    //                     * If the socket is already connected, we assume that
-    //                     * a previous call to connect succeeded just before the
-    //                     * current one.
-    //                     */
-    //                    m_state = STATE_CONNECTED;
-				//		Delegate(siCtx(m_ctx), m_on_connect)(this);
-				//		return;
-				//		break;
-    //                case EINPROGRESS:
-    //                    /*
-    //                     * If the current call to connect is still in progress,
-    //                     * we just retry on the next callback.
-    //                     */
-    //                    break;
-    //                default:// In all other cases, we set the error flag
-    //                    m_state |= STATE_ERROR;
-    //                }
-				//	m_timer_listener->restart(100);
-    //            } else {
-    //                /*
-    //                 * If the call to connect() succeeds, the connecting flag is
-    //                 * cleared, the connected flag is set, and the onConnect
-    //                 * event is triggered.
-    //                 */
-    //                m_state = STATE_CONNECTED;
-				//	Delegate(siCtx(m_ctx), m_on_connect)(
-				//		siScr(this));
-    //                m_timer_listener = 0; // We don't need anymore callbacks for now
-    //            }
-    //        } else if (m_state & STATE_ACCEPTING) {
-    //            siScr on_accept;
-    //            /*
-    //             * If the connecting flag is set, we try to call connect() on
-    //             * each callback.
-    //             */
-    //            socklen_t addr_len = sizeof(sockaddr_in);
-    //            int sock = ::accept(m_sock, (sockaddr*) &m_addr,
-    //                                  &addr_len);
-    //            
-    //            if (sock < 0) {
-    //                switch (errno) {
-    //                case EWOULDBLOCK:
-    //                    /*
-    //                     * If the call to accept() would block because no
-    //                     * incoming connections are available, we just retry on
-    //                     * the next callback.
-    //                     */
-    //                    break;
-    //                default:
-    //                    // In all other cases, we set the error flag
-    //                    m_state |= STATE_ERROR;
-    //                }
-    //            } else {
-    //                siScr scr = o3_new(cSocket)(siCtx(m_ctx), sock, m_type, STATE_CONNECTED);
-    //              
-    //                Var arg(scr, g_sys);
-				//	Delegate(siCtx(m_ctx), m_on_accept)(
-				//		siScr(this));
-    //                m_timer_listener = 0; // We don't need anymore callbacks for now
-    //            }
-    //        } else if (m_state & (STATE_SENDING | STATE_RECEIVING)) {
-    //        
-    //            /*
-    //             * If either the sending or receiving flag is set, we need to
-    //             * figure out whether the socket is ready for reading or writing
-    //             * (or both), by calling select().
-    //             */
-    //            fd_set  readfds;
-    //            fd_set  writefds;
-    //            fd_set  errorfds;
-    //            timeval timeout;
-    //            int     err;
-
-    //            FD_ZERO(&readfds);
-    //            FD_SET(m_sock, &readfds);
-    //            FD_ZERO(&writefds);
-    //            FD_SET(m_sock, &writefds);
-    //            FD_ZERO(&errorfds);
-    //            FD_SET(m_sock, &errorfds);
-    //            timeout.tv_sec = 0;
-    //            timeout.tv_usec = 0;
-    //            do
-    //                err = ::select(m_sock + 1, &readfds, &writefds, &errorfds,
-    //                             &timeout);
-    //            while (err < 0);
-
-    //            if (m_state & STATE_SENDING && FD_ISSET(m_sock, &writefds)) {
-    //                /*
-    //                 * If the sending flag is set and the socket is ready for
-    //                 * writing, we send at most m_packet_size bytes from the
-    //                 * output buf to the socket.
-    //                 */
-    //                void*   data = m_out_buf.ptr();
-    //                size_t size = min(m_out_buf.size(), m_packet_size);
-
-    //                size = ::send(m_sock, data, size, 0);
-    //                if (size < 0) {
-    //                    m_state |= STATE_ERROR;
-    //                } else {
-
-    //                    /*
-    //                     * If the call to send() succeeds, the onSend event is
-    //                     * triggered, end the data sent is removed from the
-    //                     * output buf. If the output buf becomes empty as a
-    //                     * result, the sending bit is cleared as well.
-    //                     */
-    //                    m_bytes_sent += size;
-				//		Delegate(siCtx(m_ctx), m_on_send)(
-				//			siScr(this));
-    //                    m_out_buf.remove(0, size);
-    //                    if (m_out_buf.empty()) {
-    //                        m_state &= ~STATE_SENDING;
-    //                        if (!(m_state & STATE_RECEIVING))
-    //                            m_file_listener = 0; // We don't need any more callbacks for now
-    //                        }
-    //                }
-    //            }
-    //            if (m_state & STATE_RECEIVING && FD_ISSET(m_sock, &readfds)) {
-				//	siScr on_receive;
-    //                /*
-    //                 * If the receiving flag is set and the socket is ready for
-    //                 * reading, we receive at most m_packet_size bytes from the
-    //                 * socket to the input buf.
-    //                 */
-    //                Buf buf;
-    //                
-    //                buf.reserve(m_packet_size);
-    //                sockaddr_in addr;
-    //                socklen_t addrlen = sizeof(struct sockaddr_in);
-    //                ssize_t size = ::recvfrom(m_sock, buf.ptr(), buf.capacity(), 0,
-    //                                          (sockaddr*) &addr, &addrlen);
-    //                m_src_address = Str(inet_ntoa(addr.sin_addr));
-    //                if (size < 0) {
-    //                    switch (errno) {
-    //                    case EINTR:
-    //                        /*
-    //                         * If the call to recv() was interrupted, the socket
-    //                         * will still be ready for reading on the next pass,
-    //                         * so we will just retry on the next callback.
-    //                         */
-    //                        break;
-    //                    default:
-    //                        // In all other cases, we set the error flag
-    //                        m_state |= STATE_ERROR;
-    //                    }
-    //                } else if (size == 0) {
-    //                    /*
-    //                     * We assume that if the socket was ready for reading,
-    //                     * but we received 0 bytes, that one side of the
-    //                     * connection was closed. The most obvious way to deal
-    //                     * with this seems to be to put the other end of the
-    //                     * connection in an erroneous state.
-    //                     */
-    //                    m_state |= STATE_ERROR;
-    //                } else {
-    //                    /*
-    //                     * If the call to recv() succeeds, we append the
-    //                     * received data to the end of the input buf, and
-    //                     * trigger the onReceive event.
-    //                     */
-    //                    buf.resize(size);
-    //                    m_received_buf.append(buf.ptr(), buf.size());
-    //                    m_bytes_received += size;
-				//		Delegate(siCtx(m_ctx), m_on_receive)(
-				//			siScr(this));
-    //                }
-    //            }
-    //        }
-    //    }
 
 
     };

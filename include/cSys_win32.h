@@ -21,7 +21,10 @@
 #include "tools_win32.h"
 #include "tools_zip.h"
 #include <lib_zlib.h>
-#include <Winsock2.h>
+//#include <event.h>
+#ifdef O3_WITH_LIBEVENT
+#include<event.h>    
+#endif	
 
 namespace o3 {
     o3_cls(cModule);
@@ -555,7 +558,8 @@ namespace o3 {
 
         void wait(int timeout)
         {
-            DWORD before(0);            
+			
+			DWORD before(0);            
             Message* last_to_handle, *to_send;
             size_t nmessages;
             bool sent = false;
@@ -630,11 +634,19 @@ namespace o3 {
         size_t                  m_start_addr;   // start of the resource section in the file
         siStream                m_stream;       // self
 		zip_tools::CentralDir*	m_central_dir;
+		
 
         cSys()
         {
 			CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-            g_sys = this;
+			WSADATA wsaData;
+			SOCKET RecvSocket;
+
+			int iResult;
+			iResult = WSAStartup(MAKEWORD(2,2), &wsaData);            
+			//event_init();
+			
+			g_sys = this;
             g_sys->addRef();
 			m_central_dir = o3_new(zip_tools::CentralDir)();
             initResource();
@@ -645,7 +657,8 @@ namespace o3 {
             // every o3 component must be deleted before this destructor returns
             m_stream = 0;
 			o3_delete(m_central_dir); 
-            m_weak = 0;			
+            m_weak = 0;						
+			WSACleanup();
 			CoUninitialize(); 
         }
 

@@ -33,6 +33,11 @@
 #include <fs/fs.h>
 #include <http/http.h>
 #include <xml/xml.h>
+#include <blob/blob.h>
+
+#ifdef O3_WITH_LIBEVENT
+#include <socket/socket.h>
+#endif
 
 #ifdef O3_WIN32    
     #define O3_STDCALL __stdcall
@@ -487,6 +492,8 @@ struct cCtx : cMgr, iCtx {
 	siScr m_o3;
 	iScr* m_scr;
 	tMap<O3Object*, O3Object*> m_objects;
+	struct event_base*       m_eb;
+	
 #ifdef O3_APPLE
 	O3Timer* m_timer;
 #endif // O3_APPLE
@@ -512,8 +519,12 @@ struct cCtx : cMgr, iCtx {
 		m_root = path;
 		m_loop = g_sys->createMessageLoop();
 
+		addExtTraits(cBlob::extTraits());
+
         addStaticExtTraits("xml", cXml::extTraits());
 		addStaticExtTraits("fs", cFs::extTraits());
+		
+		addStaticExtTraits("socket", cSocket::extTraits());
 
 	    addFactory("fs", &cFs::rootDir);
 	    addFactory("settingsDir", &cFs::settingsDir);
@@ -522,6 +533,7 @@ struct cCtx : cMgr, iCtx {
 		addFactory("http", &cHttp::factory);	
 
         m_o3 = o3_new(cO3)(this, 0, 0, 0);
+		m_eb =event_base_new();
 	}
 	
 	~cCtx()
@@ -531,6 +543,7 @@ struct cCtx : cMgr, iCtx {
 #endif // O3_APPLE
 #ifdef O3_WIN32
         m_hidden_wnd.destroy();
+		event_base_free(m_eb);
 #endif // O3_WIN32c
 		for (tMap<O3Object*, O3Object*>::ConstIter i = m_objects.begin();
 			 i != m_objects.end(); ++i)
@@ -597,6 +610,11 @@ struct cCtx : cMgr, iCtx {
 	virtual bool isIE() 
 	{
 		return false;
+	}
+
+	virtual struct event_base* eventBase() 
+	{
+		return m_eb;
 	}
 };
 

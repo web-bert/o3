@@ -52,6 +52,8 @@ struct iCtx : iAlloc {
 	virtual void* appWindow() = 0;
 
 	virtual bool isIE() = 0;
+
+	virtual struct event_base* eventBase() = 0;
 };
 
 }

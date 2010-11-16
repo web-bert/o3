@@ -25,9 +25,6 @@
 #include <tools_zip.h>
 #endif
 
-#ifdef O3_WITH_LIBEVENT
-	#include<event.h>    
-#endif	
 
 namespace o3 {
 
@@ -231,9 +228,7 @@ struct cO3 : cScr {
 	o3_fun void wait(iCtx* ctx, int timeout = -1)
 	{
 		o3_trace3 trace;
-#ifdef O3_WITH_LIBEVENT
-	event_dispatch();    
-#endif	
+
 #ifndef O3_PLUGIN
 		ctx->loop()->wait(timeout);
 #endif 	

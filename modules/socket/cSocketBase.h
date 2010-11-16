@@ -247,6 +247,15 @@ namespace o3 {
 			return m_on_send = cb;
 		}
 
+		o3_get siScr onerror()
+		{
+			return m_on_error;
+		}
+		o3_set siScr setOnerror(iScr* cb)
+		{
+			return m_on_error = cb;
+		}
+
 		o3_fun void close() = 0;
 
         o3_prop     size_t  m_packet_size;
@@ -260,6 +269,7 @@ namespace o3 {
 		siScr m_on_connect;
 		siScr m_on_receive;
 		siScr m_on_send;
+		siScr m_on_error;
 
         Buf     m_received_buf;
         int     m_state;

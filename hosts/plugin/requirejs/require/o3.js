@@ -190,10 +190,21 @@
 				  
 					o3 = document.getElementById(id);
 				}	
+				
+				var fileref=document.createElement('script');
+				fileref.setAttribute("type","text/javascript");
+				fileref.setAttribute("src", name + ".js");
+				document.getElementsByTagName("head")[0].appendChild(fileref);
+
+//				document.body.appendChild(
+//					document.createElement("div")).innerHTML = '<script type="text/javascript" src="' 
+//						+ name +'.js"></script>';
+				
+				
+				require.s.o3modules[name](o3);
 					
-			
 				//var context = require.s.contexts[contextName];
-				o3.require(name);
+				//o3.require(name);
 				//moduleNames.push(name);
 				require.checkLoaded(contextName);
 				//head.appendChild(node);			
@@ -237,17 +248,17 @@
 				
 				for (var i=0; i<context.o3Waiting.length; i++) {
 				    var name = context.o3Waiting[i].name;
-					context.defined[name] = o3[name];
+					context.defined[name] = o3.loaded[name]();
 				}
 				
-				o3.onupdate = function() { 
+				//o3.onupdate = function() { 
 					// TODO: prompt the user about the new available installer that can be started here, then:
-					o3.doInstall();
-				};
+				//	o3.doInstall();
+				//};
 				
-				o3.oninstall = function() { 
-					alert("New o3 plugin has been installed please refresh this site.") ;
-				};
+				//o3.oninstall = function() { 
+				//	alert("New o3 plugin has been installed please refresh this site.") ;
+				//};
 			
                 cb();
 			}

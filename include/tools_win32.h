@@ -1191,7 +1191,7 @@ struct iWindow : iUnk
 			e = GetLastError();
 			if (m_hwnd) {
 				SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (LONG_PTR) ctx);
-				SetTimer(m_hwnd, (UINT_PTR) m_hwnd, 200, 0);        
+				SetTimer(m_hwnd, (UINT_PTR) m_hwnd, 100, 0);        
 			}
         }
 
@@ -1213,7 +1213,21 @@ struct iWindow : iUnk
 					// the previous call have not returned yet...
 					SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) 0);
                     ctx->loop()->wait(1);
-                    SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) ctx);
+#ifdef O3_WITH_LIBEVENT
+					//event_loop(EVLOOP_NONBLOCK );    
+					struct timeval t;
+
+					t.tv_sec = 0;
+					t.tv_usec = 5000;
+
+					int e = event_base_loopexit(ctx->eventBase(),&t);
+					if (e<0){
+						printf("blah");
+					}
+					event_base_loop(ctx->eventBase(),0);
+
+#endif	                    
+					SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) ctx);
 					break;
                 }
 

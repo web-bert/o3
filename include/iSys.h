@@ -17,7 +17,8 @@
  */
 #ifndef O3_I_SYS_H
 #define O3_I_SYS_H
-
+#include <Winsock2.h>
+#include <event.h>
 namespace o3 {
 
 class Delegate;
@@ -143,6 +144,7 @@ struct iSys : iAlloc {
 	virtual bool approvalBox(const char* msg, const char* caption) = 0;
 
 	virtual void sleep(int time) = 0;
+
 };
 
 class Lock {

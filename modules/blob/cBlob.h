@@ -80,15 +80,6 @@ struct cBlob : cScr {
         return Buf::fromBase64(str.ptr(), str.alloc());
     }
 
-    static o3_ext("cScrBuf") o3_fun Str toString(o3_tgt iScr* tgt)
-    {
-        o3_trace3 trace;
-        cScrBuf* pthis = (cScrBuf*) tgt;
-        Buf buf(pthis);
-
-        return Str(buf);
-    }
-
     static o3_ext("cScrBuf") o3_fun Str toHex(o3_tgt iScr* tgt)
     {
         o3_trace3 trace;

@@ -36,6 +36,14 @@ struct cScrBuf : cScr, iBuf {
 
 	o3_glue_gen()
 
+	o3_fun Str toString()
+	{
+		o3_trace3 trace;
+		Buf buf(this);
+
+		return Str(buf);
+	}
+
     o3_get size_t length()
     {
         o3_trace3 trace;
@@ -43,36 +51,28 @@ struct cScrBuf : cScr, iBuf {
         return m_buf.size();
     }
 
-    o3_set size_t setLength(size_t size)
-    {
-        o3_trace3 trace;
+    //o3_set size_t setLength(size_t size)
+    //{
+    //    o3_trace3 trace;
 
-        m_buf.resize(size);
-        return size;
-    }
+    //    m_buf.resize(size);
+    //    return size;
+    //}
 
-	o3_fun void append(const Buf& other)
-	{
-		m_buf.append(other.ptr(), other.size());
-	}
+	//o3_fun void append(const Buf& other)
+	//{
+	//	m_buf.append(other.ptr(), other.size());
+	//}
 
-	o3_fun Buf slice(size_t start, size_t end)
-	{
-		size_t size = m_buf.size();
-		if(start<0 || end<0 || start>size || end>size || start>end)
-			return Buf();
+	//o3_fun Buf slice(size_t start, size_t end)
+	//{
+	//	size_t size = m_buf.size();
+	//	if(start<0 || end<0 || start>size || end>size || start>end)
+	//		return Buf();
 
-		return Buf(((int8_t*)m_buf.ptr())+start, end-start);
-	}
+	//	return Buf(((int8_t*)m_buf.ptr())+start, end-start);
+	//}
 
-    o3_fun size_t __enumerator__(size_t index)
-    {
-        o3_trace3 trace;
-
-        if ((size_t) ++index < m_buf.size())
-            return index;
-        return (size_t) -1;
-    }
 
     o3_fun bool __query__(size_t index)
     {
@@ -105,6 +105,47 @@ struct cScrBuf : cScr, iBuf {
 
         return m_buf;
     }
+
+	o3_ext("cO3") o3_fun siScr scrbuf()
+	{
+		return o3_new(cBlob)()
+	}
+
+	o3_fun Buf fromString(const Str& str)
+	{
+		o3_trace3 trace;
+
+		return Buf(str);
+	}
+
+	o3_fun Buf fromHex(const Str& str)
+	{
+		o3_trace3 trace;
+
+		return Buf::fromHex(str.ptr(), str.alloc());
+	}
+
+	o3_fun Buf fromBase64(const Str& str)
+	{
+		o3_trace3 trace;
+
+		return Buf::fromBase64(str.ptr(), str.alloc());
+	}
+
+	o3_fun Str toHex(o3_tgt iScr* tgt)
+	{
+		o3_trace3 trace;
+
+		return Str::fromHex(m_buf.ptr(), m_buf.size());
+	}
+
+	o3_ext("cScrBuf") o3_fun Str toBase64(o3_tgt iScr* tgt)
+	{
+		o3_trace3 trace;
+
+		return Str::fromBase64(m_buf.ptr(), m_buf.size());
+	}
+
 };
 
 }
