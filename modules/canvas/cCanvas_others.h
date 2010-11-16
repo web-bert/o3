@@ -41,6 +41,7 @@ namespace o3
 		
 		void FillGradientArray(agg::Agg2D::GradientArray *inArray, double globalAlpha)
 		{
+			o3_trace_scrfun("FillGradientArray");
 			int Count = m_colorstops.size();
 			if (Count == 0)
 			{
@@ -119,7 +120,7 @@ namespace o3
 		o3_end_class()
 		o3_glue_gen();
 
-		virtual void *GetActualGradientPointer() { return this;};
+		virtual void *GetActualGradientPointer() { o3_trace_scrfun("GetActualGradientPointer"); return this;};
 
 		enum Types
 		{
@@ -130,6 +131,7 @@ namespace o3
 
 		o3_fun void addColorStop(double offset, const Str &colorstring)
 		{
+			o3_trace_scrfun("addColorStop");
 			if (offset < 0.0 || offset > 1.0) return;
 			unsigned int color = 0;
 			decodeColor(colorstring, &color);
@@ -155,7 +157,7 @@ namespace o3
 		
 		o3_glue_gen();
 
-		o3_get double width(){return mWidth;};
+		o3_get double width(){o3_trace_scrfun("width");return mWidth;};
 
 		double mWidth;
 	};
@@ -171,6 +173,7 @@ namespace o3
        
 		o3_fun bool __query__(int idx) 
 		{       
+			o3_trace_scrfun("__query__");       
 			if (idx<0 || ((size_t)idx)>=mData.size())
 				return false;
 			return true;
@@ -178,6 +181,7 @@ namespace o3
         
         o3_fun size_t __getter__(iCtx* ctx, int idx, siEx* ex = 0) 
 		{
+            o3_trace_scrfun("__getter__");
             o3_unused(ctx);
             ex;
             return item(idx);
@@ -185,7 +189,7 @@ namespace o3
 
         unsigned char item(int index) 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("item");
 			if (index<0 || ((size_t)index)>=mData.size())
 				return 0;
 			return mData[index];			
@@ -193,6 +197,7 @@ namespace o3
         
         virtual o3_get int length() 
 		{
+            o3_trace_scrfun("length");
             return mData.size();           
         }
 	};
@@ -208,11 +213,13 @@ namespace o3
 
 		o3_get size_t width()
 		{
+			o3_trace_scrfun("width");
 			return 0;
 		};
 
 		o3_get size_t height()
 		{
+			o3_trace_scrfun("height");
 			return 0;
 		};
 
@@ -220,6 +227,7 @@ namespace o3
 
 		o3_get siScr data()
 		{
+			o3_trace_scrfun("data");
 			return siScr(&mStorage);
 		}
 	};

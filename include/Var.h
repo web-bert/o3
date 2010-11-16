@@ -54,7 +54,7 @@ class Var {
 
     void setStr()
     {
-        o3_trace1 trace;
+        o3_trace_comglue("setStr");
 
         if (!((uintptr_t) m_u.alloc & 0x1))
             m_u.alloc = (iAlloc*) ((uintptr_t) m_u.alloc | 0x2);
@@ -62,7 +62,7 @@ class Var {
 
     void setWide()
     {
-        o3_trace1 trace;
+        o3_trace_comglue("setWide");
 
         ((uint8_t*) this)[O3_AUTO_CAPACITY + 1] |= 0x2;
     }
@@ -82,7 +82,7 @@ public:
 
     Var(iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         m_u.alloc = alloc;
         m_u.alloc->addRef();
@@ -91,7 +91,7 @@ public:
 
     Var(bool val, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         m_u.alloc = alloc;
         m_u.alloc->addRef();
@@ -101,7 +101,7 @@ public:
 
     Var(int32_t val, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         m_u.alloc = alloc;
         m_u.alloc->addRef();
@@ -111,7 +111,7 @@ public:
 
     Var(int64_t val, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         m_u.alloc = alloc;
         m_u.alloc->addRef();
@@ -121,14 +121,14 @@ public:
 
     Var(size_t val, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         new (this) Var((int32_t) val, alloc);
     }
  
     Var(double val, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         m_u.alloc = alloc;
         m_u.alloc->addRef();
@@ -138,7 +138,7 @@ public:
 
     Var(iScr* val, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
         
         m_u.alloc = alloc;
         m_u.alloc->addRef();
@@ -153,14 +153,14 @@ public:
     template<typename T>
     Var(const tSi<T>& val, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         new(this) Var(siScr(val).ptr(), alloc);
     }
 
     Var(const Str& str)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         new(m_str) Str(str);
         setStr();
@@ -168,14 +168,14 @@ public:
 
     Var(const char* str, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         new(this) Var(Str(str, alloc));
     }
 
     Var(const WStr& str)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         new(m_wstr) WStr(str);
         ((WStr*) m_wstr)->reserve(O3_AUTO_CAPACITY);
@@ -185,14 +185,14 @@ public:
 
     Var(const wchar_t* str, iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         new(this) Var(WStr(str, alloc));
     }
 
     Var(const Var& that)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("Var");
 
         if (that.isStr()) {
             if (that.isWide()) {
@@ -239,7 +239,7 @@ public:
 
     ~Var()
     {
-        o3_trace1 trace;
+        o3_trace_comglue("~Var");
 
         if (isStr()) {
             if (isWide())
@@ -427,7 +427,7 @@ public:
 
     Var& set()
     {
-        o3_trace1 trace;
+        o3_trace_comglue("set");
         Var tmp(alloc());
 
         swap(*this, tmp);
@@ -436,7 +436,7 @@ public:
 
     Var& set(bool val)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("set");
         Var tmp(val, alloc());
 
         swap(*this, tmp);
@@ -445,7 +445,7 @@ public:
 
     Var& set(int32_t val)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("set");
         Var tmp(val, alloc());
 
         swap(*this, tmp);
@@ -454,7 +454,7 @@ public:
 
     Var& set(int64_t val)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("set");
         Var tmp(val, alloc());
 
         swap(*this, tmp);
@@ -463,7 +463,7 @@ public:
 
     Var& set(double val)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("set");
         Var tmp(val, alloc());
 
         swap(*this, tmp);
@@ -472,7 +472,7 @@ public:
 
     Var& set(iScr* scr)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("set");
         Var tmp(scr, alloc());
 
         swap(*this, tmp);
@@ -481,14 +481,14 @@ public:
 
     Var& set(siScr scr)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("set");
 
         return set(scr.ptr());
     }
 
     Var& set(const Str& str)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("set");
         Var tmp = alloc() == str.alloc() ? Var(str) : Var(str, alloc());
 
         swap(*this, tmp);
@@ -497,7 +497,7 @@ public:
 
     Var& set(const char* str)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("set");
         Var tmp(str, alloc());
 
         swap(*this, tmp);
@@ -506,7 +506,7 @@ public:
 
     Var& set(const WStr& str)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("set");
         Var tmp = alloc() == str.alloc() ? Var(str) : Var(str, alloc());
 
         swap(*this, tmp);
@@ -515,7 +515,7 @@ public:
 
     Var& set(const wchar_t* str)
     {
-        o3_trace1 trace;
+        o3_trace_comglue("set");
         Var tmp(str, alloc());
 
         swap(*this, tmp);

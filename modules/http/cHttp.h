@@ -27,6 +27,7 @@ struct cHttp : cScr, iHttp {
 
     static size_t read(void* ptr, size_t size, size_t nmemb, void *stream)
     {
+        o3_trace_scrfun("read");
         cHttp* pthis = (cHttp*) stream;
         Lock lock(pthis->m_mutex);
         memCopy(ptr, pthis->m_ptr, size = min(size * nmemb, pthis->m_size));
@@ -37,6 +38,7 @@ struct cHttp : cScr, iHttp {
 
     static size_t header(void *ptr, size_t size, size_t nmemb, void *stream)
     {
+        o3_trace_scrfun("header");
         cHttp* pthis = (cHttp*) stream;
         Lock lock(pthis->m_mutex);
         Str header = (const char*) ptr;
@@ -50,6 +52,7 @@ struct cHttp : cScr, iHttp {
 
     static size_t write(void *ptr, size_t size, size_t nmemb, void *stream)
     {
+        o3_trace_scrfun("write");
         cHttp* pthis = (cHttp*) stream;
         Lock lock(pthis->m_mutex);
 
@@ -99,6 +102,7 @@ struct cHttp : cScr, iHttp {
 
     cHttp()
     {
+        o3_trace_scrfun("cHttp");
         m_handle = curl_easy_init();
         m_mutex = g_sys->createMutex();
         m_state = READY_STATE_UNINITIALIZED;
@@ -108,6 +112,7 @@ struct cHttp : cScr, iHttp {
 
     ~cHttp()
     {
+        o3_trace_scrfun("~cHttp");
         curl_easy_cleanup(m_handle);
     }
 
@@ -126,19 +131,20 @@ struct cHttp : cScr, iHttp {
 
     static o3_ext("cO3") o3_fun siScr http()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("http");
 
         return o3_new(cHttp)();
     }
 
 	static siUnk factory(iCtx*)
 	{
+		o3_trace_scrfun("factory");
 		return http();
 	}
 
     virtual o3_get ReadyState readyState()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("readyState");
         Lock lock(m_mutex);
 
         return m_state;
@@ -147,7 +153,7 @@ struct cHttp : cScr, iHttp {
     virtual o3_fun void open(const char* method, const char* url,
                              bool async = true)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("open");
 		
         m_state = READY_STATE_LOADING;
         if (strEquals(method, "GET"))
@@ -163,7 +169,7 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_fun void setRequestHeader(const char* name, const char* value)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setRequestHeader");
 
         if (*value)
             m_request_headers[name] = value;
@@ -173,7 +179,7 @@ struct cHttp : cScr, iHttp {
 
 	virtual void send(iCtx* ctx, const Buf& buf, bool blocking)
 	{
-		o3_trace3 trace;
+		o3_trace_scrfun("send");
 
 		m_request_body = buf;
 		m_ptr = (uint8_t*) buf.ptr();
@@ -188,21 +194,21 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_fun void send(iCtx* ctx, const Buf& buf)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("send");
 
         send(ctx,buf,!m_async);
     }
 
     virtual o3_fun void send(iCtx* ctx, const Str& str)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("send");
 
         send(ctx,str,!m_async);
     }
 
 	virtual void send(iCtx* ctx, const Str& str, bool blocking)
 	{
-		o3_trace3 trace;
+		o3_trace_scrfun("send");
 		Buf buf(str.size());
 
 		buf.append(str.ptr(), str.size());
@@ -211,11 +217,13 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_get Str statusText()
     {
+        o3_trace_scrfun("statusText");
         return Str::fromInt32(statusCode());
     }
 
     virtual o3_get int statusCode()
     {
+        o3_trace_scrfun("statusCode");
         long code;
 
         curl_easy_getinfo(m_handle, CURLINFO_RESPONSE_CODE, &code);
@@ -224,7 +232,7 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_fun Str getAllResponseHeaders()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("getAllResponseHeaders");
         Lock lock(m_mutex);
         Str headers;
 
@@ -236,7 +244,7 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_fun Str getResponseHeader(const char* name)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("getResponseHeader");
         Lock lock(m_mutex);
 
         return m_response_headers[name];
@@ -244,7 +252,7 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_get size_t bytesTotal()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("bytesTotal");
         tMap<Str, Str>::ConstIter iter;
 
         iter = m_response_headers.find("Content-Length");
@@ -255,7 +263,7 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_get size_t bytesReceived()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("bytesReceived");
         Lock lock(m_mutex);
 
         return m_response_body.size();
@@ -263,7 +271,7 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_get Buf responseBlob()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("responseBlob");
         Lock lock(m_mutex);
 
         return m_response_body;
@@ -271,7 +279,7 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_get Str responseText()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("responseText");
         Lock lock(m_mutex);
 
         return Str(m_response_body);
@@ -279,12 +287,12 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_fun void abort()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("abort");
     }
 
     virtual o3_get siScr onreadystatechange()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("onreadystatechange");
         Lock lock(m_mutex);
 
         return m_onreadystatechange;
@@ -292,7 +300,7 @@ struct cHttp : cScr, iHttp {
 
 	virtual void setOnreadystatechange(Delegate onreadystatechange)
 	{
-		o3_trace3 trace;
+		o3_trace_scrfun("setOnreadystatechange");
 		Lock lock(m_mutex);
 
 		m_dg_onreadystatechange = onreadystatechange;
@@ -300,7 +308,7 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_set siScr setOnreadystatechange(iCtx* ctx, iScr* onreadystatechange)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setOnreadystatechange");
 		setOnreadystatechange(Delegate(ctx, onreadystatechange));
 
 		Lock lock(m_mutex);
@@ -309,7 +317,7 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_get siScr onprogress()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("onprogress");
         Lock lock(m_mutex);
 
         return m_onprogress;
@@ -317,7 +325,7 @@ struct cHttp : cScr, iHttp {
 
 	virtual void setOnprogress(Delegate onprogress)
 	{
-		o3_trace3 trace;
+		o3_trace_scrfun("setOnprogress");
 		Lock lock(m_mutex);
 
 		m_dg_onprogress = onprogress;
@@ -325,7 +333,7 @@ struct cHttp : cScr, iHttp {
 
     virtual o3_set siScr setOnprogress(iCtx* ctx, iScr* onprogress)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setOnprogress");
 		setOnprogress(Delegate(ctx, onprogress));
 
         Lock lock(m_mutex);
@@ -383,6 +391,7 @@ struct cHttp : cScr, iHttp {
 
     void callOnReadystatechange(iUnk*)
     {
+        o3_trace_scrfun("callOnReadystatechange");
         Delegate fun;
 
         {
@@ -398,6 +407,7 @@ struct cHttp : cScr, iHttp {
 
     void callOnprogress(iUnk*)
     {
+        o3_trace_scrfun("callOnprogress");
         Delegate fun;
 
         {
@@ -411,6 +421,7 @@ struct cHttp : cScr, iHttp {
 
 
 	o3_fun siFs responseOpen(iFs* parent) {
+		o3_trace_scrfun("responseOpen");
 		Str name = getDocName();
 		siFs ret;
 		siStream stream;
@@ -436,6 +447,9 @@ struct cHttp : cScr, iHttp {
 	Str prependName(const char* base){
 		// Obtained with a fair dice roll; guaranteed to be random 
 		//srand ( 4 ); 
+		o3_trace_scrfun("prependName");
+		// Obtained with a fair dice roll; guaranteed to be random 
+		//srand ( 4 ); 
 		int rnd = rand() % 10;
 		Str ret = Str::fromInt32(rnd);		
 		ret.append(base);
@@ -443,6 +457,7 @@ struct cHttp : cScr, iHttp {
 	}
 
 	Str getDocName(){
+		o3_trace_scrfun("getDocName");
 		size_t idx;
 		Str name, label("filename="), content("Content-Disposition");
 		Str cont = m_response_headers[content];

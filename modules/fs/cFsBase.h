@@ -44,21 +44,21 @@ struct cFsBase : cScr, iFs {
 
     virtual o3_get bool isDir()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("isDir");
 
         return type() == TYPE_DIR;
     }
 
     virtual o3_get bool isFile()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("isFile");
 
         return type() == TYPE_FILE;
     }
 
     virtual o3_get bool isLink()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("isLink");
 
         return type() == TYPE_LINK;
     }
@@ -81,7 +81,7 @@ struct cFsBase : cScr, iFs {
 
     virtual o3_get Str name()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("name");
         Str path = this->path();
         const char* path1 = path;
         const char* name = path1 + 1;
@@ -94,7 +94,7 @@ struct cFsBase : cScr, iFs {
 
     virtual o3_set Str setName(const char* name, siEx*)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setName");
         Str path = this->path();;
 		size_t found=0,last=NOT_FOUND;
 
@@ -112,7 +112,7 @@ struct cFsBase : cScr, iFs {
 
     virtual o3_get siFs parent()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("parent");
 
         return get("..");
     }
@@ -133,7 +133,7 @@ struct cFsBase : cScr, iFs {
 
     virtual o3_fun siFs copy(iFs* to, siEx* ex)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("copy");
         tVec<siFs> nodes;
 		siFs to1=to;
 
@@ -163,7 +163,7 @@ struct cFsBase : cScr, iFs {
     virtual o3_fun siFs move(iFs* to, siEx* ex=0)
     {
 		// TODO: this method should call the native move file API
-        o3_trace3 trace;
+        o3_trace_scrfun("move");
 
         siFs ret = copy(to, ex);
 		// if there was an error don't remove the original files:
@@ -178,21 +178,21 @@ struct cFsBase : cScr, iFs {
 
     virtual o3_get bool canRead()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("canRead");
 
         return open("r") ? true : false;
     }
 
     virtual o3_get bool canWrite()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("canWrite");
 
         return open("a") ? true : false;
     }
 
     virtual o3_get Buf buffer()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("buffer");
         siStream stream = open("r");
 
         return stream ? Buf(stream.ptr()) : Buf();
@@ -200,7 +200,7 @@ struct cFsBase : cScr, iFs {
 
     virtual o3_set Buf setBuffer(const Buf& buf)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setBuffer");
         siStream stream = open("w");
 
         if (!stream)
@@ -212,7 +212,7 @@ struct cFsBase : cScr, iFs {
 	// writing from stream to stream by chunks
     virtual o3_set siStream setBuffer(iStream* stream, siEx* ex=0)
     {		
-        o3_trace3 trace;
+        o3_trace_scrfun("setBuffer");
 		static const size_t CHUNK = 4096;
 
 		siStream mstream = open("w");
@@ -241,14 +241,14 @@ struct cFsBase : cScr, iFs {
 
     virtual o3_get Str data()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("data");
 
         return buffer();
     }
 
     virtual o3_set Str setData(const Str& str)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setData");
         Buf buf(str);
 
         if (buf.size() > 0)
@@ -258,13 +258,14 @@ struct cFsBase : cScr, iFs {
 
     virtual o3_get siScr onchange()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("onchange");
 
         return m_onchange;
     }
 
 	virtual void setOnchange(iCtx* ctx, Delegate dg)
 	{
+		o3_trace_scrfun("setOnchange");
 		if (ctx)
 			m_ctx = ctx;
 		if (m_onchange)
@@ -278,7 +279,7 @@ struct cFsBase : cScr, iFs {
 
     virtual o3_set siScr setOnchange(iCtx* ctx, iScr* onchange)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setOnchange");
 
 		m_onchange = onchange;
 		setOnchange(ctx, Delegate(ctx,m_onchange));		
@@ -288,42 +289,42 @@ struct cFsBase : cScr, iFs {
 
     virtual o3_get siStream fopen(const char* path, const char* mode)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("fopen");
 
         return get(path)->open(mode);
     }
 
     virtual o3_get size_t fseek(iStream* stream, size_t pos)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("fseek");
 
         return stream->setPos(pos);
     }
 
     virtual o3_get Str fread(iStream* stream, size_t size)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("fread");
 
         return Str(Buf(stream, size)); 
     }
 
     virtual o3_get size_t fwrite(iStream* stream, const Str& str)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("fwrite");
 
         return stream->write(str.ptr(), str.size());
     }
 
     virtual o3_get bool fflush(iStream* stream)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("fflush");
 
         return stream->flush();
     }
 
     virtual o3_get bool fclose(iStream* stream)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("fclose");
 
         return stream->close();
     }

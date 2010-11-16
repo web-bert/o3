@@ -67,51 +67,61 @@ namespace o3 {
 
         o3_get bool error()
         {
+            o3_trace_scrfun("error");
             return (m_state & STATE_ERROR) > 0;
         }
 
         o3_get bool isClosed() 
         {
+            o3_trace_scrfun("isClosed");
             return (m_state & STATE_CLOSED) > 0;
         }
 
         o3_get bool isCreated() 
         {
+            o3_trace_scrfun("isCreated");
             return (m_state & STATE_CREATED) > 0;
         }
 
         o3_get bool isConnected() 
         {
+            o3_trace_scrfun("isConnected");
             return (m_state & STATE_CONNECTED) > 0;
         }
 
         o3_get bool isConnecting() 
         {
+            o3_trace_scrfun("isConnecting");
             return (m_state & STATE_CONNECTING) > 0;
         }
 
         o3_get bool isAccepting() 
         {
+            o3_trace_scrfun("isAccepting");
             return (m_state & STATE_ACCEPTING) > 0;
         }
 
         o3_get bool isReceiveing() 
         {
+            o3_trace_scrfun("isReceiveing");
             return (m_state & STATE_RECEIVING) > 0;
         }
 
         o3_get bool isSending()
 		{
+            o3_trace_scrfun("isSending");
             return (m_state & STATE_SENDING) > 0;
         }
                         
         o3_fun bool bind(int port)
         {
+            o3_trace_scrfun("bind");
             return bind("0.0.0.0", port);
         }
 
         o3_fun bool bind(const char* full)
         {
+            o3_trace_scrfun("bind");
             Str host;
             int port;
             parseUrl(full, host, port);
@@ -122,6 +132,7 @@ namespace o3 {
 
         o3_fun bool connect(const char* full) 
         {
+            o3_trace_scrfun("connect");
             Str host;
             int port;
             parseUrl(full, host, port);
@@ -136,11 +147,13 @@ namespace o3 {
 
         o3_fun bool send(const char* data) 
         {
+            o3_trace_scrfun("send");
             return send((uint8_t*)data, strLen(data)*sizeof(char));
         }
 
         o3_fun bool send(iBuf* ibuf) 
         {            
+            o3_trace_scrfun("send");            
             if (!ibuf)
                 return false;
 
@@ -152,6 +165,7 @@ namespace o3 {
 
         o3_fun bool sendTo(iBuf* ibuf, const char* host, int port)
         {
+			o3_trace_scrfun("sendTo");
 			host; port;
 			// TODO: handle host and port
             if (!ibuf)
@@ -163,6 +177,7 @@ namespace o3 {
 
         o3_fun bool sendTo(iBuf* ibuf, const char* full_addr)
         {
+            o3_trace_scrfun("sendTo");
             Str host;
             int port;
             parseUrl(full_addr, host, port);
@@ -175,11 +190,13 @@ namespace o3 {
 
         o3_get Buf receivedBuf() 
         {
+			o3_trace_scrfun("receivedBuf");
 			return m_received_buf; 
         }
         
         o3_get Str receivedText() 
 		{
+			o3_trace_scrfun("receivedText");
 			size_t next_zero;
 			int8_t zero=0;
 			Buf buf(m_received_buf);
@@ -194,6 +211,7 @@ namespace o3 {
 
 		o3_fun void clearBuf()
 		{
+			o3_trace_scrfun("clearBuf");
 			m_received_buf.clear();
 			m_bytes_received = 0;
 		}
@@ -201,6 +219,7 @@ namespace o3 {
 
         bool parseUrl(const char* url, Str& host, int& port) 
 		{
+            o3_trace_scrfun("parseUrl");
             const char* p;
 
             for (p = url; *p; ++p)
@@ -213,37 +232,45 @@ namespace o3 {
 
 		o3_get siScr onaccept()
 		{
+			o3_trace_scrfun("onaccept");
 			return m_on_accept;
 		}
 		o3_set siScr setOnaccept(iScr* cb)
 		{
+			o3_trace_scrfun("setOnaccept");
 			return m_on_accept = cb;
 		}
 
 		o3_get siScr onconnect()
 		{
+			o3_trace_scrfun("onconnect");
 			return m_on_connect;
 		}
 		o3_set siScr setOnconnect(iScr* cb)
 		{
+			o3_trace_scrfun("setOnconnect");
 			return m_on_connect = cb;
 		}
 
 		o3_get siScr onreceive()
 		{
+			o3_trace_scrfun("onreceive");
 			return m_on_receive;
 		}
 		o3_set siScr setOnreceive(iScr* cb)
 		{
+			o3_trace_scrfun("setOnreceive");
 			return m_on_receive = cb;
 		}
 
 		o3_get siScr onsend()
 		{
+			o3_trace_scrfun("onsend");
 			return m_on_send;
 		}
 		o3_set siScr setOnsend(iScr* cb)
 		{
+			o3_trace_scrfun("setOnsend");
 			return m_on_send = cb;
 		}
 

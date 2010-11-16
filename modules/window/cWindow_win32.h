@@ -36,6 +36,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
     cWindow(HWND hwnd, bool chained = false, bool owner = true)
         : m_hwnd(hwnd), m_icon_s(NULL), m_icon_l(NULL), m_done(false), m_color(0), m_text_color(-1),m_owner(owner)
     {
+        o3_trace_scrfun("cWindow");
         if (chained)
         {
             // if the hwnd already use the windowlong parameter
@@ -57,6 +58,8 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual ~cWindow()
     {
+
+        o3_trace_scrfun("~cWindow");
 
         if (m_icon_s) {
             ::DestroyIcon(m_icon_s);   
@@ -96,6 +99,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     static o3_ext("cO3") o3_get siWindow window(iCtx* ctx)
     {
+        o3_trace_scrfun("window");
         Var v = ctx->value("appWindow");
         siWindow ret = v.toScr();
         if (ret)
@@ -114,6 +118,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
     static o3_ext("cO3") o3_fun siWindow createWindow(o3_tgt iScr* tgt, const char* caption, int x, int y, 
         int width, int height, int style = 0)
     {   
+		o3_trace_scrfun("createWindow");   
 		tgt = 0;
         return create(0, caption, x, y, width, height, style);
     }
@@ -121,12 +126,15 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
     o3_fun siWindow createWindow(const char* caption, int x, int y, 
         int width, int height, int style = 0)
     {
+        o3_trace_scrfun("createWindow");
         return create(m_hwnd, caption, x, y, width, height, style);
     }
 
     static siWindow create(HWND parent, const char* caption, int x, int y, 
         int width, int height, int style = 0)
     {
+        // register o3 default window class, if needed
+        o3_trace_scrfun("create");
         // register o3 default window class, if needed
         WNDCLASSW wnd_class;        
         regWndClass(wnd_class);
@@ -148,12 +156,15 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
     static DWORD getFlags(int)
     {
         // TODO: implement
+        o3_trace_scrfun("getFlags");
+        // TODO: implement
         DWORD flags = WS_SYSMENU | WS_TABSTOP | WS_EX_CONTROLPARENT | WS_VISIBLE; 
         return flags;
     }
 
     virtual int x()
     {
+        o3_trace_scrfun("x");
         RECT r;
         ::GetWindowRect(m_hwnd, &r);
         return r.left;
@@ -161,6 +172,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual int y()
     {
+        o3_trace_scrfun("y");
         RECT r;
         ::GetWindowRect(m_hwnd, &r);
         return r.top;    
@@ -168,6 +180,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual o3_get int clientX()
     {
+        o3_trace_scrfun("clientX");
         RECT w,c;
         ::GetWindowRect(m_hwnd,&w);
         ::GetClientRect(m_hwnd,&c);
@@ -177,6 +190,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual o3_get int clientY()
     {
+        o3_trace_scrfun("clientY");
         RECT w,c;
         ::GetWindowRect(m_hwnd,&w);
         ::GetClientRect(m_hwnd,&c);
@@ -186,6 +200,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
                     
     virtual int height()
     {
+        o3_trace_scrfun("height");
         RECT r;
         ::GetWindowRect(m_hwnd, &r);
         return r.bottom - r.top;        
@@ -193,6 +208,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual int width()
     {
+        o3_trace_scrfun("width");
         RECT r;
         ::GetWindowRect(m_hwnd, &r);
         return r.right - r.left;            
@@ -200,6 +216,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual int setX(int x) 
     {
+        o3_trace_scrfun("setX");
         RECT r;
         ::GetWindowRect(m_hwnd, &r);
         ::MoveWindow ( m_hwnd, x, r.top, r.right - r.left, r.bottom - r.top, TRUE);
@@ -208,6 +225,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
     
     virtual int setY(int y) 
     {
+        o3_trace_scrfun("setY");
         RECT r;
         ::GetWindowRect(m_hwnd, &r);
         ::MoveWindow( m_hwnd, r.left, y, r.right - r.left, r.bottom - r.top, TRUE);
@@ -216,6 +234,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual int setHeight(int h) 
     {
+        o3_trace_scrfun("setHeight");
         RECT r;
         ::GetWindowRect(m_hwnd, &r);
         ::MoveWindow( m_hwnd, r.left, r.top, r.right - r.left, h, TRUE);
@@ -224,6 +243,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual int setWidth(int w) 
     {
+        o3_trace_scrfun("setWidth");
         RECT r;
         ::GetWindowRect(m_hwnd, &r);
         ::MoveWindow( m_hwnd, r.left, r.top, w, r.bottom - r.top, TRUE);
@@ -232,26 +252,31 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual o3_fun void minimize()
     {
+        o3_trace_scrfun("minimize");
         ::ShowWindow(m_hwnd, SW_MINIMIZE);
     }
 
     virtual o3_fun void maximize() 
     {
+        o3_trace_scrfun("maximize");
         ::ShowWindow(m_hwnd, SW_MAXIMIZE);
     }
 
     virtual o3_fun void restore() 
     {
+        o3_trace_scrfun("restore");
         ::ShowWindow(m_hwnd, SW_RESTORE);
     }
 
     virtual o3_fun void close() 
     {
+        o3_trace_scrfun("close");
         ::PostMessage(m_hwnd,WM_CLOSE,0,0);
     }
 
     virtual o3_set bool setVisible(bool visible)     
     {
+        o3_trace_scrfun("setVisible");
         ::ShowWindow(m_hwnd, visible ? SW_SHOW : SW_HIDE);
         ::UpdateWindow(m_hwnd);
         return visible;
@@ -259,11 +284,13 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual o3_get bool showButtons()
     {
+        o3_trace_scrfun("showButtons");
         return true;        
     }
 
     virtual o3_set bool setShowButtons(bool show) 
     {        
+        o3_trace_scrfun("setShowButtons");        
         LONG style = ::GetWindowLong(m_hwnd, GWL_STYLE);        
         
         if ( (style & WS_SYSMENU) && !show)
@@ -280,6 +307,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual o3_get Str caption() 
     {
+        o3_trace_scrfun("caption");
         WStr caption;
         caption.reserve(4096);
         ::GetWindowTextW(m_hwnd, caption.ptr(), 4096);
@@ -289,6 +317,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual o3_set Str setCaption(const Str& caption_string) 
     {      
+        o3_trace_scrfun("setCaption");      
         ::SetWindowTextA(m_hwnd, caption_string.ptr());
         ::InvalidateRect(m_hwnd,0,TRUE);
         return caption_string;
@@ -296,6 +325,8 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual o3_set void setIcon(const Str& name_of_icon) 
     {
+        // get the icon from the rsc
+        o3_trace_scrfun("setIcon");
         // get the icon from the rsc
         Buf icon = ((cSys*) g_sys)->resource(name_of_icon);
         if (icon.empty())
@@ -307,6 +338,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual o3_fun void useIcon(const Buf& icon_data)
     {
+        o3_trace_scrfun("useIcon");
         if (m_icon_s) {
             ::DestroyIcon(m_icon_s);
             m_icon_s = NULL;
@@ -353,11 +385,13 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     virtual void* handle()
     {
+        o3_trace_scrfun("handle");
         return m_hwnd;
     }
 
     virtual LRESULT CALLBACK wndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
+        o3_trace_scrfun("wndProc");
         switch (uMsg)
         {
             // if a button is clicked cButton object probably need to do a callback
@@ -423,6 +457,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     o3_fun bool focus() 
     {
+      o3_trace_scrfun("focus");
       if (m_hwnd == NULL)
         return false;
 
@@ -441,6 +476,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     static o3_ext("cO3") o3_fun int alertBox(const char* caption, const char* message, const char* mode=0, siEx* ex=0) 
     {
+        o3_trace_scrfun("alertBox");
         WStr wcaption = Str(caption);
         WStr wmessage = Str(message);
 
@@ -468,6 +504,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     o3_fun void destroy()
     {
+        o3_trace_scrfun("destroy");
         if (m_hwnd) {
                 DestroyWindow(m_hwnd);
             m_hwnd = 0;            
@@ -476,12 +513,14 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
 
     o3_set siScr setOnclose(iCtx *ctx, iScr* onclose) 
     {
+        o3_trace_scrfun("setOnclose");
         m_ctx = ctx;
         return m_onclose =  onclose;
     }
 
     o3_set siScr setOnend(iCtx *ctx, iScr* onend) 
     {
+        o3_trace_scrfun("setOnend");
         m_ctx = ctx;
         return m_onend =  onend;
     }

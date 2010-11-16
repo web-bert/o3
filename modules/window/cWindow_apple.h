@@ -26,6 +26,7 @@ namespace o3 {
 struct cWindow : cWindowBase {
     static o3_ext("cO3") o3_get siScr window(iCtx* ctx)
     {
+        o3_trace_scrfun("window");
         static Var window = ctx->value("window");
         
         if (window.type() == Var::TYPE_VOID)
@@ -38,6 +39,7 @@ struct cWindow : cWindowBase {
     
     cWindow()
     {
+        o3_trace_scrfun("cWindow");
         m_window = [[NSApplication sharedApplication] mainWindow];
         m_position.x = 0;
         m_position.y = 0;
@@ -50,14 +52,14 @@ struct cWindow : cWindowBase {
     
     int x()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("x");
 
         return m_window.frame.origin.x;
     }
     
     int setX(int x)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setX");
         NSRect frame = m_window.frame;
         
         frame.origin.x = x;
@@ -67,14 +69,14 @@ struct cWindow : cWindowBase {
     
     int y()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("y");
 
         return m_window.frame.origin.y;
     }
     
     int setY(int y)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setY");
         NSRect frame = m_window.frame;
         
         frame.origin.y = y;
@@ -84,14 +86,14 @@ struct cWindow : cWindowBase {
     
     int width()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("width");
 
         return m_window.frame.size.width;
     }
     
     int setWidth(int width)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setWidth");
         NSRect frame = m_window.frame;
         
         frame.size.width = width;
@@ -101,14 +103,14 @@ struct cWindow : cWindowBase {
     
     int height()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("height");
 
         return m_window.frame.size.height;
     }
     
     int setHeight(int height)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setHeight");
         NSRect frame = m_window.frame;
         
         frame.size.height = height;
@@ -118,6 +120,7 @@ struct cWindow : cWindowBase {
     
     void sendMouseMove(int x, int y)
     {
+        o3_trace_scrfun("sendMouseMove");
         NSRect frame;
         CGFloat top, left;
         CGEventRef event;

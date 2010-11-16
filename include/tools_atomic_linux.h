@@ -22,16 +22,19 @@ namespace o3 {
 
 inline int atomicTas(volatile int& x)
 {
+    o3_trace_tools("atomicTas");
     return __sync_lock_test_and_set(&x, 1);
 }
 
 inline int atomicInc(volatile int& x)
 {
+    o3_trace_tools("atomicInc");
     return __sync_add_and_fetch(&x, 1);
 }
 
 inline int atomicDec(volatile int& x)
 {
+    o3_trace_tools("atomicDec");
     return __sync_sub_and_fetch(&x, 1);
 }
 

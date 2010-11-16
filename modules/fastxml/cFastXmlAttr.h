@@ -23,7 +23,7 @@ namespace o3 {
         cFastXmlAttr(iXmlDocument* doc, xml_node parent, xml_attribute attr) 
             : cFastXmlNode(doc, parent, attr) 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("cFastXmlAttr");
 			o3_assert(attr);
         }
 
@@ -40,7 +40,7 @@ namespace o3 {
 
         o3_get Str name() 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("name");
             return m_attr.name();
         }
 
@@ -52,13 +52,13 @@ namespace o3 {
 
         virtual o3_get Str value() 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("value");
             return m_attr.value();
         }
 
         virtual o3_set void setValue(const char* value) 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("setValue");
 			m_attr.set_value(value);
         }
 

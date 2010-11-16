@@ -7,6 +7,7 @@ namespace o3{
 
 	__inline double calc_sq_distance(double x1, double y1, double x2, double y2)
 	{
+		o3_trace_scrfun("calc_sq_distance");
 		double dx = x2-x1;
 		double dy = y2-y1;
 		return dx * dx + dy * dy;
@@ -26,12 +27,14 @@ namespace o3{
 			  m_angle_tolerance(0.0),
 			  m_count(0)
 		  { 
+			  o3_trace_scrfun("QuadraticCurveGen"); 
 			  init(x1, y1, x2, y2, x3, y3);
 		  }
 
 
 		  void init(double x1, double y1, double x2, double y2, double x3, double y3)
 		  {
+			  o3_trace_scrfun("init");
 			  m_points.clear();
 			  m_distance_tolerance_square = 0.5 / m_approximation_scale;
 			  m_distance_tolerance_square *= m_distance_tolerance_square;
@@ -41,6 +44,7 @@ namespace o3{
 
 		  unsigned vertex(double* x, double* y)
 		  {
+			  o3_trace_scrfun("vertex");
 			  if(m_count >= m_points.size()) return agg::agg::path_cmd_stop;
 			  V2<double> &p = m_points[m_count++];
 			  *x = p.x;
@@ -50,6 +54,7 @@ namespace o3{
 
 		void recursive_bezier(double x1, double y1, double x2, double y2, double x3, double y3,unsigned level)
 		{
+			o3_trace_scrfun("recursive_bezier");
 			if(level > curve_recursion_limit) 
 			{
 				return;
@@ -131,6 +136,8 @@ namespace o3{
 		void bezier(double x1, double y1, double x2, double y2, double x3, double y3)
 		{
 			//m_points.push(V2<double>(x1, y1)); // skip startpoint.. we use "curveTo" which implies the starting point is already there 
+			o3_trace_scrfun("bezier");
+			//m_points.push(V2<double>(x1, y1)); // skip startpoint.. we use "curveTo" which implies the starting point is already there 
 			recursive_bezier(x1, y1, x2, y2, x3, y3, 0);
 			m_points.push(V2<double>(x3, y3));
 		}
@@ -153,6 +160,7 @@ namespace o3{
 			m_cusp_limit(0.0),
 			m_count(0)
 		{ 
+			o3_trace_scrfun("BezierCurveGen"); 
 			init(x1, y1, x2, y2, x3, y3, x4, y4);
 		}
 
@@ -161,6 +169,7 @@ namespace o3{
 			double x3, double y3,
 			double x4, double y4)
 		{
+			o3_trace_scrfun("init");
 			m_points.clear();
 			m_distance_tolerance_square = 0.5 / m_approximation_scale;
 			m_distance_tolerance_square *= m_distance_tolerance_square;
@@ -170,6 +179,7 @@ namespace o3{
 
 		unsigned vertex(double* x, double* y)
 		{
+			o3_trace_scrfun("vertex");
 			if(m_count >= m_points.size()) return agg::agg::path_cmd_stop;
 			const V2<double> & p = m_points[m_count++];
 			*x = p.x;
@@ -183,6 +193,7 @@ namespace o3{
 			double x4, double y4,
 			unsigned level)
 		{
+			o3_trace_scrfun("recursive_bezier");
 			if(level > curve_recursion_limit) 
 			{
 				return;
@@ -395,6 +406,8 @@ namespace o3{
 			double x4, double y4)
 		{
 			// m_points.push(V2<double>(x1, y1)); first point skipped in "curve to"
+			o3_trace_scrfun("bezier");
+			// m_points.push(V2<double>(x1, y1)); first point skipped in "curve to"
 			recursive_bezier(x1, y1, x2, y2, x3, y3, x4, y4, 0);
 			m_points.push(V2<double>(x4, y4));
 		}
@@ -416,6 +429,7 @@ namespace o3{
 
 		m_x(x), m_y(y), m_rx(rx), m_ry(ry), m_scale(1.0)
 		{
+			o3_trace_scrfun("ArcGen");
 			normalize(a1, a2, ccw);
 			m_path_cmd = agg::agg::path_cmd_move_to; 
 			m_angle = m_start;
@@ -425,6 +439,7 @@ namespace o3{
 
 		unsigned vertex(double* x, double* y)
 		{
+			o3_trace_scrfun("vertex");
 			if(agg::agg::is_stop(m_path_cmd)) return agg::agg::path_cmd_stop;
 			double newdist = distancehad + distanceperstep;
 			if(newdist  >= distance)
@@ -448,6 +463,7 @@ namespace o3{
 
 		void normalize(double a1, double a2, bool ccw)
 		{
+			o3_trace_scrfun("normalize");
 			double ra = (fabs(m_rx) + fabs(m_ry)) / 2;
 			
 			m_da = acos(ra / (ra + 0.125 / m_scale)) * 2;

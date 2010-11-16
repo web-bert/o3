@@ -25,6 +25,6 @@
 
 namespace o3{
     int g_outerComponents = 0;
-    extern iSys* g_sys = 0;
+    extern iSys* g_sys;
 }
 

@@ -31,11 +31,13 @@ namespace o3 {
 
         cModule(void* handle)
         {
+            o3_trace_sys("cModule");
             m_handle = (HMODULE)handle;
         }
 
         ~cModule()
         {
+            o3_trace_sys("~cModule");
             typedef void (*o3_deinit_t)();
             
             o3_deinit_t deinit = (o3_deinit_t) GetProcAddress(m_handle, "deinit");
@@ -51,6 +53,7 @@ namespace o3 {
 
         void* symbol(const char* name)
         {
+            o3_trace_sys("symbol");
             return GetProcAddress(m_handle, name);
         }
     };
@@ -67,6 +70,7 @@ namespace o3 {
 
         ~cThread()
         {
+            o3_trace_sys("~cThread");
             if ((m_running || m_cancelled) && !m_joined) {
                 m_cancelled = true;
                 if (m_handle)
@@ -86,6 +90,7 @@ namespace o3 {
         DWORD       m_thread_id;
 
         static DWORD WINAPI startRoutine(LPVOID lpParameter) {
+            o3_trace_sys("startRoutine");
             cThread* t = (cThread*) lpParameter;
 
             t->m_run(o3_cast t);
@@ -95,16 +100,19 @@ namespace o3 {
         
         bool running()
         {
+            o3_trace_sys("running");
             return m_running;
         }
 
         bool cancelled()
         {
+            o3_trace_sys("cancelled");
             return m_cancelled;
         }
 
         void run()
         {            
+            o3_trace_sys("run");            
             m_handle = CreateThread(0, 0, startRoutine, (LPVOID) this,
                 0, &m_thread_id);
             m_running = true;
@@ -112,11 +120,13 @@ namespace o3 {
 
         void cancel()
         {
+            o3_trace_sys("cancel");
             m_cancelled = true;
         }
 
         void join()
         {
+            o3_trace_sys("join");
             if (running() || m_cancelled) {
                 m_cancelled = true;
                 WaitForSingleObject(m_handle, INFINITE);
@@ -131,11 +141,13 @@ namespace o3 {
     {
         cMutex()
         {
+            o3_trace_sys("cMutex");
             InitializeCriticalSection(&m_section);
         }
 
         ~cMutex()
         {
+            o3_trace_sys("~cMutex");
             DeleteCriticalSection(&m_section);
         }        
 
@@ -147,11 +159,13 @@ namespace o3 {
 
         void lock()
         {
+            o3_trace_sys("lock");
             EnterCriticalSection(&m_section);
         }
 
         void unlock()
         {
+            o3_trace_sys("unlock");
             LeaveCriticalSection(&m_section);
         }
     };
@@ -178,6 +192,7 @@ namespace o3 {
 
         virtual ~cHandle()
         {
+            o3_trace_sys("~cHandle");
             if (m_handle)
                 switch (m_type) {
                     case TYPE_DEFAULT:
@@ -207,6 +222,7 @@ namespace o3 {
 
         inline HANDLE handle()
         {
+            o3_trace_sys("handle");
             return m_handle;
         }
     };
@@ -223,6 +239,7 @@ namespace o3 {
         
         virtual ~cEvent()
         {
+            o3_trace_sys("~cEvent");
             if (m_event)
                 CloseHandle(m_event);
         }
@@ -236,6 +253,7 @@ namespace o3 {
 
         virtual void wait(iMutex* mutex)
         {
+            o3_trace_sys("wait");
             if(mutex)
                 mutex->unlock();
             
@@ -247,16 +265,19 @@ namespace o3 {
 
         virtual void signal()
         {
+            o3_trace_sys("signal");
             if (m_event)
                 SetEvent(m_event);
         }
 
         virtual void broadcast()
         {
+            o3_trace_sys("broadcast");
             signal();
         }
 
         HANDLE handle() {
+            o3_trace_sys("handle");
             return m_event;
         }        
     };
@@ -278,6 +299,7 @@ namespace o3 {
 
             ~cListener()
             {
+                o3_trace_sys("~cListener");
                 if (siMessageLoop loop = m_loop)
                     ((cMessageLoop*) loop.ptr())->removeListener(siHandle(m_handle));
             }
@@ -291,6 +313,7 @@ namespace o3 {
 
             virtual void* handle() 
             {
+                o3_trace_sys("handle");
                 return m_handle;    
             }
         };        
@@ -325,6 +348,7 @@ namespace o3 {
                 , m_reset(true)
                 , m_mutex(g_sys->createMutex())                
             {
+                o3_trace_sys("cEventHandler");
                 m_handles[0] = siHandle(m_event)->handle();
                 m_nhandles = 1;
             }
@@ -371,6 +395,7 @@ namespace o3 {
 
             siListener createListener(iHandle* ihandle, Delegate fun, bool manual=false) 
             {				
+                o3_trace_sys("createListener");				
                 if (!ihandle)
                     return siListener();
 
@@ -385,6 +410,7 @@ namespace o3 {
 
             void removeListener(iHandle* ihandle)
             {
+                o3_trace_sys("removeListener");
                 if (!ihandle)
                     return;
 
@@ -403,6 +429,7 @@ namespace o3 {
 
             bool wait(int timeout)
             {
+                o3_trace_sys("wait");
                 {
                     Lock lock(m_mutex);
                     if (m_reset)
@@ -450,6 +477,7 @@ namespace o3 {
 
             bool handleEventsFrom(DWORD index)
             {
+                o3_trace_sys("handleEventsFrom");
                 if (index == 0) {
                     index = WaitForMultipleObjects( m_nhandles-1, 
                         m_handles + 1, FALSE, 0) + 1;
@@ -494,6 +522,7 @@ namespace o3 {
 
             void reset()
             {
+                o3_trace_sys("reset");
                 tMap<HANDLE,EventObject>::Iter it;
                 {
                     Lock lock(m_mutex);                    
@@ -530,16 +559,19 @@ namespace o3 {
 		// the handle needs to be reset manually
         siListener createListener(void* handle, unsigned flag, const Delegate& fun)
         {
+            o3_trace_sys("createListener");
             return m_event_handler.createListener((iHandle*) handle, fun, flag&1);
         }
 
         void removeListener(iHandle* handle)
         {
+            o3_trace_sys("removeListener");
             m_event_handler.removeListener(handle);
         }
 
         siTimer createTimer(int timeout, const Delegate& fun)
         {
+            o3_trace_sys("createTimer");
             timeout;
             fun;
             return siTimer();
@@ -547,6 +579,7 @@ namespace o3 {
 
         void post(const Delegate& fun, iUnk* arg)
         {
+            o3_trace_sys("post");
             Lock lock(m_mutex);
 			if (m_queue.size() <  O3_MESSAGE_LIMIT)
                 m_queue.pushBack(o3_new(Message(fun, arg)));
@@ -555,25 +588,25 @@ namespace o3 {
 
         void wait(int timeout)
         {
-            DWORD before(0);            
+            o3_trace_sys("wait");
+            DWORD start = GetTickCount(), spent(0);            
             Message* last_to_handle, *to_send;
             size_t nmessages;
             bool sent = false;
             
-            while(timeout>=0 && !sent)
-            {                       
-                before = GetTickCount();                
+            while(timeout>=spent && !sent)
+            {                       							       
                 m_event_handler.wait(0);
 
                 {
                     Lock lock(m_mutex);
                     nmessages = m_queue.size();
                 }                                    
-                
-                if ( !nmessages && !m_event_handler.wait(timeout)) {                    
+                if ( !nmessages && !m_event_handler.wait((timeout - spent)*10)) {                    
                     //no messages                    
-                    timeout -= (GetTickCount() - before) / 10;
-                    continue;
+                    //timeout -= (GetTickCount() - before) / 10;
+					spent = (GetTickCount() - start)/10;
+					continue;
                 }
 
                 {
@@ -600,8 +633,9 @@ namespace o3 {
                     sent = true;
                 } 
              
-                timeout -= (GetTickCount() - before) / 10;
-            }
+                //timeout -= (GetTickCount() - before) / 10;
+				spent = (GetTickCount() - start)/10;
+			}
             
         }
     };
@@ -625,28 +659,38 @@ namespace o3 {
             size_t size;
         };
 
+		FILE*					file;
         static const size_t     rsc_magic_num = 12344321;
         //tMap<Str, Position>     m_files;        // map of appended resource files
         size_t                  m_start_addr;   // start of the resource section in the file
         siStream                m_stream;       // self
 		zip_tools::CentralDir*	m_central_dir;
 
-        cSys()
+		cSys() : file(0), m_stream(0)
         {
+			o3_trace_no_trace;
 			CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-            g_sys = this;
+			removeLogFile();
+#ifdef O3_LOGFILE
+			//file = fopen("c:\\Users\\Gabor\\AppData\\Local\\Temp\\Low\\o3_v0_9\\o3log.txt", "a");
+            file = fopen("c:\\tmp\\o3log.txt", "a");
+#endif
+			g_sys = this;
             g_sys->addRef();
-			m_central_dir = o3_new(zip_tools::CentralDir)();
-            initResource();
+			//m_central_dir = o3_new(zip_tools::CentralDir)();
+            //initResource();
         }
 
         virtual ~cSys()
         {
             // every o3 component must be deleted before this destructor returns
+            o3_trace_no_trace("~cSys");
+            // every o3 component must be deleted before this destructor returns
             m_stream = 0;
 			o3_delete(m_central_dir); 
             m_weak = 0;			
-			CoUninitialize(); 
+			CoUninitialize();
+			fclose(file);
         }
 
         o3_begin_class(cSysBase)
@@ -654,22 +698,26 @@ namespace o3 {
 
         void* alloc(size_t size)
         {
+            o3_trace_sys("alloc");
             return ::operator new(size);
         }
 
         void free(void* ptr)
         {
+            o3_trace_sys("free");
             ::operator delete(ptr);
         }
 
         void o3assert(const char* pred, const char* file, int line)
         {
+			o3_trace_sys("o3assert");
 			o3::log("Assertion %s failed in file %s on line %d\n", pred, file, line);
 			abort();
         }
 
         siModule loadModule(const char* name)
         {
+            o3_trace_sys("loadModule");
             typedef bool (*o3_init_t)(iSys*);
 
             HMODULE handle;
@@ -696,6 +744,7 @@ namespace o3 {
     
         siThread createThread(const Delegate& run)
         {
+            o3_trace_sys("createThread");
             scThread thread = o3_new(cThread)(run);
 
             thread->run();
@@ -706,38 +755,46 @@ namespace o3 {
 
         siMutex createMutex()
         {
+            o3_trace_sys("createMutex");
             return o3_new(cMutex)();
         }
 
         siEvent createEvent()
         {            
+            o3_trace_sys("createEvent");            
             return o3_new(cEvent)(CreateEvent(NULL, FALSE, FALSE, NULL)) ;
         }
 
         siMessageLoop createMessageLoop()
         {
+            o3_trace_sys("createMessageLoop");
             return o3_new(cMessageLoop)();
         }
 
 		bool removeLogFile()
 		{
 			//DeleteFileW(L"c:\\Users\\Gabor\\AppData\\Local\\Temp\\Low\\o3_v0_9\\o3log.txt");
+			o3_trace_no_trace;
+			//DeleteFileW(L"c:\\Users\\Gabor\\AppData\\Local\\Temp\\Low\\o3_v0_9\\o3log.txt");
 			DeleteFileW(L"c:\\log\\o3log.txt");
 			return true;
 		}
 
-		virtual void logfv(const char* /*format*/, va_list /*ap*/)
+		virtual void logfv(const char* format, va_list ap)
 		{
+			o3_trace_no_trace;
 			//format;ap;
 			//vfprintf(stderr, format, ap);
 			//static bool rem = removeLogFile();
 			//FILE* file = fopen("c:\\Users\\Gabor\\AppData\\Local\\Temp\\Low\\o3_v0_9\\o3log.txt", "a");
-			//vfprintf(file, format, ap);
+			if (file)
+			vfprintf(file, format, ap);
 			//fclose(file);
 		}
 
 		virtual bool approvalBox(const char* msg, const char* caption)
 		{
+			o3_trace_sys("approvalBox");
 			int ret = MessageBoxA(NULL, msg, caption, MB_OKCANCEL);
 			return (ret == IDOK);
 		}
@@ -746,6 +803,8 @@ namespace o3 {
          // reading self as a stream and finding/reading the resource header in it        
         void initResource()
         {           
+            // TODO: openSelf is not implemented for posix yet
+            o3_trace_sys("initResource");           
             // TODO: openSelf is not implemented for posix yet
             if ( !(m_stream = openSelf()) )
                 goto error;          
@@ -765,11 +824,13 @@ namespace o3 {
 
         virtual tVec<Str> resourcePaths() 
         {
+            o3_trace_sys("resourcePaths");
             return zip_tools::listCentralDir(*m_central_dir);    
         }
 
         virtual Buf resource(const char* path)
         {
+			o3_trace_sys("resource");
 			cBufStream* buf_stream = o3_new(cBufStream)();
 			siStream stream(buf_stream);
 			zip_tools::readFileFromZip(path, m_stream, stream,*m_central_dir);
@@ -779,6 +840,7 @@ namespace o3 {
 
 		void sleep(int time)
 		{
+			o3_trace_sys("sleep");
 			Sleep(time);
 		}
 
@@ -787,6 +849,7 @@ namespace o3 {
         // unzipping a resource file into a Buf
         Buf unzipResource(size_t from, size_t size)
         {
+            o3_trace_sys("unzipResource");
             Buf zipped, unzipped;
             m_stream->setPos(from);
             zipped.reserve(size);
@@ -800,6 +863,7 @@ namespace o3 {
         // finding and validating the start address of the resource section if there is any
         bool readStartAddr()
         {
+            o3_trace_sys("readStartAddr");
             size_t buf(0), magic_num(0);
 
             // TODO: stream::size() is not implemented for posix yet
@@ -825,6 +889,8 @@ namespace o3 {
         // reads in the header section of the resource and build up the file map
         bool readHeader()
         {
+            //size_t name_len(0), start;, size;
+            o3_trace_sys("readHeader");
             //size_t name_len(0), start;, size;
             Str name;
 

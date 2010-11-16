@@ -21,6 +21,7 @@
 namespace o3 {
     struct cFastXmlNamedNodeMap : cScr, iXmlNamedNodeMap {
 		cFastXmlNamedNodeMap(iXmlElement* elem) {
+			o3_trace_scrfun("cFastXmlNamedNodeMap");
 			o3_assert(elem);
 			m_elem = elem;            
 		}
@@ -39,16 +40,17 @@ namespace o3 {
 		siXmlElement    m_elem;
 		
 		o3_fun bool __query__(int idx) {
-				o3_trace3 trace;
+				o3_trace_scrfun("__query__");
 				return (idx < length());
 		} 
 
 		o3_fun bool __deleter__(int , siEx* ex = 0) {
-			o3_trace3 trace; ex;
+			o3_trace_scrfun("__deleter__"); ex;
 			return false;
 		} 
 
 		o3_fun siXmlNode __getter__(int idx, siEx* ex = 0) {
+			o3_trace_scrfun("__getter__");
 			ex;
 			o3_trace3 trace;
 			if (idx >= length() || idx < 0) {                
@@ -60,22 +62,22 @@ namespace o3 {
 		}
 
 		virtual o3_fun siXmlNode getNamedItem(const char* name) {
-			o3_trace3 trace;
+			o3_trace_scrfun("getNamedItem");
 			return m_elem->getAttributeNode(name);
 		}
 
 		virtual o3_set siXmlNode setNamedItem(iXmlNode* arg) {
-			o3_trace3 trace;
+			o3_trace_scrfun("setNamedItem");
 			return m_elem->setAttributeNode(siXmlAttr(arg));
 		}
 
 		virtual o3_fun siXmlNode removeNamedItem(const char* name) {
-			o3_trace3 trace;
+			o3_trace_scrfun("removeNamedItem");
 			return m_elem->removeAttributeNode(m_elem->getAttributeNode(name));
 		}
 
 		virtual siXmlNode item(int index) {
-			o3_trace3 trace;
+			o3_trace_scrfun("item");
 			siXmlNode elem(m_elem);
 			xml_attribute attr = elem->node().first_attribute();
 			int l = 0;
@@ -87,7 +89,7 @@ namespace o3 {
 		}
 
 		virtual o3_get int length() {
-			o3_trace3 trace;
+			o3_trace_scrfun("length");
 			if (!m_elem) return 0;
 			int l = 0;
 			siXmlNode elem(m_elem);

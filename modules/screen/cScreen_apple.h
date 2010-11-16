@@ -25,6 +25,7 @@ namespace o3 {
 struct cScreen : cScreenBase {
     static o3_ext("cO3") o3_fun siScr screen(iCtx* ctx)
     {
+        o3_trace_scrfun("screen");
         static Var screen = ctx->value("screen");
 
         if (screen.type() == Var::TYPE_VOID)
@@ -39,14 +40,14 @@ struct cScreen : cScreenBase {
 
     int width()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("width");
 
         return [[NSScreen mainScreen] frame].size.width;
     }
 
     int height()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("height");
 
         return [[NSScreen mainScreen] frame].size.height;
     }

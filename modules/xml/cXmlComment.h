@@ -22,7 +22,7 @@ namespace o3 {
 	struct cXmlComment : cXmlCharacterData, iXmlComment2 {
         cXmlComment(xmlNodePtr node, iXmlNode2* owner_node, NodeMap* node_map) 
             : cXmlCharacterData(node, owner_node, node_map) {
-                o3_trace3 trace;
+                o3_trace_scrfun("cXmlComment");
         }
 
 		virtual ~cXmlComment()

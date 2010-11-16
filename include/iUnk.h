@@ -81,7 +81,7 @@ class tSi {
 public:
     tSi(T* ptr = 0) : m_ptr(ptr)
     {
-        o3_trace1 trace;
+        o3_trace_combase("tSi");
 
         if (m_ptr)
             m_ptr->addRef();
@@ -90,7 +90,7 @@ public:
     template<typename T1>
     tSi(T1* ptr) : m_ptr(0)
     {
-        o3_trace1 trace;
+        o3_trace_combase("tSi");
 
         if (ptr)
             (o3_cast ptr)->queryInterface(iidof(m_ptr), (void**) &m_ptr);
@@ -98,7 +98,7 @@ public:
 
     tSi(const tSi& that) : m_ptr(that.m_ptr)
     {
-        o3_trace1 trace;
+        o3_trace_combase("tSi");
 
         if (m_ptr)
             m_ptr->addRef();
@@ -107,7 +107,7 @@ public:
     template<typename T1>
     tSi(const tSi<T1>& that) : m_ptr(0)
     {
-        o3_trace1 trace;
+        o3_trace_combase("tSi");
 
         if (that.m_ptr)
             that.m_ptr->queryInterface(iidof(m_ptr), (void**) &m_ptr);
@@ -140,7 +140,7 @@ public:
 
     ~tSi()
     {
-        o3_trace1 trace;
+        o3_trace_combase("~tSi");
 
         if (m_ptr)
             m_ptr->release();

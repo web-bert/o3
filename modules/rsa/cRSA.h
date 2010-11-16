@@ -33,6 +33,7 @@ namespace o3 {
 
         static o3_ext("cO3") o3_get siScr rsa(iCtx* ctx)
 		{
+			o3_trace_scrfun("rsa");
 			Var var = ctx->value("rsa");
 			siScr rsa = var.toScr();
 			if (rsa)
@@ -44,6 +45,7 @@ namespace o3 {
 
         o3_fun Buf encrypt( const Buf& in, const Buf& mod, const Buf& exp, bool prv=true )
 		{
+            o3_trace_scrfun("encrypt");
             size_t size = (in.size() / mod.size() + 1) * mod.size();
             Buf out;
 
@@ -56,6 +58,7 @@ namespace o3 {
 
         o3_fun Buf decrypt( const Buf& in, const Buf& mod, const Buf& exp, bool prv=true )
 		{
+            o3_trace_scrfun("decrypt");
             size_t size = (in.size() / mod.size() + 1) * mod.size();
             Buf out;
 

@@ -30,6 +30,7 @@ struct cKeyboard : cKeyboardBase {
 
 	void sendKeyDown(int key)
 	{
+		o3_trace_scrfun("sendKeyDown");
 		int win_keycode = mapJsKeyCodes(key);
 		if (win_keycode > 0)
 			keyDown((BYTE)win_keycode);
@@ -37,6 +38,7 @@ struct cKeyboard : cKeyboardBase {
 
 	void sendKeyUp(int key)
 	{
+		o3_trace_scrfun("sendKeyUp");
 		int win_keycode = mapJsKeyCodes(key);
 		if (win_keycode > 0)
 			keyUp((BYTE)win_keycode);
@@ -44,6 +46,7 @@ struct cKeyboard : cKeyboardBase {
 
 	static void keyDown(BYTE VKey) 
 	{
+		o3_trace_scrfun("keyDown");
 		BYTE ScanCode = 0;
 		ScanCode = LOBYTE(::MapVirtualKey(VKey, 0));
 
@@ -52,11 +55,13 @@ struct cKeyboard : cKeyboardBase {
 
 	static void keyUp(BYTE VKey) 
 	{
+		o3_trace_scrfun("keyUp");
 		BYTE ScanCode = LOBYTE(::MapVirtualKey(VKey, 0));
 		::keybd_event(VKey, ScanCode, KEYEVENTF_KEYUP, 0);
 	}
 
 	static int mapJsKeyCodes(int js_code) {
+		o3_trace_scrfun("mapJsKeyCodes");
 		switch(js_code){
 			case 8: return VK_BACK;		//backspace  	
 			case 9: return VK_TAB;  	//tab 	

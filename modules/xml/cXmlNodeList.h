@@ -23,6 +23,7 @@ namespace o3 {
     struct cXmlNodeList : cScr, iXmlNodeList2 {
 
         cXmlNodeList(siXmlNode2 parent, const char* name = 0) {
+            o3_trace_scrfun("cXmlNodeList");
             m_query = name != 0;
             m_parent = parent;
             if(name) m_name = name;
@@ -41,24 +42,24 @@ namespace o3 {
         o3_glue_gen()
 
         o3_fun bool __query__(iCtx* ctx, int idx) {
-            o3_trace3 trace;
+            o3_trace_scrfun("__query__");
             return (idx < length(ctx));
         } 
         
         o3_fun bool __deleter__(int , siEx* ex = 0) {
-            o3_trace3 trace; ex;
+            o3_trace_scrfun("__deleter__"); ex;
             return false;
         } 
         
         o3_fun siXmlNode2 __getter__(iCtx* ctx, int idx, siEx* ex = 0) {
-            o3_trace3 trace; ex;
+            o3_trace_scrfun("__getter__"); ex;
             if (idx >= length(ctx) || idx < 0)
                 return siXmlNode2();
             return item(ctx, idx);
         }
         
         virtual siXmlNode2 item(iCtx* ctx, int index) {
-            o3_trace3 trace;
+            o3_trace_scrfun("item");
             siXmlNode2 item;
             
             if (m_query) {
@@ -72,7 +73,7 @@ namespace o3 {
         }
 
         virtual o3_get int length(iCtx* ctx) {
-            o3_trace3 trace;
+            o3_trace_scrfun("length");
             int length = 0;
             siXmlNode2 child = m_parent->firstChild(ctx);
 
@@ -85,7 +86,7 @@ namespace o3 {
         
         siXmlNode2 queryItem(iCtx* ctx, iXmlNode2* parent, const char* name,
                 int& index) {
-            o3_trace3 trace;
+            o3_trace_scrfun("queryItem");
             siXmlNode2 child = parent->firstChild(ctx);
 
             while (child) {
@@ -104,7 +105,7 @@ namespace o3 {
         }
 
         int queryLength(iCtx* ctx, iXmlNode2* parent, const char* name) {
-            o3_trace3 trace;
+            o3_trace_scrfun("queryLength");
             int length = 0;
             siXmlNode2 child = parent->firstChild(ctx);
             

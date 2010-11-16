@@ -21,6 +21,7 @@
 namespace o3 {
     struct cXmlNamedNodeMap : cScr, iXmlNamedNodeMap2 {
         cXmlNamedNodeMap(iXmlElement2* elem) {
+            o3_trace_scrfun("cXmlNamedNodeMap");
             o3_assert(elem);
             m_elem = elem;            
         }
@@ -37,16 +38,17 @@ namespace o3 {
         o3_glue_gen()
 
         o3_fun bool __query__(int idx) {
-            o3_trace3 trace;
+            o3_trace_scrfun("__query__");
             return (idx < length());
         } 
         
         o3_fun bool __deleter__(int , siEx* ex = 0) {
-            o3_trace3 trace; ex;
+            o3_trace_scrfun("__deleter__"); ex;
             return false;
         } 
         
         o3_fun siXmlNode2 __getter__(iCtx* ctx, int idx, siEx* ex = 0) {
+            o3_trace_scrfun("__getter__");
             ex;
             o3_trace3 trace;
             if (idx >= length() || idx < 0) {                
@@ -58,22 +60,22 @@ namespace o3 {
         }
         
 		virtual o3_fun siXmlNode2 getNamedItem(iCtx* ctx, const char* name) {
-            o3_trace3 trace;
+            o3_trace_scrfun("getNamedItem");
 			return m_elem->getAttributeNode(ctx, name);
 		}
         
 		virtual o3_set siXmlNode2 setNamedItem(iCtx* ctx, iXmlNode2* arg) {
-            o3_trace3 trace;
+            o3_trace_scrfun("setNamedItem");
 			return m_elem->setAttributeNode(ctx, siXmlAttr2(arg));
 		}
         
 		virtual o3_fun siXmlNode2 removeNamedItem(iCtx* ctx, const char* name) {
-            o3_trace3 trace;
+            o3_trace_scrfun("removeNamedItem");
 			return m_elem->removeAttributeNode(m_elem->getAttributeNode(ctx, name));
 		}
 
         virtual siXmlNode2 item(iCtx* ctx, int index) {
-            o3_trace3 trace;
+            o3_trace_scrfun("item");
             xmlAttrPtr attr = m_elem->firstAttr();
             int l = 0;
             while(attr && index!=l) {
@@ -85,7 +87,7 @@ namespace o3 {
 		}
         
 		virtual o3_get int length() {
-            o3_trace3 trace;
+            o3_trace_scrfun("length");
             if (!m_elem) return 0;
             int l = 0;
             xmlAttrPtr attr = m_elem->firstAttr();

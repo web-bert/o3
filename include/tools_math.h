@@ -27,11 +27,13 @@ namespace o3
 	public:
 		V2()
 		{
+			o3_trace_tools("V2");
 			x = y = 0;
 		};
 
 		template <typename C> V2(C _x, C _y)
 		{
+			o3_trace_tools("V2");
 			x = (T)_x;
 			y = (T)_y;
 		};
@@ -63,11 +65,13 @@ namespace o3
 		
 		M33()
 		{
+			o3_trace_tools("M33");
 			setIdentity();
 		};
 		
 		void setIdentity()
 		{
+			o3_trace_tools("setIdentity");
 			M[0][0] = M[1][1] = M[2][2] = 1.0f;
 			M[0][1] = M[0][2] = M[1][0] = 
 			M[1][2] = M[2][0] = M[2][1] = 0.0f;
@@ -75,6 +79,7 @@ namespace o3
 
 		void setTranslation(T x, T y)
 		{
+			o3_trace_tools("setTranslation");
 			setIdentity();
 			M[2][0] = x;
 			M[2][1] = y;
@@ -82,6 +87,8 @@ namespace o3
 
 		void setScale(T scalex, T scaley)
 		{
+
+			o3_trace_tools("setScale");
 
 			M[0][0] = scalex;
 			M[1][1] = scaley;
@@ -92,6 +99,7 @@ namespace o3
 
 		void setRotation(T theta)
 		{
+			o3_trace_tools("setRotation");
 			setIdentity();
 			T ct  = cos(theta);
 			T st  = sin(theta);
@@ -104,6 +112,7 @@ namespace o3
 
 		M33<T> Multiply(M33<T> &B)
 		{
+			o3_trace_tools("Multiply");
 			M33<T> R;
 			R.M[0][0] = M[0][0]*B.M[0][0] + M[1][0]*B.M[0][1] + M[2][0]*B.M[0][2];
 			R.M[1][0] = M[0][0]*B.M[1][0] + M[1][0]*B.M[1][1] + M[2][0]*B.M[1][2];
@@ -121,6 +130,7 @@ namespace o3
 
 		V2<T> Multiply(V2<T> &B)
 		{
+			o3_trace_tools("Multiply");
 			V2<T> R;
 
 			R.x = M[0][0]*B.x + M[1][0]*B.y + M[2][0];

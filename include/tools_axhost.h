@@ -78,6 +78,8 @@ namespace o3 {
             LRESULT CALLBACK wndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 // CHECK: think for better solution...
+                o3_trace_tools("wndProc");
+                // CHECK: think for better solution...
                 if (!p_this->m_hwnd)
                     p_this->m_hwnd = hwnd;
 
@@ -128,10 +130,12 @@ namespace o3 {
 	        mscom_end();   
 
             ULONG STDMETHODCALLTYPE AddRef() {
+                o3_trace_tools("AddRef");
                 int32_t ret = atomicInc(_m_com.ref_count);
                 return (ULONG)ret;
             } 
             ULONG STDMETHODCALLTYPE Release() {              
+                o3_trace_tools("Release");              
                 int ret = atomicDec(_m_com.ref_count);
                 if( ret == 0){ 
                     this->~HostSink(); 
@@ -145,17 +149,20 @@ namespace o3 {
 	        // IDispatch methods
 	        STDMETHODIMP GetTypeInfoCount(UINT *pctinfo)
             {
+                o3_trace_tools("GetTypeInfoCount");
                 return E_NOTIMPL;
             }
 	        
             STDMETHODIMP GetTypeInfo(UINT iTInfo,LCID lcid,ITypeInfo **ppTInfo)
             {
+                o3_trace_tools("GetTypeInfo");
                 return E_NOTIMPL;
             }
 
 	        STDMETHODIMP GetIDsOfNames(REFIID riid,LPOLESTR *rgszNames,
                 UINT cNames,LCID lcid,DISPID *rgDispId)
             {
+                o3_trace_tools("GetIDsOfNames");
                 return E_NOTIMPL;
             }
 
@@ -163,6 +170,8 @@ namespace o3 {
                 WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,
                 EXCEPINFO *pExcepInfo,UINT *puArgErr)
             {
+                // here we can receive the events and play with them
+                o3_trace_tools("Invoke");
                 // here we can receive the events and play with them
                 if (dispIdMember==DISPID_NEWWINDOW2) 
                 {
@@ -193,6 +202,7 @@ namespace o3 {
             , m_advise_cookie(0)
 			, m_shut_down(false)
         {
+            o3_trace_tools("HostIE");
             m_rect.left = 0;
             m_rect.top = 0;
             m_rect.right = 640;
@@ -208,6 +218,7 @@ namespace o3 {
 
         virtual ~HostIE()
         {
+            o3_trace_tools("~HostIE");
             dropBrowser();
         }
 
@@ -220,10 +231,12 @@ namespace o3 {
 		mscom_end();
 
         ULONG STDMETHODCALLTYPE AddRef() {
+            o3_trace_tools("AddRef");
             int32_t ret = atomicInc(_m_com.ref_count);
             return (ULONG)ret;
         } 
         ULONG STDMETHODCALLTYPE Release() {              
+            o3_trace_tools("Release");              
             int ret = atomicDec(_m_com.ref_count);
             if( ret == 0){ 
                 this->~HostIE(); 
@@ -259,6 +272,7 @@ namespace o3 {
 
 		void setApproveTarget(const char* url)
 		{
+			o3_trace_tools("setApproveTarget");
 			int idx = m_o3->resolve(m_ctx, "approveTarget", true);
 			Var ret, arg = Str(url);
 			m_o3->invoke(m_ctx, iScr::ACCESS_SET, idx, 1, &arg, &ret);
@@ -266,6 +280,7 @@ namespace o3 {
 
         void displayURL(const char* url)
         {
+		   o3_trace_tools("displayURL");
 		   HRESULT res = CoInternetSetFeatureEnabled(FEATURE_LOCALMACHINE_LOCKDOWN, SET_FEATURE_ON_THREAD_LOCALMACHINE, false);
            if (!m_web_browser2)
                return;
@@ -289,6 +304,7 @@ namespace o3 {
 
         HWND createWindow()
         {
+		    o3_trace_tools("createWindow");
 		    WNDCLASSW wc;
             regWndClass(wc);
             
@@ -305,12 +321,14 @@ namespace o3 {
 
         void showWindow()
         {
+            o3_trace_tools("showWindow");
             ShowWindow(m_hwnd, SW_SHOW);
 			UpdateWindow(m_hwnd);
         }
 
         bool initProtocol()
         {
+			o3_trace_tools("initProtocol");
 			m_proto_factory = o3_new(cProtocolIE)(m_ctx);
 			cProtocolIE::registerProtocol(m_proto_factory.ptr());
 
@@ -319,6 +337,7 @@ namespace o3 {
 
         bool embedBrowser()
         {
+	        o3_trace_tools("embedBrowser");
 	        SIClassFactory		class_factory = 0;
 	        SIOleObject         browser_object;
 	        
@@ -374,6 +393,7 @@ namespace o3 {
 
         void dropBrowser()
         {
+            o3_trace_tools("dropBrowser");
             if (m_connection)
                 m_connection->Unadvise(m_advise_cookie);
             m_advise_cookie = 0;
@@ -389,12 +409,15 @@ namespace o3 {
         void resizeBrowser(DWORD width, DWORD height)
         {
 	        // Notify the brwoser about the window size change
+	        o3_trace_tools("resizeBrowser");
+	        // Notify the brwoser about the window size change
 	        m_web_browser2->put_Width(width);
 	        m_web_browser2->put_Height(height);
         }
 
         void start()
         {
+            o3_trace_tools("start");
             MSG msg;    
             while (!m_shut_down && GetMessage(&msg, 0, 0, 0) == 1) 
             {
@@ -416,12 +439,14 @@ namespace o3 {
         // display the context menu.
         HRESULT STDMETHODCALLTYPE ShowContextMenu(DWORD dwID, POINT *ppt, IUnknown *pcmdtReserved, IDispatch *pdispReserved)
         {
+	        o3_trace_tools("ShowContextMenu");
 	        return(S_OK);
         }
 
         // initi browser UI
         HRESULT STDMETHODCALLTYPE GetHostInfo(DOCHOSTUIINFO *pInfo)
         {
+            o3_trace_tools("GetHostInfo");
             pInfo->cbSize = sizeof(DOCHOSTUIINFO);
 
             //set flags here like:
@@ -456,47 +481,58 @@ namespace o3 {
 
         HRESULT STDMETHODCALLTYPE ShowUI(DWORD dwID, IOleInPlaceActiveObject *pActiveObject, IOleCommandTarget __RPC_FAR *pCommandTarget, IOleInPlaceFrame __RPC_FAR *pFrame, IOleInPlaceUIWindow *pDoc)
         {
+	        o3_trace_tools("ShowUI");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE HideUI()
         {
+	        o3_trace_tools("HideUI");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE UpdateUI()
         {
+	        o3_trace_tools("UpdateUI");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE EnableModeless(BOOL fEnable)
         {
+	        o3_trace_tools("EnableModeless");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE OnDocWindowActivate(BOOL fActivate)
         {
+	        o3_trace_tools("OnDocWindowActivate");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE OnFrameWindowActivate(BOOL fActivate)
         {
+	        o3_trace_tools("OnFrameWindowActivate");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE ResizeBorder(LPCRECT prcBorder, IOleInPlaceUIWindow *pUIWindow, BOOL fRameWindow)
         {
+	        o3_trace_tools("ResizeBorder");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE TranslateAccelerator(LPMSG lpMsg, const GUID *pguidCmdGroup, DWORD nCmdID)
         {
             // you can overwrite key strokes here...
+	        o3_trace_tools("TranslateAccelerator");
+            // you can overwrite key strokes here...
 	        return(S_FALSE);
         }
 
         HRESULT STDMETHODCALLTYPE GetOptionKeyPath(LPOLESTR __RPC_FAR *pchKey, DWORD dw)
         {
+            // MSDN : "Even if this method is not implemented, the parameter should be set to NULL."
+            o3_trace_tools("GetOptionKeyPath");
             // MSDN : "Even if this method is not implemented, the parameter should be set to NULL."
             pchKey = NULL;
 	        // default registry settings for now
@@ -520,6 +556,7 @@ namespace o3 {
         // custom drop target
         HRESULT STDMETHODCALLTYPE GetDropTarget(IDropTarget __RPC_FAR *pDropTarget, IDropTarget __RPC_FAR *__RPC_FAR *ppDropTarget)
         {
+            o3_trace_tools("GetDropTarget");
             if (m_drop_target) {
                 *ppDropTarget = m_drop_target;
                 m_drop_target->AddRef(); 
@@ -533,6 +570,8 @@ namespace o3 {
         HRESULT STDMETHODCALLTYPE GetExternal(IDispatch **ppDispatch)
         {
             
+            o3_trace_tools("GetExternal");
+            
             *ppDispatch = SIDispatch(this).ptr();
              
              this->AddRef(); 
@@ -542,6 +581,7 @@ namespace o3 {
         // URL modification
         HRESULT STDMETHODCALLTYPE TranslateUrl(DWORD dwTranslate, OLECHAR *pchURLIn, OLECHAR **ppchURLOut)
         {            
+	        o3_trace_tools("TranslateUrl");            
 	        *ppchURLOut = 0;
             return(S_FALSE);
         }
@@ -549,6 +589,7 @@ namespace o3 {
         // if we ever want to disable / customize cut and paste, it can be done here...
         HRESULT STDMETHODCALLTYPE FilterDataObject(IDataObject *pDO, IDataObject **ppDORet)
         {            
+	        o3_trace_tools("FilterDataObject");            
 	        *ppDORet = 0;
 	        return(S_FALSE);
         }
@@ -559,16 +600,20 @@ namespace o3 {
 
         HRESULT STDMETHODCALLTYPE SaveObject()
         {
+	        o3_trace_tools("SaveObject");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE GetMoniker(DWORD dwAssign, DWORD dwWhichMoniker, IMoniker **ppmk)
         {
+	        o3_trace_tools("GetMoniker");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE GetContainer(LPOLECONTAINER *ppContainer)
         {
+	        // no container support for now
+	        o3_trace_tools("GetContainer");
 	        // no container support for now
 	        *ppContainer = 0;
 
@@ -577,16 +622,19 @@ namespace o3 {
 
         HRESULT STDMETHODCALLTYPE ShowObject()
         {
+	        o3_trace_tools("ShowObject");
 	        return(NOERROR);
         }
 
         HRESULT STDMETHODCALLTYPE OnShowWindow(BOOL fShow)
         {
+	        o3_trace_tools("OnShowWindow");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE RequestNewObjectLayout()
         {
+	        o3_trace_tools("RequestNewObjectLayout");
 	        NOTIMPLEMENTED;
         }
 
@@ -595,26 +643,32 @@ namespace o3 {
 
         HRESULT STDMETHODCALLTYPE ContextSensitiveHelp(BOOL fEnterMode)
         {
+	        o3_trace_tools("ContextSensitiveHelp");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE CanInPlaceActivate()
         {
+	        o3_trace_tools("CanInPlaceActivate");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE OnInPlaceActivate()
         {
+	        o3_trace_tools("OnInPlaceActivate");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE OnUIActivate()
         {
+	        o3_trace_tools("OnUIActivate");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE GetWindowContext(IOleInPlaceFrame **lplpFrame, IOleInPlaceUIWindow  **lplpDoc, LPRECT lprcPosRect, LPRECT lprcClipRect, LPOLEINPLACEFRAMEINFO lpFrameInfo)
         {
+
+	        o3_trace_tools("GetWindowContext");
 
 	        *lplpFrame = SIOleInPlaceFrame(this).ptr();
 			AddRef();
@@ -635,31 +689,37 @@ namespace o3 {
 
         HRESULT STDMETHODCALLTYPE Scroll(SIZE scrollExtent)
         {
+	        o3_trace_tools("Scroll");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE OnUIDeactivate(BOOL fUndoable)
         {
+	        o3_trace_tools("OnUIDeactivate");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE OnInPlaceDeactivate()
         {
+	        o3_trace_tools("OnInPlaceDeactivate");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE DiscardUndoState()
         {
+	        o3_trace_tools("DiscardUndoState");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE DeactivateAndUndo()
         {
+	        o3_trace_tools("DeactivateAndUndo");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE OnPosRectChange(LPCRECT lprcPosRect)
         {
+            o3_trace_tools("OnPosRectChange");
             SIOleInPlaceObject	inplace(m_web_browser2);
 	        if (inplace)
 	        {
@@ -676,52 +736,62 @@ namespace o3 {
 
         HRESULT STDMETHODCALLTYPE GetWindow(HWND *lphwnd)
         {
+	        o3_trace_tools("GetWindow");
 	        *lphwnd = m_hwnd;
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE GetBorder(LPRECT lprectBorder)
         {
+	        o3_trace_tools("GetBorder");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE RequestBorderSpace(LPCBORDERWIDTHS pborderwidths)
         {
+	        o3_trace_tools("RequestBorderSpace");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE SetBorderSpace(LPCBORDERWIDTHS pborderwidths)
         {
+	        o3_trace_tools("SetBorderSpace");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE SetActiveObject(IOleInPlaceActiveObject *pActiveObject, LPCOLESTR pszObjName)
         {
+	        o3_trace_tools("SetActiveObject");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE InsertMenus(HMENU hmenuShared, LPOLEMENUGROUPWIDTHS lpMenuWidths)
         {
+	        o3_trace_tools("InsertMenus");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE SetMenu(HMENU hmenuShared, HOLEMENU holemenu, HWND hwndActiveObject)
         {
+	        o3_trace_tools("SetMenu");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE RemoveMenus(HMENU hmenuShared)
         {
+	        o3_trace_tools("RemoveMenus");
 	        NOTIMPLEMENTED;
         }
 
         HRESULT STDMETHODCALLTYPE SetStatusText(LPCOLESTR pszStatusText)
         {
+	        o3_trace_tools("SetStatusText");
 	        return(S_OK);
         }
 
         HRESULT STDMETHODCALLTYPE TranslateAccelerator(LPMSG lpmsg, WORD wID)
         {
+	        o3_trace_tools("TranslateAccelerator");
 	        NOTIMPLEMENTED;
         }
 
@@ -729,16 +799,19 @@ namespace o3 {
 
         HRESULT STDMETHODCALLTYPE GetTypeInfoCount(unsigned int *pctinfo)
         {
+	        o3_trace_tools("GetTypeInfoCount");
 	        return(E_NOTIMPL);
         }
 
         HRESULT STDMETHODCALLTYPE GetTypeInfo(unsigned int iTInfo, LCID lcid, ITypeInfo **ppTInfo)
         {
+	        o3_trace_tools("GetTypeInfo");
 	        return(E_NOTIMPL);
         }
 
         HRESULT STDMETHODCALLTYPE GetIDsOfNames(REFIID riid, OLECHAR ** rgszNames, unsigned int cNames, LCID lcid, DISPID * rgDispId)
         {
+            o3_trace_tools("GetIDsOfNames");
             HRESULT ret = S_OK;
             for (unsigned int i=0; i<cNames; i++) {
                 if (strEquals(rgszNames[i], L"o3"))
@@ -755,6 +828,7 @@ namespace o3 {
         HRESULT STDMETHODCALLTYPE Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags, 
             DISPPARAMS * pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, unsigned int *puArgErr)
         {
+            o3_trace_tools("Invoke");
             if ( 1 == dispIdMember  
                 && DISPATCH_PROPERTYGET == wFlags
                 && pVarResult ) 

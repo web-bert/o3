@@ -16,6 +16,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
+#define O3_NODE
 #include <v8.h>
 #include <o3.h>
 #include <js/js.h>

@@ -24,6 +24,7 @@ namespace o3 {
         cFastXmlDocument() 
 			: cFastXmlNode(0,xml_node(),xml_attribute()) 
 		{            
+			o3_trace_scrfun("cFastXmlDocument");            
 			m_node = m_root;		
 		}
 
@@ -42,13 +43,13 @@ namespace o3 {
             
         virtual o3_get siXmlElement documentElement() 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("documentElement");
             return siXmlElement(firstChild());
         }
         
         virtual o3_fun siXmlElement createElement(const char* tagName) 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("createElement");
             o3_assert(tagName);
 			// in pugi we can just append create nodes
 			xml_node node = m_root.append_child(node_element);
@@ -60,7 +61,7 @@ namespace o3 {
         
 		virtual o3_fun siXmlText createTextNode(const char* data) 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("createTextNode");
             o3_assert(data);
 			xml_node node = m_root.append_child(node_pcdata);
 			node.set_value(data);
@@ -71,7 +72,7 @@ namespace o3 {
 
 		virtual o3_fun siXmlComment createComment(const char* data) 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("createComment");
             o3_assert(data);
 
 			xml_node node = m_root.append_child(node_comment);
@@ -82,7 +83,7 @@ namespace o3 {
         
 		virtual o3_fun siXmlCDATASection createCDATASection(const char* data) 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("createCDATASection");
             o3_assert(data);
 
 			xml_node node = m_root.append_child(node_cdata);
@@ -93,7 +94,7 @@ namespace o3 {
         
         virtual o3_fun siXmlAttr createAttribute(const char* name) 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("createAttribute");
             o3_assert(name);
 
 			xml_node tmp = m_root.append_child();
@@ -113,12 +114,14 @@ namespace o3 {
 
 		o3_fun bool setProperty(const Str& prop, const Str& val)
 		{
+            o3_trace_scrfun("setProperty");
             o3_unused(val), o3_unused(prop);
             return true;
 		}
 
 		o3_fun siXmlNode importNode(iXmlNode* externalNode, bool deep)
 		{
+            o3_trace_scrfun("importNode");
             o3_unused(deep);
 			if (!externalNode)
 				return siXmlNode();
@@ -142,13 +145,14 @@ namespace o3 {
 
 		o3_fun siXmlNode getElementById(const Str& id) 
 		{
+			o3_trace_scrfun("getElementById");
 			xpath_node node = m_root.select_single_node(Str("descendant-or-self::node()[@id='") + id + "']");	
 			return node.node() ? wrapXmlNode(ownerDocument(), node.node()) : siXmlNode();
 		}
 
 		o3_fun siXmlNodeList getElementsByTagName(const char* name) 
 		{
-			o3_trace3 trace;
+			o3_trace_scrfun("getElementsByTagName");
 			o3_assert(name);
 			siXmlElement e = documentElement();
 			return e ? e->getElementsByTagName(name) : siXmlNodeList();
@@ -156,6 +160,7 @@ namespace o3 {
 
 		xml_document& doc() 
 		{
+			o3_trace_scrfun("doc");
 			return m_root;
 		}
 

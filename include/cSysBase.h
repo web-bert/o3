@@ -35,24 +35,24 @@ class Delegate {
 public:
     Delegate() : m_pf(0)
     {
-        o3_trace1 trace;
+        o3_trace_sys("Delegate");
     }
 
     Delegate(iCtx* ctx, iScr* scr) : m_ctx(ctx), m_unk(scr), m_pf(0)
     {
-        o3_trace1 trace;
+        o3_trace_sys("Delegate");
     }
 
     template<typename T>
     Delegate(T* unk, void (T::*pmf)(iUnk*))
         : m_unk(o3_cast unk), m_pmf((void (cUnk::*)(iUnk*)) pmf), m_pf(0)
     {
-        o3_trace1 trace;
+        o3_trace_sys("Delegate");
     }
 
     Delegate(void (*pf)(iUnk*)) : m_pf(pf)
     {
-        o3_trace1 trace;
+        o3_trace_sys("Delegate");
     }
 
     bool valid() const
@@ -72,7 +72,7 @@ public:
     template<typename T>
     void call(T* src)
     {
-        o3_trace1 trace;
+        o3_trace_sys("call");
 
         if (siCtx ctx = m_ctx) {
             if (siScr scr = m_unk) {
@@ -91,6 +91,7 @@ public:
     template<typename T>
     void call(const tSi<T>& src)
     {
+        o3_trace_sys("call");
         return call(src.ptr());
     }
 
@@ -132,7 +133,7 @@ struct cThreadPool : cUnk, iThreadPool {
 
     cThreadPool()
     {
-        o3_trace2 trace;
+        o3_trace_sys("cThreadPool");
         m_mutex = g_sys->createMutex();
         m_event = g_sys->createEvent();
     }
@@ -143,7 +144,7 @@ struct cThreadPool : cUnk, iThreadPool {
 
     void deinit()
     {
-        o3_trace2 trace;
+        o3_trace_sys("deinit");
 
         for (size_t i = 0; i < m_threads.size(); ++i)
             m_threads[i]->cancel();
@@ -162,7 +163,7 @@ struct cThreadPool : cUnk, iThreadPool {
 
     void post(const Delegate& fun, iUnk* src)
     {
-        o3_trace2 trace;
+        o3_trace_sys("post");
         Lock lock(m_mutex);
 
         m_commands.pushBack(Command(fun, src));
@@ -172,6 +173,7 @@ struct cThreadPool : cUnk, iThreadPool {
 
     void run(iUnk* src)
     {
+        o3_trace_sys("run");
         siThread thread = src;
 
         while (!thread->cancelled()) {
@@ -196,14 +198,20 @@ struct cThreadPool : cUnk, iThreadPool {
 o3_cls(cSysBase);
 
 struct cSysBase : cUnk, iSys {
-    cSysBase()
+	cSysBase() : depth(1)
     {
-        g_sys = this;
+        o3_trace_sys("cSysBase");
+		memSet(spaces, ' ', 2048);        
+		g_sys = this;
         g_sys->addRef();
     }
 
+	size_t depth;
+	char spaces[2048];
+
     ~cSysBase()
     {
+        o3_trace_sys("~cSysBase");
         g_sys = 0;
     }
 
@@ -212,18 +220,30 @@ struct cSysBase : cUnk, iSys {
         o3_add_iface(iSys)
     o3_end_class()
 
-    void traceEnter(const char* file, int line)
+    void traceEnter(const char* fun, const char* file, int line)
     {
-        o3_log("Entering %s:%d\n", file, line);
+        o3_trace_no_trace;
+		spaces[++depth] = 0;
+		o3_log("%sEntering %s: %s:%d\n", spaces, fun, file, line);
+		spaces[depth] = ' ';
     }
 
     void traceLeave()
     {
-        o3_log("Leaving\n");
+        o3_trace_no_trace;
+		spaces[depth--] = 0;
+        o3_log("%sLeaving\n", spaces);
+		spaces[depth] = ' ';
     }
+
+	virtual void logfv(const char* format, va_list ap)
+	{
+
+	}
 
     siThreadPool createThreadPool(int count)
     {
+        o3_trace_sys("createThreadPool");
         scThreadPool pool = o3_new(cThreadPool)();
 
         while (count-- > 0) {

@@ -35,12 +35,14 @@ namespace o3 {
 
 		static o3_ext("cO3") o3_fun siScr zip()
 		{
+			o3_trace_scrfun("zip");
 			return o3_new(cZip)();
 		}
 
 		// TODO: reset function
 		o3_fun bool add(iFs* node, const char* zip_path = 0)
 		{
+			o3_trace_scrfun("add");
 			if (!node)
 				return false;
 
@@ -69,6 +71,7 @@ namespace o3 {
 
 		o3_fun bool zipTo(iFs* dest, siEx* ex=0)
 		{ 
+			o3_trace_scrfun("zipTo"); 
 			if (!dest)
 				return false;
 
@@ -100,11 +103,13 @@ namespace o3 {
 
 		static o3_ext("cO3") o3_fun siScr unzip()
 		{
+			o3_trace_scrfun("unzip");
 			return o3_new(cUnzip1)();
 		}
 
 		o3_fun bool openZipFile(iFs* zip_file, siEx* ex=0)
 		{
+			o3_trace_scrfun("openZipFile");
 			if (!zip_file)
 				return false;
 
@@ -113,6 +118,7 @@ namespace o3 {
 
 		o3_fun bool openZipFromStream(iStream* zip_stream, siEx* ex=0) 
 		{
+			o3_trace_scrfun("openZipFromStream");
 			if (!zip_stream)
 				return false;
 
@@ -131,11 +137,13 @@ namespace o3 {
 
 		o3_get tVec<Str> listFiles()
 		{
+			o3_trace_scrfun("listFiles");
 			return zip_tools::listCentralDir(m_central_dir);
 		}
 
 		Buf get(const Str& zip_path, siEx* ex=0)
 		{
+			o3_trace_scrfun("get");
 			cBufStream* buf_stream = o3_new(cBufStream)();
 			get(zip_path, siStream(buf_stream), ex);
 			return buf_stream->buf();
@@ -143,6 +151,7 @@ namespace o3 {
 
 		o3_fun bool get(const Str& zip_path, iStream* dest, siEx* ex=0)
 		{
+			o3_trace_scrfun("get");
 			if (!m_stream || !dest)
 				return false;
 
@@ -158,6 +167,7 @@ namespace o3 {
 		// Note: the destination must be a directory
 		o3_fun bool unzipTo(iFs* from, iFs* to, siEx* ex)
 		{
+			o3_trace_scrfun("unzipTo");
 			if (!from || !to)
 				return false;
 			

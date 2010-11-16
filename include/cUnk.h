@@ -70,13 +70,14 @@ class tSc {
 public:
     tSc(T* ptr = 0) : m_ptr(ptr)
     {
+        o3_trace_combase("tSc");
         if (m_ptr)
             m_ptr->addRef();
     }
 
     tSc(const tSc& that) : m_ptr(that.m_ptr)
     {
-        o3_trace1 trace;
+        o3_trace_combase("tSc");
 
         if (m_ptr)
             m_ptr->addRef();
@@ -96,6 +97,7 @@ public:
 
     ~tSc()
     {
+        o3_trace_combase("~tSc");
         if (m_ptr)
             m_ptr->release();
     }
@@ -165,7 +167,7 @@ struct cUnk : iUnk {
 
         int32_t queryInterface(const Guid& iid, void** obj)
         {
-            o3_trace2 trace;
+            o3_trace_combase("queryInterface");
 
             if (iid == iidof(this)) {
                 *obj = this;
@@ -186,11 +188,13 @@ struct cUnk : iUnk {
 
         uint32_t addRef()
         {
+            o3_trace_combase("addRef");
             return atomicInc((volatile int&) m_ref_count);
         }
 
         uint32_t release()
         {
+            o3_trace_combase("release");
             if (atomicDec((volatile int&) m_ref_count) == 0) {
                 delete this;
                 return 0;
@@ -200,7 +204,7 @@ struct cUnk : iUnk {
 
         void lock()
         {
-            o3_trace2 trace;
+            o3_trace_combase("lock");
 
             while (atomicTas(m_spin_lock))
                 ;
@@ -208,7 +212,7 @@ struct cUnk : iUnk {
 
         void unlock()
         {
-            o3_trace2 trace;
+            o3_trace_combase("unlock");
 
             m_spin_lock = 0;
         }
@@ -221,17 +225,19 @@ struct cUnk : iUnk {
 #pragma warning(disable:4355)
     cUnk() : m_ref_count(0), m_weak(new cWeak(this))
     {
+        o3_trace_combase("cUnk");
         m_weak->m_unk_outer = this;
     }
 #pragma warning(pop)
 
     virtual ~cUnk()
     {
+		o3_trace_combase("~cUnk");
     }
 
     int32_t queryInterface(const Guid& iid, void** obj)
     {
-        o3_trace2 trace;
+        o3_trace_combase("queryInterface");
 
         if (iid == iidof(this)) {
             *obj = o3_cast this;
@@ -246,14 +252,14 @@ struct cUnk : iUnk {
 
     uint32_t addRef()
     {
-        o3_trace2 trace;
+        o3_trace_combase("addRef");
 
         return atomicInc((volatile int&) m_ref_count);
     }
 
     uint32_t release()
     {
-        o3_trace2 trace;
+        o3_trace_combase("release");
 
         m_weak->lock();
         if (atomicDec((volatile int&) m_ref_count) == 0) {

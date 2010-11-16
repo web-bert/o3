@@ -25,16 +25,19 @@ namespace o3 {
 
 inline int atomicTas(volatile int& x)
 {
+    o3_trace_tools("atomicTas");
     return (int) InterlockedExchange((LONG volatile*) &x, 1);
 }
 
 inline int atomicInc(volatile int& x)
 {
+    o3_trace_tools("atomicInc");
     return (int) InterlockedIncrement((LONG volatile*) &x); 
 }
 
 inline int atomicDec(volatile int& x)
 {
+    o3_trace_tools("atomicDec");
     return (int) InterlockedDecrement((LONG volatile*) &x);
 }
 

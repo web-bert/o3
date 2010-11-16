@@ -34,6 +34,7 @@ struct cMouseBase : cScr {
     
     virtual o3_fun void sendLeftMouseClicked()
     {
+        o3_trace_scrfun("sendLeftMouseClicked");
         sendLeftMouseDown();
         sendLeftMouseUp();
     }
@@ -44,6 +45,7 @@ struct cMouseBase : cScr {
     
     virtual o3_fun void sendRightMouseClicked()
     {
+        o3_trace_scrfun("sendRightMouseClicked");
         sendRightMouseDown();
         sendRightMouseUp();
     }

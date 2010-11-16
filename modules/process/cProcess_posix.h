@@ -47,53 +47,62 @@ struct cProcess : cProcessBase {
 
     static o3_ext("cO3") o3_fun siScr process()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("process");
 
         return o3_new(cProcess)();
     }
 
     static o3_ext("cO3") o3_fun int system(const char* command)
     {
+        o3_trace_scrfun("system");
         return ::system(command);
     }
 
     siStream stdIn()
     {
+        o3_trace_scrfun("stdIn");
         return m_in;
     }
 
     siStream setStdIn(iStream* in)
     {
+        o3_trace_scrfun("setStdIn");
         return m_in = in;
     }
 
     siStream stdOut()
     {
+        o3_trace_scrfun("stdOut");
         return m_out;
     }
 
     siStream setStdOut(iStream* out)
     {
+        o3_trace_scrfun("setStdOut");
         return m_out = out;
     }
 
     siStream stdErr()
     {
+        o3_trace_scrfun("stdErr");
         return m_err;
     }
 
     siStream setStdErr(iStream* err)
     {
+        o3_trace_scrfun("setStdErr");
         return m_err = err;
     }
 
 	void task(iUnk*)
 	{
+		o3_trace_scrfun("task");
 		::system(m_cmd.ptr());
 	}
 
     void exec(iCtx* ctx, const char* args)
     {
+o3_trace_scrfun("exec");
 #ifdef O3_PLUGIN	
 		m_cmd = args;
 		ctx->mgr()->pool()->post(Delegate(this, &cProcess::task),
@@ -142,6 +151,7 @@ struct cProcess : cProcessBase {
 
     int exitCode()
     {
+        o3_trace_scrfun("exitCode");
         if (m_pid && waitpid(m_pid, &m_stat, WNOHANG) == m_pid) 
             m_pid = 0;
         return WIFEXITED(m_stat) ? WEXITSTATUS(m_stat) : -1;
@@ -149,6 +159,7 @@ struct cProcess : cProcessBase {
 
     void startListening()
     {
+        o3_trace_scrfun("startListening");
         m_timer = m_ctx->loop()->createTimer(10,
                                              Delegate(this,
                                                       &cProcess::listen));
@@ -156,11 +167,13 @@ struct cProcess : cProcessBase {
 
     void stopListening()
     {
+        o3_trace_scrfun("stopListening");
         m_timer = 0;
     }
 
     void listen(iUnk*)
     {
+        o3_trace_scrfun("listen");
         if (m_pid && waitpid(m_pid, &m_stat, WNOHANG) == m_pid) 
             m_pid = 0;
         if (m_pid)

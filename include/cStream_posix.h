@@ -29,14 +29,14 @@ struct cStream : cStreamBase {
 
     cStream(FILE* stream)
     {
-        o3_trace2 trace;
+        o3_trace_scrfun("cStream");
 
         m_stream = stream;
     }
 
     virtual ~cStream()
     {
-        o3_trace2 trace;
+        o3_trace_scrfun("~cStream");
 
         if (m_stream)
             fclose(m_stream);
@@ -49,28 +49,28 @@ struct cStream : cStreamBase {
 
     bool eof()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("eof");
 
         return feof(m_stream);
     }
 
     bool error()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("error");
 
         return ferror(m_stream);
     }
 
     size_t pos()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("pos");
 
         return ftell(m_stream);
     }
 
     size_t setPos(size_t pos)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("setPos");
 
         fseek(m_stream, pos, SEEK_SET);
         return pos;
@@ -78,41 +78,42 @@ struct cStream : cStreamBase {
 
     size_t read(void* ptr, size_t size)
     {
-        o3_trace2 trace;
+        o3_trace_scrfun("read");
 
         return fread(ptr, sizeof(uint8_t), size, m_stream);
     }
 
     size_t write(const void* ptr, size_t size)
     {
-        o3_trace2 trace;
+        o3_trace_scrfun("write");
         
         return fwrite(ptr, sizeof(uint8_t), size, m_stream);
     }
 
     bool flush()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("flush");
 
         return fflush(m_stream) == 0;
     }
 
     bool close()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("close");
 
         return fclose(m_stream) == 0;
     }
 
     void* unwrap()
     {
-        o3_trace2 trace;
+        o3_trace_scrfun("unwrap");
 
         return m_stream;
     }
 
 	size_t size()
 	{
+		o3_trace_scrfun("size");
 		size_t ret,cpos = pos();		
 		fseek(m_stream,0,SEEK_END);
 		ret = pos();

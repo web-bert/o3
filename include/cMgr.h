@@ -43,6 +43,7 @@ struct Trait {
 
     static Trait begin()
     {
+        o3_trace_comglue("begin");
         static const Trait BEGIN = { 0, TYPE_BEGIN, 0, 0, 0, 0, 0 };
         o3_trace1 trace;
 
@@ -51,6 +52,7 @@ struct Trait {
 
     static Trait end()
     {
+        o3_trace_comglue("end");
         static const Trait END = { 0, TYPE_END, 0, 0, 0, 0, 0 };
         o3_trace1 trace;
 
@@ -82,10 +84,10 @@ struct cMgr : cUnk, iMgr {
 
     cMgr(const char* root = O3_FS_ROOT)		
 	{
-        o3_trace2 trace;
+        o3_trace_comglue("cMgr");
 	#ifndef O3_NODE
         // node.js is not compatible with the threadpool
-		m_pool = g_sys->createThreadPool();
+		//m_pool = g_sys->createThreadPool();
     #endif
 		m_root = root;
 		m_mutex = g_sys->createMutex();
@@ -93,6 +95,7 @@ struct cMgr : cUnk, iMgr {
 
     ~cMgr()
     {
+		o3_trace_comglue("~cMgr");
 		if (m_pool)
 			m_pool->deinit();
 		if (m_setting_file)
@@ -106,7 +109,7 @@ struct cMgr : cUnk, iMgr {
 
     Trait* extTraits(const char* name)
     {
-        o3_trace2 trace;        
+        o3_trace_comglue("extTraits");        
 		static Trait TRAITS[] = { Trait::begin(), Trait::end() };
         Trait* traits = TRAITS;
 		{
@@ -122,6 +125,7 @@ struct cMgr : cUnk, iMgr {
 
     bool loadModule(const char* name)
     {
+        o3_trace_comglue("loadModule");
         Trait* traits;
 
         if (traits = m_static_ext_traits[name]) {
@@ -134,12 +138,13 @@ struct cMgr : cUnk, iMgr {
 
     void addStaticExtTraits(const char* name, Trait* traits)
     {
+        o3_trace_comglue("addStaticExtTraits");
         m_static_ext_traits[name] = traits;
     }
 
     void addExtTraits(Trait* traits)
     {
-        o3_trace2 trace;
+        o3_trace_comglue("addExtTraits");
 
         for (Trait* ptrait = traits + 1; ptrait->type != Trait::TYPE_END;
              ++ptrait) {
@@ -169,30 +174,33 @@ struct cMgr : cUnk, iMgr {
 
 	void addFactory(const Str& name, factory_t factory) 
 	{
+		o3_trace_comglue("addFactory");
 		m_factories[name] = factory;
 	}
 
 	factory_t factory(const Str& name) 
 	{
+		o3_trace_comglue("factory");
 		return m_factories[name];
 	}
 
     siThreadPool pool()
     {
-        o3_trace2 trace;
+        o3_trace_comglue("pool");
 
         return m_pool;
     }
 
     Str root()
     {
-        o3_trace2 trace;
+        o3_trace_comglue("root");
         return m_root + "/" + hostFromURL(m_current_url);
     }
 
 	Buf downloadComponent(iCtx* ctx, const Str& name,  
 		Delegate onreadystatechange, Delegate onprogress)
 	{
+		o3_trace_comglue("downloadComponent");
 		Str name2;
 #ifdef O3_WIN32
 		name2 = name;
@@ -210,6 +218,7 @@ struct cMgr : cUnk, iMgr {
 
 	Buf downloadUpdateInfo(iCtx* ctx)
 	{
+		o3_trace_comglue("downloadUpdateInfo");
 		Str url = Str(O3_BASE_URL) + "/" 
 			+ O3_VERSION_STRING + "/" 
 			+ O3_PLATFORM + "/hash.zip";
@@ -218,6 +227,7 @@ struct cMgr : cUnk, iMgr {
 
 	Buf downloadInstaller(iCtx* ctx)
 	{
+		o3_trace_comglue("downloadInstaller");
 		Str url = Str(O3_REPO_URL) 
 			+ O3_PLUGIN_INSTALLER;
 
@@ -226,6 +236,7 @@ struct cMgr : cUnk, iMgr {
 
 	Buf downloadHashes( iCtx* ctx ) 
 	{
+		o3_trace_comglue("downloadHashes");
 		Str url = Str(O3_REPO_URL) 
 			+ O3_PLUGIN_VERSION;
 
@@ -235,6 +246,7 @@ struct cMgr : cUnk, iMgr {
 	Buf downloadFile( Str url, iCtx* ctx, Delegate onreadystatechange, 
 		Delegate onprogress ) 
 	{
+		o3_trace_comglue("downloadFile");
 		siHttp http = m_factories["http"](0);
 		http->setOnreadystatechange(onreadystatechange);
 		http->setOnprogress(onprogress);
@@ -245,16 +257,19 @@ struct cMgr : cUnk, iMgr {
 
 	Str currentUrl()
 	{
+		o3_trace_comglue("currentUrl");
 		return m_current_url;
 	}	
 
 	void setCurrentUrl(const char* url)
 	{
+		o3_trace_comglue("setCurrentUrl");
 		m_current_url = url;
 	}
 
 	siFs settingFile(const Str& url)
 	{
+        o3_trace_comglue("settingFile");
         Str host = hostFromURL(url);
 		siFs root = m_factories["settingsDir"](0);
 		if (host.empty())
@@ -265,6 +280,7 @@ struct cMgr : cUnk, iMgr {
 
 	tMap<Str, int> readSettings()
 	{
+		o3_trace_comglue("readSettings");
 		siFs file = settingFile(currentUrl());
 		if (!file || !file->exists())
 			return tMap<Str,int>();
@@ -274,6 +290,7 @@ struct cMgr : cUnk, iMgr {
 
 	void writeSettings(const tMap<Str, int>& settings)
 	{
+		o3_trace_comglue("writeSettings");
 		siFs file = settingFile(currentUrl());	
 		if (file)
 			file->setData(serializeSettings(settings));
@@ -281,6 +298,7 @@ struct cMgr : cUnk, iMgr {
 
 	tMap<Str, int> parseSettings( const Str& data) 
 	{
+		o3_trace_comglue("parseSettings");
 		tMap<Str, int> settings;
 		const char *p = data.ptr();
 		const char *k,*v,*e, *i = p;
@@ -306,6 +324,7 @@ struct cMgr : cUnk, iMgr {
 
 	Str serializeSettings( const tMap<Str, int>& settings) 
 	{
+		o3_trace_comglue("serializeSettings");
 		Str data;
 		tMap<Str,int>::ConstIter it;
 		for(it=settings.begin(); it!=settings.end(); ++it) {
@@ -318,6 +337,7 @@ struct cMgr : cUnk, iMgr {
 
 	Str allSettings()
 	{
+		o3_trace_comglue("allSettings");
 		siFs root = m_factories["fs"](0);
 		siFs settings_dir = root->get("settings");
 		if (!settings_dir || !settings_dir->exists())
@@ -335,6 +355,7 @@ struct cMgr : cUnk, iMgr {
 
 	bool writeAllSettings(const Str& settings)
 	{
+		o3_trace_comglue("writeAllSettings");
 		if (!safeLocation())
 			return false;
 
@@ -371,6 +392,7 @@ struct cMgr : cUnk, iMgr {
 
 	Str pathFromURL( const Str& url )
 	{		
+		o3_trace_comglue("pathFromURL");		
 		size_t i,e;
 		i=url.find("//");
 		o3_assert(i!=NOT_FOUND);	
@@ -387,12 +409,14 @@ struct cMgr : cUnk, iMgr {
 	// TODO: only settings or aprove pages, hash check
 	bool safeLocation()
 	{
+		o3_trace_comglue("safeLocation");
 		Str o3path,path("/"),host =  hostFromURL(m_current_url);
 		return strEquals(host.ptr(),O3_AJAX_DOMAIN);
 	}
 
 	Str latestVersion(iCtx* ctx)
 	{
+		o3_trace_comglue("latestVersion");
 		Str url(O3_BASE_URL);
 		url.append("version");
 		Buf data = downloadFile(url,
@@ -408,6 +432,7 @@ struct cMgr : cUnk, iMgr {
 
 	void monitorSettings(iCtx* ctx, iEvent* e)
 	{
+		o3_trace_comglue("monitorSettings");
 		m_setting_file = settingFile(currentUrl());
 		if (!m_setting_file) {
 			// should not happen, lets not block in this case...
@@ -429,6 +454,7 @@ struct cMgr : cUnk, iMgr {
 
 	void onSettingFileChange(iUnk*)
 	{
+		o3_trace_comglue("onSettingFileChange");
 		m_change_event->signal();
 		m_setting_file->setOnchange(siCtx(this), 0);
 	}
@@ -450,6 +476,7 @@ struct cMgr : cUnk, iMgr {
 // more serious url parser and put somewhere else...
 Str hostFromURL( const Str& url ) 
 {
+	o3_trace_comglue("hostFromURL");
 	size_t s,i;
 	i=url.find("//");
 	o3_assert(i!=NOT_FOUND);	
