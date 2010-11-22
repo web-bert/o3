@@ -79,13 +79,6 @@ struct cScrBuf : cScr, iBuf {
 		m_buf.append(other.ptr(), other.size());
 	}
 
-	o3_fun Buf slice(size_t start, size_t end)
-	{
-		o3_trace_scrfun("slice");
-		size_t size = m_buf.size();
-		if(start<0 || end<0 || start>size || end>size || start>end)
-			return Buf();
-
 
 	//o3_fun Buf slice(size_t start, size_t end)
 	//{
@@ -132,7 +125,7 @@ struct cScrBuf : cScr, iBuf {
 
 	o3_ext("cO3") o3_fun siScr scrbuf()
 	{
-		return o3_new(cBlob)()
+		return o3_new(cScrBuf)();
 	}
 
 	o3_fun Buf fromString(const Str& str)
@@ -147,7 +140,7 @@ struct cScrBuf : cScr, iBuf {
 		o3_trace3 trace;
 
 		return Buf::fromHex(str.ptr(), str.alloc());
-	}
+	}                         
 
 	o3_fun Buf fromBase64(const Str& str)
 	{
@@ -170,6 +163,8 @@ struct cScrBuf : cScr, iBuf {
 		return Str::fromBase64(m_buf.ptr(), m_buf.size());
 	}
 
+	// node.js API
+	//buffer.write(string, offset=0, encoding='utf8')
 };
 
 }

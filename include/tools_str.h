@@ -201,7 +201,6 @@ inline size_t strPrintfv(char* str, const char* format, va_list ap)
     o3_trace_tools("strPrintfv");
 
 	size_t n = ::vsnprintf(str, str ? 0x7FFFFFFF : 0, format, ap);
-	o3_log("### %d\n", n);
 	return n;
 }
 

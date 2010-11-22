@@ -33,7 +33,7 @@
 #include <fs/fs.h>
 #include <http/http.h>
 #include <xml/xml.h>
-#include <blob/blob.h>
+//#include <blob/blob.h>
 
 #ifdef O3_WITH_LIBEVENT
 #include <socket/socket.h>
@@ -48,6 +48,15 @@
 
 
 namespace o3 {
+
+o3_iid(iScrObj, 0xf3afb7c0, 
+	   0x2bf3, 
+	   0x4b77, 
+	   0x8e, 0x63, 0xd, 0xec, 0x25, 0xc8, 0x9e, 0x96);
+
+struct iScrObj : iUnk {
+	virtual NPObject* unwrap() = 0;
+};
 
 struct cCtx : cMgr, iCtx {
 	struct O3Object : NPObject {
@@ -237,7 +246,7 @@ struct cCtx : cMgr, iCtx {
 			
 			if (::NPN_IdentifierIsString(identifier)) {
 				char* name = ::NPN_UTF8FromIdentifier(identifier);
-				int index = m_scr->resolve(ctx, name);
+				int index = m_scr->resolve(ctx, name, true);
 				Var arg = toVar(m_npp, *value);
 				
 				::NPN_MemFree(name);
@@ -371,8 +380,8 @@ struct cCtx : cMgr, iCtx {
 			return ((O3Object*) object)->removeProperty(identifier);
 		}
 	};
-	
-    struct cScrObj : cScr {
+
+    struct cScrObj : cScr, iScrObj {
         NPObject*   m_object;
         NPP         m_npp;
         
@@ -392,6 +401,7 @@ struct cCtx : cMgr, iCtx {
         }
 
         o3_begin_class(cScr)
+			o3_add_iface(iScrObj)	
         o3_end_class()
         
         int resolve(iCtx* ctx, const char* name, bool set)
@@ -437,6 +447,9 @@ struct cCtx : cMgr, iCtx {
             return siEx();
         }
 
+		NPObject* unwrap() {
+			return m_object;
+		}
     };
  
 
@@ -503,7 +516,15 @@ struct cCtx : cMgr, iCtx {
 				STRINGZ_TO_NPVARIANT(val, to);
 				break;
 			case Var::TYPE_SCR:
-				ctx->m_scr = from.toScr();
+				siScr scr(from.toScr()); 				
+				siScrObj wrapper(scr);
+				if (wrapper) {
+					NPObject* obj = wrapper->unwrap();
+					NPN_RetainObject(obj);
+					OBJECT_TO_NPVARIANT(obj, to);
+					break;
+				}
+				ctx->m_scr = scr;
 				OBJECT_TO_NPVARIANT(NPN_CreateObject(npp, &g_class), to);
 				break;
 		};
@@ -535,8 +556,8 @@ o3_trace_hostglue("cCtx");
 		m_root = path;
 		m_loop = g_sys->createMessageLoop();
 
-		addExtTraits(cBlob::extTraits());
-
+		//addExtTraits(cBlob::extTraits());
+		addExtTraits(cScrBuf::extTraits());
         addStaticExtTraits("xml", cXml::extTraits());
 		addStaticExtTraits("fs", cFs::extTraits());
 		
@@ -789,12 +810,6 @@ NPError NPP_Destroy(NPP npp, NPSavedData** pdata)
     o3_trace_hostglue("NPP_Destroy");
     o3::cCtx* ctx = (o3::cCtx*) npp->pdata;
     
-//#ifdef O3_WIN32 
-    //ctx->m_hidden_wnd.destroy();
-//#endif
-//#ifdef O3_APPLE
-    //[ctx->m_timer invalidate];
-//#endif // O3_APPLE
 	ctx->release();
     return NPERR_NO_ERROR;
 }

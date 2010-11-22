@@ -1,11 +1,10 @@
 <html>
 <head>
-<script src="requirejs/require.js"></script>
-<script src="requirejs/require/o3.js"></script>
+<script src="require.js"></script>
 <script>
 
-require(["o3!xml", "o3!fs"], 
-function (xml,fs) {
+require(["o3!xml"], 
+function (xml) {
     alert(xml.parseFromString("<html></html>").xml);
 });
 

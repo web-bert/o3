@@ -45,7 +45,7 @@ namespace o3 {
     mscom_ptr(IOleInPlaceActiveObject);
     mscom_ptr(IOleClientSite);
     mscom_ptr(IDispBridge);    
-    mscom_ptr(IDispatch);
+   
     mscom_ptr(IConnectionPointContainer);
     mscom_ptr(IConnectionPoint);
     mscom_ptr(IDropTarget);

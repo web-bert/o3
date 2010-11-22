@@ -45,6 +45,10 @@ namespace o3 {
 			m_type = type;
             m_state = state;
 			m_ctx = ctx;
+			memSet(&m_ev_accept,0,sizeof(m_ev_accept));
+			memSet(&m_ev_connect,0,sizeof(m_ev_connect));
+			memSet(&m_ev_read,0,sizeof(m_ev_read));
+			memSet(&m_ev_write,0,sizeof(m_ev_write));
         }
 
         ~cSocket()
@@ -114,7 +118,7 @@ namespace o3 {
             return true;
         }
         
-        virtual bool connect(const char* host, int port)
+        virtual bool _connect(const char* host, int port)
 		{
             /*
              * Cannot connect if an error was raised or there still is a pending
@@ -278,6 +282,14 @@ namespace o3 {
 #else			
 			::close(m_sock);
 #endif
+			if (m_ev_accept.ev_base)
+				event_del(&m_ev_accept);
+			if (m_ev_connect.ev_base)
+				event_del(&m_ev_connect);
+			if (m_ev_read.ev_base)
+				event_del(&m_ev_read);
+			if (m_ev_write.ev_base)
+				event_del(&m_ev_write);
             m_state = STATE_CLOSED;
 			m_sock = 0;
         }
@@ -469,7 +481,6 @@ namespace o3 {
 		HSOCKET     m_sock;
 		sockaddr_in m_addr;
 		Buf         m_out_buf;
-		siWeak		m_ctx;
 		struct event m_ev_accept;
 		struct event m_ev_connect;
 		struct event m_ev_read;

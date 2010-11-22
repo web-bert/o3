@@ -19,7 +19,7 @@ namespace o3 {
 
         virtual bool bind(const char* addr, int port) = 0;
         virtual bool accept() = 0;
-        virtual bool connect(const char* host, int port) = 0;
+        virtual bool _connect(const char* host, int port) = 0;
         virtual bool receive() = 0;
         virtual bool send(uint8_t* data, size_t size) = 0;
         virtual bool sendTo(uint8_t* data, size_t size, const char* url, int port) = 0;
@@ -130,16 +130,16 @@ namespace o3 {
 
         o3_fun bool bind(const char* full, int port) = 0;
 
-        o3_fun bool connect(const char* full) 
+        o3_fun bool _connect(const char* full) 
         {
             o3_trace_scrfun("connect");
             Str host;
             int port;
             parseUrl(full, host, port);
-            return connect(host, port);
+            return _connect(host, port);
         }
 
-        o3_fun bool connect(const char* host, int port) = 0;
+        o3_fun bool _connect(const char* host, int port) = 0;
 
 		o3_fun bool accept() = 0;
 
@@ -300,7 +300,7 @@ namespace o3 {
 
         Buf     m_received_buf;
         int     m_state;
-		siWeak	m_ctx;
+		siCtx	m_ctx;
 
     };     
 }

@@ -1215,20 +1215,7 @@ struct iWindow : iUnk
 					//SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) 0);
                     ctx->loop()->wait(1);
 
-#ifdef O3_WITH_LIBEVENT
-					//event_loop(EVLOOP_NONBLOCK );    
-					struct timeval t;
-
-					t.tv_sec = 0;
-					t.tv_usec = 5000;
-
-					int e = event_base_loopexit(ctx->eventBase(),&t);
-					if (e<0){
-						printf("blah");
-					}
-					event_base_loop(ctx->eventBase(),0);
-
-#endif	                    
+             
 					SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) ctx);
 
 					break;

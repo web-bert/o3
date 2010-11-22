@@ -234,7 +234,17 @@ struct cO3 : cScr {
 	{
 
 		o3_trace_scrfun("wait");
-		ctx->loop()->wait(timeout);	
+		ctx->loop()->wait(timeout);
+#ifdef O3_WITH_LIBEVENT
+		//event_loop(EVLOOP_NONBLOCK );    
+		struct timeval t;
+
+		t.tv_sec = 0;
+		t.tv_usec = 5000;
+
+		event_base_loopexit(ctx->eventBase(),&t);
+		event_base_loop(ctx->eventBase(),0);
+#endif	       
 	}
 
 	o3_fun void exit(int status = 0)

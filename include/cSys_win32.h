@@ -21,7 +21,7 @@
 #include "tools_win32.h"
 #include "tools_zip.h"
 #include <lib_zlib.h>
-//#include <event.h>
+
 #ifdef O3_WITH_LIBEVENT
 #include<event.h>    
 #endif	

@@ -111,7 +111,7 @@ struct cBuffer : cScr {
             replace_buf.ptr(), replace_buf.size());
     }
 
-    o3_fun void replace(nst char* orig, const char* rep)
+    o3_fun void replace(const char* orig, const char* rep)
     {    
         o3_trace_scrfun("replace");    
 

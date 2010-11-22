@@ -29,6 +29,8 @@ namespace o3 {
 	DEFINE_GUID(IID_IDispArray, 
 	0x85de6f5, 0xa868, 0x4f14, 0xab, 0xfd, 0xbc, 0x19, 0x7a, 0xc2, 0x82, 0x69);
 
+	 mscom_ptr(IDispatch);
+
     struct iScrBridge : iUnk{		
 		virtual IDispatchEx* getBridge() = 0;
 	};
@@ -617,10 +619,11 @@ namespace o3 {
                 if(bridge)
 				{
 					//unwrap the object
-					IDispatch* sc = bridge->getBridge();
-					//sc->AddRef();
+					IDispatchEx* sc = bridge->getBridge();
+					SIDispatch disp(sc);
+					sc->AddRef();
 					out.vt=VT_DISPATCH;
-					out.pdispVal = sc;
+					out.pdispVal = disp;
 					ret = true;
                 }else{				
 					siScr iscr = in.toScr();													
