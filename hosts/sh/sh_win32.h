@@ -77,6 +77,7 @@ int main(int argc, char **argv) {
 
 	mgr->addExtTraits(cWindow::extTraits());
 	mgr->addExtTraits(cGLWindow::extTraits());
+	mgr->addExtTraits(cGLTexture::extTraits());
 
 	mgr->addExtTraits(cCanvas::extTraits());
 	//mgr->addExtTraits(cBarcode::extTraits());
