@@ -2334,6 +2334,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void lineTo(double x, double y)
 		{
+			//return;
 			if (m_paths.size() == 0)
 			{
 				moveTo(x,y);

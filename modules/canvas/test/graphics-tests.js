@@ -215,6 +215,7 @@ tests['translate()'] = function(ctx){
       y1 = y2;
       i++;
     } while (x2 != R-O && y2 != 0 );
+	
     ctx.stroke();
   }
 };
@@ -791,6 +792,10 @@ tests['textBaseline middle'] = function(ctx){
 };
 
 tests['integration 1'] = function(ctx){
+var actx = {};
+actx.lineTo = function(x,y){};
+actx.moveTo = function(x,y){};
+
   ctx.fillStyle = '#eee';
 	ctx.fillRect(0,0,300,300);
 
@@ -800,8 +805,10 @@ tests['integration 1'] = function(ctx){
 	var xs = 10, ys = 10, cx = xs/2, cy=ys/2, xd = 300/xs, yd = 300/ys;
 	for(var xt = 0; xt<300; xt+=xd){
 		for(var yt = 0; yt<300; yt+=yd){
-		  ctx.moveTo(xt,0);ctx.lineTo(xt,300);
-		  ctx.moveTo(0,yt);ctx.lineTo(300,yt);
+		  actx.moveTo(xt,0);
+		  actx.lineTo(xt,300);
+		  actx.moveTo(0,yt);
+		  actx.lineTo(300,yt);
 		}
 	}
 	ctx.stroke();
@@ -809,27 +816,27 @@ tests['integration 1'] = function(ctx){
 	ctx.strokeStyle = "rgba(0,0,0,0.5)";
   ctx.fillStyle= "rgba(0,174,239,0.8)";
   ctx.beginPath();
-  ctx.moveTo(0,300);
+  actx.moveTo(0,300);
   for(var xt = 0; xt<300; xt+=1)
-      ctx.lineTo(xt, 100+10*Math.sin(xt/32+n+Math.sin(xt/64+n))*5+Math.sin(xt/48));
-  ctx.lineTo(300,300);
-  ctx.lineTo(0,300);
+      actx.lineTo(xt, 100+10*Math.sin(xt/32+n+Math.sin(xt/64+n))*5+Math.sin(xt/48));
+  actx.lineTo(300,300);
+  actx.lineTo(0,300);
   ctx.fill();
   ctx.stroke();
   ctx.beginPath();
   ctx.fillStyle = "rgba(242,0,144,0.7)"; n = n+2;
   for(var xt = 0; xt<300; xt+=1)
-      ctx.lineTo(xt, 150+10*Math.sin(xt/32+n+Math.sin(xt/64+n))*5+Math.sin(xt/48));
-  ctx.lineTo(300,300);
-  ctx.lineTo(0,300);
+      actx.lineTo(xt, 150+10*Math.sin(xt/32+n+Math.sin(xt/64+n))*5+Math.sin(xt/48));
+  actx.lineTo(300,300);
+  actx.lineTo(0,300);
   ctx.fill();
   ctx.stroke();
   ctx.beginPath();
   ctx.fillStyle = "rgba(255,254,0,0.7)"; n = n+4;
   for(var xt = 0; xt<300; xt+=1)
-      ctx.lineTo(xt, 200+10*Math.sin(xt/32+n+Math.sin(xt/64+n))*5+Math.sin(xt/48));
-  ctx.lineTo(300,300);
-  ctx.lineTo(0,300);
+      actx.lineTo(xt, 200+10*Math.sin(xt/32+n+Math.sin(xt/64+n))*5+Math.sin(xt/48));
+  actx.lineTo(300,300);
+  actx.lineTo(0,300);
   ctx.fill();
   ctx.stroke();
 };
