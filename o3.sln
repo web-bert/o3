@@ -241,6 +241,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "window", "window", "{DB2F31
 	ProjectSection(SolutionItems) = preProject
 		modules\window\cButton.h = modules\window\cButton.h
 		modules\window\cButton_win32.h = modules\window\cButton_win32.h
+		modules\glwindow\cGLWindow.h = modules\glwindow\cGLWindow.h
 		modules\window\cStaticCtrl.h = modules\window\cStaticCtrl.h
 		modules\window\cStaticCtrl_win32.h = modules\window\cStaticCtrl_win32.h
 		modules\window\cWindow.h = modules\window\cWindow.h

@@ -30,6 +30,7 @@
 #include "resource/resource.h"
 #include "screen/screen.h"
 #include "window/window.h"
+#include "glwindow/glwindow.h"
 #include "tools/tools.h"
 #include "process/process.h"
 //#include "test/test.h" 
@@ -73,6 +74,9 @@ int main(int argc, char **argv) {
     mgr->addExtTraits(cScreen::extTraits());
 	mgr->addExtTraits(cProcess::extTraits());
 	//mgr->addExtTraits(cTest::extTraits());
+
+	mgr->addExtTraits(cWindow::extTraits());
+	mgr->addExtTraits(cGLWindow::extTraits());
 
 	mgr->addExtTraits(cCanvas::extTraits());
 	//mgr->addExtTraits(cBarcode::extTraits());
@@ -129,7 +133,14 @@ int main(int argc, char **argv) {
 			_chdir(cwd.ptr());
 		}		
 		
-		ctx->eval(script);
+		siEx ex;
+		ctx->eval(script, &ex);
+		if (ex) 
+		{
+			fprintf(stderr, "%s\n", ex->message().ptr());
+		}
+
+//		ctx->eval(script);
 #ifndef O3_V8			
 		if (((cJs*)ctx.ptr())->scriptError())
 			ret = -1;
