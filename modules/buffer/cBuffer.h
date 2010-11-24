@@ -115,8 +115,8 @@ struct cBuffer : cScr {
     {    
         o3_trace_scrfun("replace");    
 
-        m_buf.findAndReplaceAll(orig, strLen(orig)*sizeof(char),
-            rep, strLen(rep)*sizeof(char));
+        m_buf.findAndReplaceAll(orig, strLen(orig),
+            rep, strLen(rep));
     }
 
     o3_fun void replaceUtf16(const wchar_t* orig, const wchar_t* rep) 

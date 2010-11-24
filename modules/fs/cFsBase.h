@@ -252,7 +252,7 @@ struct cFsBase : cScr, iFs {
         Buf buf(str);
 
         if (buf.size() > 0)
-            buf.resize(buf.size() - sizeof(char));
+            buf.resize(buf.size() - 1);
         return setBuffer(buf);
     }
 

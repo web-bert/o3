@@ -17,8 +17,15 @@
  */
 #ifndef O3_I_SYS_H
 #define O3_I_SYS_H
+
+#ifdef O3_WIN32
 #include <Winsock2.h>
+#endif
+
+#ifdef O3_WITH_LIBEVENT 
 #include <event.h>
+#endif
+
 namespace o3 {
 
 class Delegate;

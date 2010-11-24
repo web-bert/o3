@@ -19,6 +19,9 @@
 #define O3_C_JS1_POSIX_H
 
 // #include <node/deps/v8/include/v8.h>
+#ifdef O3_V8
+#include <v8/v8.h>
+#endif
 
 using namespace v8;
 
@@ -594,7 +597,7 @@ o3_trace_hostglue("js");
 
 	virtual void* appWindow()
 	{
-
+		return 0;
 	}
 
 	virtual bool isIE()

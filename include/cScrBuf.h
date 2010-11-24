@@ -36,12 +36,42 @@ struct cScrBuf : cScr, iBuf {
 
 	o3_glue_gen()
 
-	o3_fun Str toString()
+	o3_fun Str toString(const char* encoding="utf8", int start=0, int end=-1)
 	{
 		o3_trace3 trace;
-		Buf buf(this);
 
-		return Str(buf);
+		if (end == -1 && start == 0) {							
+			if (strEquals(encoding, "base64"))
+				return toBase64();
+			if (strEquals(encoding, "ascii"))
+				return toHex();
+
+			return m_buf;
+		}			
+
+		if (end==-1)
+			end = m_buf.size();
+
+		if (start > end)
+			return Str();
+
+		if (end == -1 && start == 0) {							
+			if (strEquals(encoding, "base64")){
+				Str ret(toBase64());
+				if (start > ret.size())
+					return Str();
+				return Str(ret.ptr()+start, end-start);
+			}
+			if (strEquals(encoding, "ascii")) {
+				WStr ret = Str(m_buf);
+				if(start > ret.size())
+					return Str();
+				ret = WStr(ret.ptr()+start, end-start);
+				return Str(ret);
+			}
+
+			return m_buf;
+		}	
 	}
 
     o3_get size_t length()
@@ -51,6 +81,12 @@ struct cScrBuf : cScr, iBuf {
         return m_buf.size();
     }
 
+	o3_fun size_t byteLength(const char* string, const char* encoding="utf8")
+	{
+		o3_trace_scrfun("length");
+
+		return strFromStr(0, string, strLen(string));
+	}
 
     //o3_set size_t setLength(size_t size)
     //{
@@ -123,48 +159,81 @@ struct cScrBuf : cScr, iBuf {
         return m_buf;
     }
 
-	o3_ext("cO3") o3_fun siScr scrbuf()
-	{
-		return o3_new(cScrBuf)();
-	}
-
-	o3_fun Buf fromString(const Str& str)
+	static o3_ext("cO3") o3_fun Buf BufFromString(const Str& str)
 	{
 		o3_trace3 trace;
 
 		return Buf(str);
 	}
 
-	o3_fun Buf fromHex(const Str& str)
+	static o3_ext("cO3") o3_fun Buf BufFromHex(const Str& str)
 	{
 		o3_trace3 trace;
 
 		return Buf::fromHex(str.ptr(), str.alloc());
 	}                         
 
-	o3_fun Buf fromBase64(const Str& str)
+	static o3_ext("cO3") o3_fun Buf BufFromBase64(const Str& str)
 	{
 		o3_trace3 trace;
 
 		return Buf::fromBase64(str.ptr(), str.alloc());
 	}
 
-	o3_fun Str toHex(o3_tgt iScr* tgt)
+	o3_fun Str toHex()
 	{
 		o3_trace3 trace;
 
 		return Str::fromHex(m_buf.ptr(), m_buf.size());
 	}
 
-	o3_ext("cScrBuf") o3_fun Str toBase64(o3_tgt iScr* tgt)
+	o3_fun Str toBase64()
 	{
 		o3_trace3 trace;
 
 		return Str::fromBase64(m_buf.ptr(), m_buf.size());
 	}
 
-	// node.js API
-	//buffer.write(string, offset=0, encoding='utf8')
+	static o3_ext("cO3") o3_fun siScr ScrBuf(size_t size) 
+	{
+		cScrBuf* ret = o3_new(cScrBuf)(Buf(size));
+		memSet(ret->m_buf.ptr(), 0, size);
+		ret->m_buf.resize(size);
+		return siScr(ret);
+	}
+
+	o3_fun void write(const char* string, int offset=0, const char* encoding="utf8")
+	{
+		size_t l = min(strLen(string), m_buf.size() - offset);
+		memCopy((uint8_t*)m_buf.ptr()+offset,string,l);
+	}
+
+	o3_fun void copy(iBuf* target, int targetStart=0, int sourceStart=0, int sourceEnd=-1)
+	{
+		targetStart = max(targetStart, 0);
+		sourceStart = max(sourceEnd, 0);
+		sourceEnd = (sourceEnd<0 || sourceEnd>target->unwrap().size()) 
+			? target->unwrap().size() : sourceEnd;
+
+		int tl = max(target->unwrap().size()-targetStart, 0);
+		int sl = max(min(sourceEnd-sourceStart, m_buf.size()-sourceStart),0);
+		int l = min(tl,sl);
+
+		memCopy((uint8_t*)m_buf.ptr() + sourceStart, 
+			(uint8_t*)target->unwrap().ptr() + targetStart, l);
+	}
+
+	o3_fun siScr slice(int start, int end)
+	{
+		start = max(0,start);
+		end = min(end, m_buf.size());
+		return o3_new(cScrBuf)(Buf((uint8_t*)m_buf.ptr()+start, end-start));
+	}
+
+	o3_fun size_t find(const char* text, int from = 0)
+	{
+		return m_buf.find((size_t) max(0,from),text, strLen(text));
+	}
 };
 
 }

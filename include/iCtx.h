@@ -53,7 +53,9 @@ struct iCtx : iAlloc {
 
 	virtual bool isIE() = 0;
 
+#ifdef O3_WITH_LIBEVENT 
 	virtual struct event_base* eventBase() = 0;
+#endif
 };
 
 }

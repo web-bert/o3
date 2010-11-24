@@ -14,7 +14,8 @@ namespace o3 {
             STATE_CONNECTING = 16,
             STATE_ACCEPTING = 32,
             STATE_RECEIVING = 64,
-            STATE_SENDING = 128
+            STATE_SENDING = 128,
+			STATE_SHUTDOWN = 256
         };
 
         virtual bool bind(const char* addr, int port) = 0;
@@ -24,6 +25,7 @@ namespace o3 {
         virtual bool send(uint8_t* data, size_t size) = 0;
         virtual bool sendTo(uint8_t* data, size_t size, const char* url, int port) = 0;
         virtual void close() = 0;
+		virtual void shutdown() = 0;
     };
 
     o3_iid(iSocket, 0xe7ff0650, 0xee4f, 0x4bb2, 0xa0, 0x8, 0x8, 0x8f, 0x5c, 0xa4, 0xc, 0x45);
@@ -64,6 +66,22 @@ namespace o3 {
 			TYPE_UDP,
 			TYPE_TCP
 		);       
+
+		o3_get Str readyState() 
+		{
+			o3_trace_scrfun("error");
+			if (m_state & STATE_CLOSED || m_state & STATE_ERROR)
+				return "closed";
+			if (m_state & STATE_CONNECTED && m_state & STATE_RECEIVING) 
+				return "open";
+			if (m_state & STATE_CONNECTING)	
+				return "opening";
+			if (m_state & STATE_SHUTDOWN)
+				return "readOnly";
+			if (m_state & STATE_CONNECTED && !(m_state & STATE_RECEIVING))	
+				return "writeOnly";
+			return "closed";
+		}
 
         o3_get bool error()
         {
@@ -148,7 +166,7 @@ namespace o3 {
         o3_fun bool send(const char* data) 
         {
             o3_trace_scrfun("send");
-            return send((uint8_t*)data, strLen(data)*sizeof(char));
+            return send((uint8_t*)data, strLen(data));
         }
 
         o3_fun bool send(iBuf* ibuf) 
@@ -284,6 +302,8 @@ namespace o3 {
 		}
 
 		o3_fun void close() = 0;
+
+		o3_fun void shutdown() = 0;
 
         o3_prop     size_t  m_packet_size;
         o3_prop     size_t  m_min_receive_size;

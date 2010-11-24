@@ -83,7 +83,7 @@ struct cResourceBuilder : cScr
             header.append((void*)&length, sizeof(size_t));          
 
             // write path
-            header.append((void*)path.ptr(), length * sizeof(char)); 
+            header.append((void*)path.ptr(), length); 
 
             // store pos of the data addr, and set it to 0 for now
             pos_of_addr[path] = header.size();

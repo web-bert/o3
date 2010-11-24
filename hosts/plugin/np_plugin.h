@@ -512,7 +512,7 @@ struct cCtx : cMgr, iCtx {
 			case Var::TYPE_STR:
 			case Var::TYPE_WSTR:
 				str = from.toStr();
-				val = o3::strCopy((char*) ::NPN_MemAlloc(str.size()+sizeof(char)), str);
+				val = o3::strCopy((char*) ::NPN_MemAlloc(str.size()+1), str);
 				STRINGZ_TO_NPVARIANT(val, to);
 				break;
 			case Var::TYPE_SCR:

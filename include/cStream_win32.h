@@ -81,7 +81,7 @@ public:
 
     virtual size_t write(const char* data) {
         o3_trace_scrfun("write");
-        return write(data, strLen(data) * sizeof(char)); 
+        return write(data, strLen(data)); 
     }
 
 

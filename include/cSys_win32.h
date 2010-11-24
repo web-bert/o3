@@ -691,8 +691,8 @@ namespace o3 {
 
 			g_sys = this;
             g_sys->addRef();
-			//m_central_dir = o3_new(zip_tools::CentralDir)();
-            //initResource();
+			m_central_dir = o3_new(zip_tools::CentralDir)();
+            initResource();
         }
 
         virtual ~cSys()
@@ -706,8 +706,10 @@ namespace o3 {
             m_weak = 0;						
 			WSACleanup();
 			CoUninitialize(); 
+#ifdef O3_LOGFILE
 			fclose(file);
-        }
+#endif
+		}
 
         o3_begin_class(cSysBase)
         o3_end_class()
@@ -847,6 +849,8 @@ namespace o3 {
         virtual Buf resource(const char* path)
         {
 			o3_trace_sys("resource");
+			if (!m_stream)
+				return Buf();
 			cBufStream* buf_stream = o3_new(cBufStream)();
 			siStream stream(buf_stream);
 			zip_tools::readFileFromZip(path, m_stream, stream,*m_central_dir);

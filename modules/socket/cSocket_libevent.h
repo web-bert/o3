@@ -294,6 +294,13 @@ namespace o3 {
 			m_sock = 0;
         }
 
+		virtual void shutdown()
+		{
+			if (m_sock)
+			::shutdown (m_sock, 1);
+			m_state &= STATE_SHUTDOWN;
+		}
+
 		static void onread(int fd, short ev, void *arg) 
 		{			
             /*

@@ -20,15 +20,14 @@
 
 #include "cJsBase.h"
 
-#ifdef O3_POSIX
+#if defined O3_POSIX || defined O3_V8
 #include "cJs_posix.h"
-#endif // O3_POSIX
-#ifdef O3_WIN32
+#else
 #include "cJs_win32.h"
 #endif // O3_WIN32
 
 #ifdef O3_WITH_GLUE
-#ifdef O3_POSIX
+#if defined O3_POSIX || defined O3_V8
 #include "cJs_posix_glue.h"
 #include "cJsBase_glue.h"
 #else

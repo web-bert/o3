@@ -50,7 +50,7 @@ struct cStreamBase : cScr, iStream {
     {
         o3_trace_scrfun("read");
 
-        return Str(readBlob(n * sizeof(char)));
+        return Str(readBlob(n));
     }
 
     virtual size_t write(const void* data, size_t size) = 0;

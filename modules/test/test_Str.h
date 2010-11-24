@@ -114,7 +114,7 @@ inline void test_Str()
         {
             Str str;
 
-            o3_assert(str.capacity() == O3_AUTO_CAPACITY / sizeof(char) - 1);
+            o3_assert(str.capacity() == O3_AUTO_CAPACITY - 1);
             o3_assert(str.size() == 0);
         } {
             Str str(100);
@@ -153,7 +153,7 @@ inline void test_Str()
         } {
             Buf buf;
 
-            buf.append(STR, 32 * sizeof(char));
+            buf.append(STR, 32);
             {
                 Str str = buf;
 

@@ -13,6 +13,14 @@ function o3NetFactory(o3) {
 		return {createServer: createServer, createConnection: createConnection, Stream:Stream};
 	}	
 	
+	//o3.loaded = {net:function(){
+	//	return {createServer: createServer, createConnection: createConnection, Stream:Stream};
+	//}};
+	
+	//var o3loaded = o3.loaded;
+	//var blah = o3loaded.net();
+	//var blah2 = o3loaded["net"]();
+	
 	_doCallbacks = function(self, eventType, arg) {
 		var tmp = self.cb, cbGroup = tmp[eventType];
 			
@@ -42,17 +50,47 @@ function o3NetFactory(o3) {
 		return s;
 	}
 	
+	function inheritEvenEmitter(_self) {
+		_self.cb = {};
+		//this.on('connection', listener);
+		
+		_self.on = _self.addListener = function(eventType, cb) {
+			on(_self, eventType, cb);
+		}	
+
+		_self.removeAllListeners = function() {
+			_self.cb = {};
+		}	
+		
+		_self.removeListener = function(event, listener) {
+			var cbGroup = _self.cb[event];
+			var idx;
+			for (var v=0; v<cbGroup.length; v++)
+				if (cbGroup[v] == listener)
+					idx = v, break;
+			if (idx) {		
+				list.splice(idx, 1);
+				if (list.length == 0)
+				  delete _self.cb[event];
+			}
+		}
+		
+		_self.emit = function(event, arg) {
+			_doCallbacks(_self,event,arg);
+		}
+		
+		_self.listeners = function(event) {
+			return _self.cb[event];
+		}
+	}
+	
 	function Server (listener) {
 			
 		var _self = o3.socketTCP();
 		_self.maxConnections = 20;
 		_self.connections = 0;
 				
-		_self.cb = {};
-		
-		_self.on = _self.addListener = function(eventType, cb) {
-			on(_self, eventType, cb);
-		}
+		inheritEvenEmitter(_self);
 		
 		_self.onaccept = function(socket) {
 			var s = new Stream(socket)
@@ -74,30 +112,12 @@ function o3NetFactory(o3) {
 		return _self;
 	};
 	
-//Server.prototype.listen(path, [callback])
-//	Server.prototype.close = function() {
-	
-//	}
 	
 	function Stream (socket) {
 
 		var _self = socket ? socket : o3.socketTCP();
 
-		_self.cb = {};
-		//this.on('connection', listener);
-		
-		_self.on = _self.addListener = function(eventType, cb) {
-			//'connection', 'close'; 
-			//	'connect'
-			//	'data'
-				//The argument data will be a Buffer or String. Encoding of data is set by stream.setEncoding(). (See the section on Readable Stream for more information.)
-			//	'end'
-			//	'drain'
-			//	'error'
-			//	'close'
-			on(_self, eventType, cb);
-		}		
-
+		inheritEvenEmitter(_self)'
 		
 		_self.onconnect = function(socket) {
 			_self.receive();
@@ -129,24 +149,49 @@ function o3NetFactory(o3) {
 		_self.write = function(data, encoding) {
 			if (!encoding)
 				encoding = 'ascii';
-		//Sends data on the stream. 
-		//Returns true if the entire data was flushed successfully to the kernel buffer. 
-		//Returns false if all or part of the data was queued in user memory. 
-		//'drain' will be emitted when the buffer is again free.
+
+			// TODO: do encoding here...
+			
 			_self.send(data);
 		}
 		
 		_self.end = function(data, encoding) {
-		//Half-closes the stream. I.E., it sends a FIN packet. It is possible the server will still send some data. After calling this readyState will be 'readOnly'.
-		//If data is specified, it is equivalent to calling stream.write(data, encoding) followed by stream.end().
+			if (data)
+				_self.write(data, encoding);
+		
+			_self.shutdown();
 		}
 		
 		_self.destroy = function() {
 			_self.close();
-		//Ensures that no more I/O activity happens on this stream. Only necessary in case of errors (parse error or so).
 		}	
 		
 		return _self;
 	};
 	
+	function Buffer (subject, encoding) {
+
+		var _self;
+		switch (type = typeof subject) {
+		  case 'number':
+			_self = o3.ScrBuf(number);
+			break;
+
+		  case 'string':
+			_self = o3.BufFromString(Subject);
+			break;
+
+		  case 'object': // Assume object is an array
+			_self = o3.ScrBuf(subject.length);
+			for (var i = 0; i < _self.length; i++)
+				_self[i] = subject[i];		
+			break;
+
+		  default:
+			throw new Error("First argument need to be an number, array or string.");
+		}
+
+		return _self;
+	}
+
 }

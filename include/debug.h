@@ -55,6 +55,7 @@
 #define o3_trace_containers(name)
 #define o3_trace_hostglue(name)
 #define o3_trace_sys(name)
+
 #define o3_trace_no_trace
 
 //#define O3_LOGFILE
@@ -65,7 +66,7 @@
 //#define o3_trace_containers(name) O3Trace trace(name, __FILE__, __LINE__)
 //#define o3_trace_hostglue(name) O3Trace trace(name, __FILE__, __LINE__)
 //#define o3_trace_sys(name) O3Trace trace(name, __FILE__, __LINE__)
-//#define o3_trace_no_trace
+
 
 #ifdef O3_ASSERT
 #define o3_assert(pred) ((void) ((pred) ? 0 \
