@@ -25,6 +25,7 @@ namespace o3 {
         cFastXmlNodeList(iXmlDocument* doc, iXmlNode* parent, const char* name = 0) 
 			: m_doc(doc), m_parent(parent), m_name(name)
 		{
+			o3_trace_scrfun("cFastXmlNodeList");
 			m_query = name != 0;
         }
 
@@ -47,19 +48,19 @@ namespace o3 {
 
         o3_fun bool __query__(iCtx* ctx, int idx)
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("__query__");
             return (idx < length(ctx) && idx>=0);
         } 
         
         o3_fun bool __deleter__(int , siEx* ex = 0) 
 		{
-            o3_trace3 trace; ex;
+            o3_trace_scrfun("__deleter__"); ex;
             return false;
         } 
         
         o3_fun siXmlNode __getter__(iCtx* ctx, int idx, siEx* ex = 0) 
 		{
-            o3_trace3 trace; ex;
+            o3_trace_scrfun("__getter__"); ex;
             if (idx >= length(ctx) || idx < 0)
                 return siXmlNode();
             return item(idx);
@@ -67,7 +68,7 @@ namespace o3 {
         
         virtual siXmlNode item(int index) 
 		{
-            o3_trace3 trace;
+            o3_trace_scrfun("item");
 			siXmlNode item;
 
 			if (m_query) {
@@ -82,6 +83,7 @@ namespace o3 {
 
         virtual o3_get int length(iCtx* ctx) 
 		{
+            o3_trace_scrfun("length");
             o3_unused(ctx);
             o3_trace3 trace;
 
@@ -98,7 +100,7 @@ namespace o3 {
 		siXmlNode queryItem(iXmlNode* parent, const char* name,
 			int& index) 
 		{
-			o3_trace3 trace;
+			o3_trace_scrfun("queryItem");
 			siXmlNode child = parent->firstChild();
 
 			while (child) {
@@ -118,7 +120,7 @@ namespace o3 {
 
 		int queryLength(iXmlNode* parent, const char* name) 
 		{
-			o3_trace3 trace;
+			o3_trace_scrfun("queryLength");
 			int length = 0;
 			siXmlNode child = parent->firstChild();
 

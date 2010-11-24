@@ -26,6 +26,7 @@ namespace o3 {
 struct cKeyboard : cKeyboardBase {
     static o3_ext("cO3") o3_get siScr keyboard(iCtx* ctx)
     {
+        o3_trace_scrfun("keyboard");
         static Var keyboard = ctx->value("keyboard");
         
         if (keyboard.type() == Var::TYPE_VOID)
@@ -39,6 +40,7 @@ struct cKeyboard : cKeyboardBase {
     o3_glue_gen()
     
     int keyCode(int key) {
+        o3_trace_scrfun("keyCode");
         static int key_codes[] = {
         //  0   1   2   3   4   5   6   7   8   9   A   B   C   D   E   F
             -1, -1, -1, -1, -1, -1, -1, -1, 51, 48, -1, -1, -1, 36, -1, -1, // 0
@@ -64,6 +66,7 @@ struct cKeyboard : cKeyboardBase {
     
     void sendKeyDown(int key)
     {
+        o3_trace_scrfun("sendKeyDown");
         CGEventRef event;
         
         event = CGEventCreateKeyboardEvent(NULL, keyCode(key), true);
@@ -72,6 +75,7 @@ struct cKeyboard : cKeyboardBase {
     
     void sendKeyUp(int key)
     {
+        o3_trace_scrfun("sendKeyUp");
         CGEventRef event;
         
         event = CGEventCreateKeyboardEvent(NULL, keyCode(key), false);

@@ -25,9 +25,6 @@
 #include <tools_zip.h>
 #endif
 
-#ifdef O3_WITH_LIBEVENT
-	#include<event.h>    
-#endif	
 
 namespace o3 {
 
@@ -39,6 +36,7 @@ struct cLoadProgress : cScr {
 		: m_state(iHttp::READY_STATE_UNINITIALIZED)
 		, m_bytes_received(0)
 	{
+		o3_trace_scrfun("cLoadProgress");
 		m_mutex = g_sys->createMutex();
 	}
 
@@ -66,7 +64,7 @@ struct cLoadProgress : cScr {
 
 	o3_get size_t bytesReceived()
 	{
-		o3_trace3 trace;
+		o3_trace_scrfun("bytesReceived");
 		Lock lock(m_mutex);
 
 		return m_bytes_received;
@@ -74,7 +72,7 @@ struct cLoadProgress : cScr {
 
 	o3_get ReadyState readyState()
 	{
-		o3_trace3 trace;
+		o3_trace_scrfun("readyState");
 		Lock lock(m_mutex);
 
 		return m_state;
@@ -82,7 +80,7 @@ struct cLoadProgress : cScr {
 
 	o3_get Str fileName()
 	{
-		o3_trace3 trace;
+		o3_trace_scrfun("fileName");
 		Lock lock(m_mutex);
 
 		return m_file_name;
@@ -90,7 +88,7 @@ struct cLoadProgress : cScr {
 
 	void setFileName(const Str& name)
 	{
-		o3_trace3 trace;
+		o3_trace_scrfun("setFileName");
 		Lock lock(m_mutex);
 
 		m_file_name = name;
@@ -98,7 +96,7 @@ struct cLoadProgress : cScr {
 
 	void setState(ReadyState state)
 	{
-		o3_trace3 trace;
+		o3_trace_scrfun("setState");
 		Lock lock(m_mutex);
 
 		m_state = state;
@@ -106,7 +104,7 @@ struct cLoadProgress : cScr {
 
 	void setBytesReceived(size_t bytes_received)
 	{
-		o3_trace3 trace;
+		o3_trace_scrfun("setBytesReceived");
 		Lock lock(m_mutex);
 
 		m_bytes_received = bytes_received;
@@ -139,6 +137,7 @@ struct cO3 : cScr {
     cO3(iCtx* ctx, int /*argc*/, char** argv, char** envp)
 		: m_loading(false)
 	{
+        o3_trace_scrfun("cO3");
         if (argv)
             while (*argv)
                 m_args.push(*argv++);
@@ -165,6 +164,7 @@ struct cO3 : cScr {
 
     o3_fun void doInstall()
     {
+        o3_trace_scrfun("doInstall");
         siCtx ctx = m_ctx;
 
 		siFs dir_of_installer = ctx->mgr()->factory("installerDir")(0);
@@ -220,27 +220,36 @@ struct cO3 : cScr {
 
     o3_get tVec<Str> args()
     {
+        o3_trace_scrfun("args");
         return m_args;
     }
 
     o3_get tVec<Str> envs()
     {
+        o3_trace_scrfun("envs");
         return m_envs;
     }
 
 	o3_fun void wait(iCtx* ctx, int timeout = -1)
 	{
-		o3_trace3 trace;
-#ifdef O3_WITH_LIBEVENT
-	event_dispatch();    
-#endif	
-#ifndef O3_PLUGIN
+
+		o3_trace_scrfun("wait");
 		ctx->loop()->wait(timeout);
-#endif 	
+#ifdef O3_WITH_LIBEVENT
+		//event_loop(EVLOOP_NONBLOCK );    
+		struct timeval t;
+
+		t.tv_sec = 0;
+		t.tv_usec = 5000;
+
+		event_base_loopexit(ctx->eventBase(),&t);
+		event_base_loop(ctx->eventBase(),0);
+#endif	       
 	}
 
 	o3_fun void exit(int status = 0)
 	{
+        o3_trace_scrfun("exit");
         status = status;
 //		status;
 //		o3_trace3 trace;
@@ -254,7 +263,7 @@ struct cO3 : cScr {
 
 	o3_get Str versionInfo()
 	{		
-		o3_trace3 trace;
+		o3_trace_scrfun("versionInfo");
 
 		Str version(O3_VERSION_STRING);
 		version.findAndReplaceAll("_", ".");
@@ -263,11 +272,13 @@ struct cO3 : cScr {
 
 	o3_get Str settings(iCtx* ctx)
 	{
+		o3_trace_scrfun("settings");
 		return ctx->mgr()->allSettings();
 	}		
 
 	o3_set Str setSettings(iCtx* ctx, const Str& settings, siEx* ex)
 	{
+		o3_trace_scrfun("setSettings");
 		if (!ctx->mgr()->writeAllSettings(settings) && ex)
 			*ex = o3_new(cEx)("O3 settings could not be saved.");
 		return settings;
@@ -275,11 +286,13 @@ struct cO3 : cScr {
 
 	o3_get Str settingsURL()
 	{
+		o3_trace_scrfun("settingsURL");
 		return Str(O3_UI_URL) + "/settings.html";
 	}
 
 	o3_fun void require(iCtx* /*ctx*/, const char* module)
 	{
+		o3_trace_scrfun("require");
 		m_to_approve.pushBack(module);
 	}
 
@@ -287,6 +300,7 @@ struct cO3 : cScr {
 
 	o3_fun void loadModules(iCtx* ctx) 
 	{
+        o3_trace_scrfun("loadModules");
         m_ctx = ctx;
 		siMgr mgr = ctx->mgr();
 
@@ -336,6 +350,7 @@ struct cO3 : cScr {
 
     void onchange(iUnk*)
     {
+        o3_trace_scrfun("onchange");
         siCtx ctx = m_ctx;
         siMgr mgr = ctx->mgr();
 
@@ -357,6 +372,8 @@ struct cO3 : cScr {
 
     void finish(iCtx* ctx, iMgr* mgr) {
         // Load the components to be loaded
+        o3_trace_scrfun("finish");
+        // Load the components to be loaded
         for (tList<Str>::Iter it = m_to_load.begin(); it != m_to_load.end();
              ++it)
             if (!mgr->loadModule(*it)) {
@@ -377,6 +394,7 @@ struct cO3 : cScr {
 
 	o3_get siFs settingsDir(iCtx* ctx)
 	{
+		o3_trace_scrfun("settingsDir");
 		siMgr mgr = ctx->mgr();
 		if (!mgr->safeLocation())
 			return siFs();
@@ -388,6 +406,7 @@ struct cO3 : cScr {
 
 	o3_get Str approvalURL()
 	{
+		o3_trace_scrfun("approvalURL");
 		siCtx ctx = (m_ctx);
 		siMgr mgr = siCtx(m_ctx)->mgr();
 		Str host = hostFromURL(mgr->currentUrl());
@@ -398,12 +417,14 @@ struct cO3 : cScr {
 
 	void onDone(iUnk*)
 	{
+		o3_trace_scrfun("onDone");
 		m_loading = false;
 		Delegate(siCtx(m_ctx),m_ondone)(this);
 	}
 
 	void onStateChange(iUnk* http)
 	{
+		o3_trace_scrfun("onStateChange");
 		siHttp ihttp = http;
 		m_load_progress->setState(
 			ihttp->readyState());
@@ -413,6 +434,7 @@ struct cO3 : cScr {
 
 	void onProgress(iUnk* http)
 	{
+		o3_trace_scrfun("onProgress");
 		siHttp ihttp = http;
 		m_load_progress->setBytesReceived(
 			ihttp->bytesReceived());
@@ -429,6 +451,7 @@ struct cO3 : cScr {
 
 	void onFail(iUnk*)
 	{
+		o3_trace_scrfun("onFail");
 		Delegate(siCtx(m_ctx), m_onfail)(
 			siScr(this));	
 	}
@@ -437,6 +460,7 @@ struct cO3 : cScr {
 	// unzip the downloaded module, validates it and put the dll in place
 	bool unpackModule(const Str& name, iStream* zipped, bool update=false ) 
 	{
+        o3_trace_scrfun("unpackModule");
         o3_unused(name), o3_unused(zipped), o3_unused(update);
 		bool ret = false;
 #ifdef O3_PLUGIN
@@ -521,6 +545,7 @@ error:
 	// checks the signiture comes with the dll for validation
 	bool validateModule(iStream* data, Str sign_b64)
 	{
+        o3_trace_scrfun("validateModule");
         o3_unused(data);
 #ifdef O3_PLUGIN
 		using namespace Crypto;
@@ -557,6 +582,7 @@ error:
 	// we check the local versions hash against these values and update the component if needed
 	void moduleUpdating(iUnk*)
 	{
+o3_trace_scrfun("moduleUpdating");
 #ifdef O3_PLUGIN	
 		using namespace zip_tools;
 		siCtx ctx = siCtx(m_ctx);
@@ -629,6 +655,7 @@ error:
 	// mark the original to be deleted, remove the temp folder
 	void updateComponent( const Str& name ) 
 	{
+		o3_trace_scrfun("updateComponent");
 		siCtx ctx = siCtx(m_ctx);
 		Buf downloaded = ctx->mgr()->downloadComponent(ctx,name,
 			Delegate(), Delegate());
@@ -638,6 +665,7 @@ error:
 
 	void checkForMajorUpdate() 
 	{
+		o3_trace_scrfun("checkForMajorUpdate");
 		siCtx ctx = siCtx(m_ctx);
 		siMgr mgr = ctx->mgr();
 		Str latest = mgr->latestVersion(ctx);
@@ -650,11 +678,13 @@ error:
 
     o3_get siScr onupdate()
     {
+        o3_trace_scrfun("onupdate");
         return m_installer ? m_installer->onchange() : 0;
     }
 
     o3_set siScr setOnupdate(iCtx* ctx, iScr* onupdate)
     {
+        o3_trace_scrfun("setOnupdate");
         siFs updater = siFs(ctx->mgr()->factory("pluginDir")(0))->get(O3_PLUGIN_UPDATER);
 
         if (!m_installer)
@@ -680,11 +710,13 @@ error:
 
     o3_get siScr oninstall()
     {
+        o3_trace_scrfun("oninstall");
         return m_plugin ? m_plugin->onchange() : 0;
     }
 
     o3_set siScr setOninstall(iCtx* ctx, iScr* oninstall)
     {
+        o3_trace_scrfun("setOninstall");
         o3_unused(ctx), o3_unused(oninstall);
 #ifdef O3_PLUGIN
         if (!m_plugin)

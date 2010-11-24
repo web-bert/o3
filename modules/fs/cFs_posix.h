@@ -34,6 +34,7 @@ struct cFs : cFsBase {
     cFs(const char* root_path = "/", const char* rel_path = "/")
         : m_root_path(root_path), m_rel_path(rel_path)
     {
+        o3_trace_scrfun("cFs");
         m_valid = parsePath();
     }
 
@@ -44,7 +45,7 @@ struct cFs : cFsBase {
 
     static o3_ext("cO3") o3_get siScr fs(iCtx* ctx)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("fs");
         Var fs = ctx->value("fs");
 
         if (fs.type() == Var::TYPE_VOID)
@@ -54,7 +55,7 @@ struct cFs : cFsBase {
 
     static o3_ext("cO3") o3_get siScr cwd(iCtx* ctx)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("cwd");
         Var cwd = ctx->value("cwd");
 
         if (cwd.type() == Var::TYPE_VOID) {
@@ -68,7 +69,7 @@ struct cFs : cFsBase {
 	
 	static siScr cwd()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("cwd");
 		char* buf = getcwd(0, 0);
 
 		siFs ret = o3_new(cFs)("/", buf);
@@ -78,6 +79,7 @@ struct cFs : cFsBase {
 
 	static o3_ext("cO3") o3_get siFs fsSafe(iCtx* ctx) 
 	{     
+		o3_trace_scrfun("fsSafe");     
 		siFs ret = o3_new(cFs(ctx->mgr()->root(), "/"));
 
 		return ret;
@@ -85,34 +87,38 @@ struct cFs : cFsBase {
 
 	static siUnk rootDir(iCtx*) 
 	{	
+		o3_trace_scrfun("rootDir");	
 		return o3_new(cFs)(O3_PLUGIN_TMP);
 	}
 
 	static siUnk settingsDir(iCtx*) 
 	{	
+        o3_trace_scrfun("settingsDir");	
         return o3_new(cFs)(O3_PLUGIN_TMP);
 	}
 
     static siUnk installerDir(iCtx*)
     {
+        o3_trace_scrfun("installerDir");
         return o3_new(cFs)(O3_PLUGIN_TMP);
     }
 
     static siUnk pluginDir(iCtx*)
     {
+        o3_trace_scrfun("pluginDir");
         return o3_new(cFs)(O3_PLUGIN_DIR);
     }
 
     bool valid()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("valid");
 
         return m_valid;
     }
 
     bool exists()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("exists");
         struct stat buf;
 
         return stat(localPath(), &buf) == 0;
@@ -120,6 +126,7 @@ struct cFs : cFsBase {
 
     Type type()
     {
+        o3_trace_scrfun("type");
         struct stat buf;
 
         if (stat(localPath(), &buf) >= 0) {
@@ -135,7 +142,7 @@ struct cFs : cFsBase {
 
     int64_t accessedTime()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("accessedTime");
         struct stat buf;
 
         if (stat(localPath(), &buf) < 0) 
@@ -166,11 +173,14 @@ struct cFs : cFsBase {
     int64_t createdTime()
     {
 		// no such thing on UNIX as created time
+        o3_trace_scrfun("createdTime");
+		// no such thing on UNIX as created time
         return 0;
     }
 
 	int64_t setAccessedTime(int64_t time)
 	{
+		o3_trace_scrfun("setAccessedTime");
 		struct utimbuf b;
 		b.actime = time;
 		b.modtime = modifiedTime();
@@ -189,12 +199,13 @@ struct cFs : cFsBase {
 
 	int64_t setCreatedTime(int64_t time)
 	{
+		o3_trace_scrfun("setCreatedTime");
 		return time;
 	}
 
     size_t size()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("size");
         struct stat buf;
 
         if (stat(localPath(), &buf) < 0) 
@@ -204,14 +215,14 @@ struct cFs : cFsBase {
 
     Str path()
     {
-        o3_trace trace;
+        o3_trace_scrfun("path");
 
         return m_rel_path;
     }
 
     siFs get(const char* path)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("get");
 
         return o3_new(cFs)(m_root_path,
                             *path == '/' ? Str(path)
@@ -220,7 +231,7 @@ struct cFs : cFsBase {
 
     bool hasChildren()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("hasChildren");
         DIR* dir = opendir(localPath());
 
         if (!dir)
@@ -231,7 +242,7 @@ struct cFs : cFsBase {
 
     tVec<Str> scandir(const char* path = 0)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("scandir");
         tVec<Str> names;
         DIR* dir;
 
@@ -250,7 +261,7 @@ struct cFs : cFsBase {
 
     tVec<siFs> children()
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("children");
         tVec<siFs> names;
         DIR* dir = opendir(localPath());     
 
@@ -267,7 +278,7 @@ struct cFs : cFsBase {
 
     bool createDir()
     {
-        o3_trace trace;
+        o3_trace_scrfun("createDir");
 		
         if (!exists()) {
             siFs dir = parent();
@@ -282,7 +293,7 @@ struct cFs : cFsBase {
 
     bool createFile()
     {
-        o3_trace trace;
+        o3_trace_scrfun("createFile");
 
         if (!exists()) 
             if ( ! ((cFs*) parent().ptr())->createDir())
@@ -293,7 +304,7 @@ struct cFs : cFsBase {
 
     bool createLink(iFs* to)
     {
-        o3_trace trace;
+        o3_trace_scrfun("createLink");
 
         if (!exists()) 
             if ( ! ((cFs*) parent().ptr())->createDir())
@@ -304,7 +315,7 @@ struct cFs : cFsBase {
 
     bool remove(bool deep)
     {
-        o3_trace trace;
+        o3_trace_scrfun("remove");
 
         if (deep) {
             tVec<siFs> nodes = children();
@@ -323,7 +334,7 @@ struct cFs : cFsBase {
 
     siStream open(const char* mode, siEx* ex)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("open");
         FILE* stream;
         createFile();
         stream = ::fopen(localPath(), mode);
@@ -334,6 +345,7 @@ struct cFs : cFsBase {
 
     void startListening()
     {
+        o3_trace_scrfun("startListening");
         m_time = exists() ? modifiedTime() : 0;
         m_timer = siCtx(m_ctx)->loop()->createTimer(10,
                 Delegate(this, &cFs::listen));
@@ -341,11 +353,13 @@ struct cFs : cFsBase {
 
     void stopListening()
     {
+        o3_trace_scrfun("stopListening");
         m_timer = 0;
     }
 
     void listen(iUnk*)
     {
+        o3_trace_scrfun("listen");
         int64_t time = modifiedTime();
 
         if (exists() && m_time != time) {
@@ -357,6 +371,7 @@ struct cFs : cFsBase {
 
     bool parsePath()
     {		
+        o3_trace_scrfun("parsePath");		
         Str path = m_rel_path;
         const char* src = path.ptr();
         char* dst = path.ptr();
@@ -390,11 +405,13 @@ struct cFs : cFsBase {
 
     Str localPath()
     {
+        o3_trace_scrfun("localPath");
         return (m_root_path.size() > 1 ? m_root_path : Str()) + m_rel_path;
     }
 
 	Str fullPath()
 	{
+		o3_trace_scrfun("fullPath");
 		return localPath();
 	}
 	
@@ -406,6 +423,7 @@ struct cFs : cFsBase {
 #ifdef O3_PLUGIN
     static bool parseDescription(const char** in, void* ctx)
     {
+        o3_trace_scrfun("parseDescription");
         while (**in && **in != ']')
             ++*in;
         return true;
@@ -413,6 +431,7 @@ struct cFs : cFsBase {
     
     static bool parseType(const char** in, void* ctx)
     {
+        o3_trace_scrfun("parseType");
         NSMutableArray* types = (NSMutableArray*) ctx;
         const char* str;
         NSString* type;
@@ -434,6 +453,7 @@ struct cFs : cFsBase {
     
     static bool parseTypes(const char** in, void* ctx)
     {   
+        o3_trace_scrfun("parseTypes");   
         if (!strAcceptChr(in, '['))
             return false;
         while (**in && **in != ']') {
@@ -449,6 +469,7 @@ struct cFs : cFsBase {
     
     static bool parseEntry(const char** in, void* ctx)
     {
+        o3_trace_scrfun("parseEntry");
         if (!strAcceptChr(in, '['))
             return false;
         if (!parseTypes(in, ctx))
@@ -464,6 +485,7 @@ struct cFs : cFsBase {
     static o3_ext("cO3") o3_fun siFs openFileDialog(iCtx* ctx,
             const char* filter)
     {
+o3_trace_scrfun("openFileDialog");
 #ifdef O3_PLUGIN
         NSOpenPanel* panel;
         NSMutableArray* types;
@@ -494,6 +516,7 @@ struct cFs : cFsBase {
     
     static o3_ext("cO3") o3_fun siFs saveFileDialog(iCtx* ctx)
     {
+o3_trace_scrfun("saveFileDialog");
 #ifdef O3_PLUGIN
         NSSavePanel* panel;
         

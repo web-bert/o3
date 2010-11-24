@@ -1191,7 +1191,7 @@ struct iWindow : iUnk
 			e = GetLastError();
 			if (m_hwnd) {
 				SetWindowLongPtr(m_hwnd, GWLP_USERDATA, (LONG_PTR) ctx);
-				SetTimer(m_hwnd, (UINT_PTR) m_hwnd, 200, 0);        
+				SetTimer(m_hwnd, (UINT_PTR) m_hwnd, 100, 0);        
 			}
         }
 
@@ -1205,15 +1205,19 @@ struct iWindow : iUnk
         static LRESULT CALLBACK WndProc(HWND hWnd, UINT msg, WPARAM wParam,
                                     LPARAM lParam) 
         {
+			o3_trace_tools("WndProc");
             iCtx* ctx = (iCtx*) GetWindowLongPtr(hWnd, GWLP_USERDATA);			
             if (g_sys && ctx) {             				
                 switch (msg) {
                 case WM_TIMER:
 					// to prevent the wait function to be called again while
 					// the previous call have not returned yet...
-					SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) 0);
+					//SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) 0);
                     ctx->loop()->wait(1);
-                    SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) ctx);
+
+             
+					SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR) ctx);
+
 					break;
                 }
 

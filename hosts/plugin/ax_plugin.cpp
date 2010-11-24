@@ -17,6 +17,7 @@
  */
 
 #define O3_PLUGIN 1
+#define O3_WITH_LIBEVENT 1
 
 #include <o3.h>
 #include <tools_win32.h> 
@@ -25,6 +26,6 @@
 
 namespace o3{
     int g_outerComponents = 0;
-    extern iSys* g_sys = 0;
+    extern iSys* g_sys;
 }
 

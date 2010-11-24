@@ -28,6 +28,7 @@ struct cMouse : cMouseBase {
 
 	void sendMoveTo(int x, int y) 
 	{
+		o3_trace_scrfun("sendMoveTo");
 		static DWORD cx = GetSystemMetrics(SM_CXSCREEN);
 		static DWORD cy = GetSystemMetrics(SM_CYSCREEN);
 
@@ -39,26 +40,31 @@ struct cMouse : cMouseBase {
 
 	void sendLeftButtonDown() 
 	{
+		o3_trace_scrfun("sendLeftButtonDown");
 		mouse_event( MOUSEEVENTF_LEFTDOWN,0,0,0,0);
 	}
 
 	void sendLeftButtonUp() 
 	{
+		o3_trace_scrfun("sendLeftButtonUp");
 		mouse_event( MOUSEEVENTF_LEFTUP,0,0,0,0);
 	}
 
 	void sendRightButtonDown()
 	{
+		o3_trace_scrfun("sendRightButtonDown");
 		mouse_event( MOUSEEVENTF_RIGHTDOWN,0,0,0,0);
 	}
 
 	void sendRightButtonUp()
 	{
+		o3_trace_scrfun("sendRightButtonUp");
 		mouse_event( MOUSEEVENTF_RIGHTUP,0,0,0,0); 
 	}
 
 	void sendMouseScrolled(int i)
 	{
+		o3_trace_scrfun("sendMouseScrolled");
 		mouse_event( MOUSEEVENTF_WHEEL, 0, 0, WHEEL_DELTA * i, 0);
 	}
 };

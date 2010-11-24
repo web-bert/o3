@@ -26,6 +26,7 @@ namespace o3 {
 
 inline void test_WStr()
 {
+    o3_trace_scrfun("test_WStr");
     const char STR[] = "The quick brown fox jumps over the lazy dog";
     const wchar_t WSTR[] = L"The quick brown fox jumps over the lazy dog";
 

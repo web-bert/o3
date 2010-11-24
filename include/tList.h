@@ -41,6 +41,7 @@ class tList {
         Impl() : ref_count(1), size(0), head((Node*) /*malloc*/ memAlloc(sizeof(Node))),
                  tail(head)
         {
+            o3_trace_containers("Impl");
             head->prev = 0;
         }
     };
@@ -49,6 +50,7 @@ class tList {
 
     void makeUnique()
     {
+        o3_trace_containers("makeUnique");
         if (m_impl->ref_count > 1) {
             tList tmp;
 
@@ -60,6 +62,7 @@ class tList {
 
     Node* removeImpl(Node* head, Node* tail)
     {
+        o3_trace_containers("removeImpl");
         Node* prev = head->prev;
 
         while (head != tail) {
@@ -84,7 +87,7 @@ public:
     public:
         ConstIter(typename tList::Node* node = 0) : m_node(node)
         {
-            o3_trace1 trace;
+            o3_trace_containers("ConstIter");
         }
 
         bool operator==(const ConstIter& that) const
@@ -165,7 +168,7 @@ public:
     public:
         Iter(typename tList::Node* node = 0) : m_node(node)
         {
-            o3_trace1 trace;
+            o3_trace_containers("Iter");
         }
 
         bool operator==(const Iter& that) const
@@ -247,26 +250,26 @@ public:
 
     tList() : m_impl(o3_new(Impl)())
     {
-        o3_trace1 trace;
+        o3_trace_containers("tList");
     }
 
     tList(const T& x, size_t n) : m_impl(o3_new(Impl)())
     {
-        o3_trace1 trace;
+        o3_trace_containers("tList");
 
         append(x, n);
     }
 
     tList(ConstIter first, ConstIter last) : m_impl(o3_new(Impl)())
     {
-        o3_trace1 trace;
+        o3_trace_containers("tList");
 
         append(first, last);
     }
 
     tList(const tList& that) : m_impl(that.m_impl)
     {
-        o3_trace1 trace;
+        o3_trace_containers("tList");
 
         ++m_impl->ref_count;
     }
@@ -285,7 +288,7 @@ public:
 
     ~tList()
     {
-        o3_trace1 trace;
+        o3_trace_containers("~tList");
 
         if (--m_impl->ref_count == 0) {
             clear();
@@ -338,7 +341,7 @@ public:
 
     Iter begin()
     {
-        o3_trace1 trace;
+        o3_trace_containers("begin");
 
         makeUnique();
         return m_impl->head;
@@ -346,7 +349,7 @@ public:
 
     Iter end()
     {
-        o3_trace1 trace;
+        o3_trace_containers("end");
 
         makeUnique();
         return m_impl->tail;
@@ -354,14 +357,14 @@ public:
 
     T& front()
     {
-        o3_trace1 trace;
+        o3_trace_containers("front");
 
         return *begin();
     }
 
     T& back()
     {
-        o3_trace1 trace;
+        o3_trace_containers("back");
         Iter  tmp = end();
 
         return *--tmp;
@@ -369,7 +372,7 @@ public:
 
     Iter insert(Iter pos, const T& x)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
         Node* node = pos.m_node;
         Node* prev = node->prev;
         Node* new_node = o3_new(Node)(prev, node, x);
@@ -385,7 +388,7 @@ public:
 
     void insert(Iter pos, const T& x, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
 
         while (n--)
             pos = insert(pos, x);
@@ -393,7 +396,7 @@ public:
 
     void insert(Iter pos, ConstIter first, ConstIter last)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
 
         while (last != first)
             pos = insert(pos, *--last);
@@ -401,21 +404,21 @@ public:
 
     void append(const T& x, size_t n = 1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("append");
 
         insert(end(), x, n);
     }
 
     void append(ConstIter first, ConstIter last)
     {
-        o3_trace1 trace;
+        o3_trace_containers("append");
 
         insert(end(), first, last);
     }
 
     Iter remove(Iter pos)
     {
-        o3_trace1 trace;
+        o3_trace_containers("remove");
         Iter tmp = pos;
 
         return removeImpl(pos.m_node, (++tmp).m_node);
@@ -423,42 +426,42 @@ public:
 
     void remove(Iter first, Iter last)
     {
-        o3_trace1 trace;
+        o3_trace_containers("remove");
 
         removeImpl(first.m_node, last.m_node);
     }
 
     void clear()
     {
-        o3_trace1 trace;
+        o3_trace_containers("clear");
 
         remove(begin(), end());
     }
 
     void pushFront(const T& x)
     {
-        o3_trace1 trace;
+        o3_trace_containers("pushFront");
 
         insert(begin(), x);
     }
 
     void pushBack(const T& x)
     {
-        o3_trace1 trace;
+        o3_trace_containers("pushBack");
 
         insert(end(), x);
     }
 
     void popFront()
     {
-        o3_trace1 trace;
+        o3_trace_containers("popFront");
 
         remove(begin());
     }
 
     void popBack()
     {
-        o3_trace1 trace;
+        o3_trace_containers("popBack");
         Iter tmp = end();
 
         remove(--tmp);

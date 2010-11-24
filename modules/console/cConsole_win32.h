@@ -29,7 +29,7 @@ struct cConsole : cScr {
 
     static o3_ext("cO3") o3_get siStream stdIn(iCtx* ctx)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("stdIn");
         Var in = ctx->value("in");
 
         if (in.type() == Var::TYPE_VOID)
@@ -39,7 +39,7 @@ struct cConsole : cScr {
 
     static o3_ext("cO3") o3_get siStream stdOut(iCtx* ctx)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("stdOut");
         Var out = ctx->value("out");
 
         if (out.type() == Var::TYPE_VOID)
@@ -49,7 +49,7 @@ struct cConsole : cScr {
 
     static o3_ext("cO3") o3_get siStream stdErr(iCtx* ctx)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("stdErr");
         Var err = ctx->value("err");
 
         if (err.type() == Var::TYPE_VOID)
@@ -59,7 +59,7 @@ struct cConsole : cScr {
 
     static o3_ext("cO3") o3_fun void print(iCtx* ctx, const Str& str)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("print");
         siStream out = cConsole::stdOut(ctx);
 
         out->write(str.ptr(), str.size());

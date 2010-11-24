@@ -52,6 +52,10 @@ struct iCtx : iAlloc {
 	virtual void* appWindow() = 0;
 
 	virtual bool isIE() = 0;
+
+#ifdef O3_WITH_LIBEVENT 
+	virtual struct event_base* eventBase() = 0;
+#endif
 };
 
 }

@@ -19,6 +19,7 @@ namespace o3 {
 
         ~cSocket()
 		{
+            o3_trace_scrfun("~cSocket");
             if (m_addr)
                 ::freeaddrinfo(m_addr);
             if (m_acc_addr)
@@ -74,22 +75,26 @@ namespace o3 {
         //helper function for debugging, this should be done on cSys
         void startup() 
 		{
+            o3_trace_scrfun("startup");
             WSADATA wsd;
             WSAStartup(MAKEWORD(2,2), &wsd);
         }
 
 		static o3_ext("cO3") o3_fun siSocket socketUDP(iCtx* ctx)
 		{			
+			o3_trace_scrfun("socketUDP");			
 			return create(ctx, TYPE_UDP);
 		}
 
 		static o3_ext("cO3") o3_fun siSocket socketTCP(iCtx* ctx) 
 		{	
+			o3_trace_scrfun("socketTCP");	
 			return create(ctx, TYPE_TCP);
 		}
 
         static siScr create(iCtx* ctx, Type type)
 		{                                                            
+            o3_trace_scrfun("create");                                                            
             siScr ret = o3_new(cSocket)();
             cSocket* cret = (cSocket*)ret.ptr();
             cret->m_type = type;
@@ -140,6 +145,7 @@ namespace o3 {
 
         void setupEvent() 
 		{
+            o3_trace_scrfun("setupEvent");
             HANDLE h;
             //create and set up a WSA event for the async connection
             h = WSACreateEvent();
@@ -169,6 +175,7 @@ namespace o3 {
 
         bool bind(const char* addr, int port) 
 		{
+            o3_trace_scrfun("bind");
             if (!m_socket)
                 return false;
             
@@ -192,6 +199,7 @@ namespace o3 {
 
         struct addrinfo* getAddr(const char* addr, const char* port) 
 		{                
+            o3_trace_scrfun("getAddr");                
             struct addrinfo hints = {0}, *res;
             //struct sockaddr_in hints = {0};
             hints.ai_family = AF_INET;
@@ -209,6 +217,7 @@ namespace o3 {
 
         void updateFromAddressString() 
 		{            
+            o3_trace_scrfun("updateFromAddressString");            
             DWORD length = 512;
             m_src_address = Str();
             m_src_address.reserve(length);    
@@ -222,6 +231,7 @@ namespace o3 {
 
         bool connect(const char* url, int port)
 		{            
+            o3_trace_scrfun("connect");            
             if (m_state & (STATE_ERROR | STATE_CONNECTING | STATE_ACCEPTING))
                 return false;
                         
@@ -260,6 +270,7 @@ namespace o3 {
 
         bool accept() 
 		{
+            o3_trace_scrfun("accept");
             if (m_state & (STATE_ERROR | STATE_CONNECTING | STATE_ACCEPTING))
                 return false;
 
@@ -280,6 +291,7 @@ namespace o3 {
 
         bool send(uint8_t* data, size_t size)
 		{
+            o3_trace_scrfun("send");
             if (m_state & STATE_ERROR || !(m_state & STATE_CONNECTED))
                 return false;
             
@@ -311,6 +323,7 @@ namespace o3 {
 
         virtual bool sendTo(uint8_t* data, size_t size, const char* url, int port) 
 		{
+            o3_trace_scrfun("sendTo");
             if (m_state & STATE_ERROR || m_type != TYPE_UDP)
                 return false;
 
@@ -355,6 +368,8 @@ namespace o3 {
         int sendFirstBuf(size_t size, DWORD& bytes_sent)
 		{
             // Create an event and an ovelapped struct for the async send            
+            o3_trace_scrfun("sendFirstBuf");
+            // Create an event and an ovelapped struct for the async send            
             memSet(&m_overl_send, 0, sizeof(WSAOVERLAPPED));
             m_overl_send.hEvent = m_write_signal->handle();            
                 
@@ -370,6 +385,7 @@ namespace o3 {
 
         virtual bool receive() 
 		{
+            o3_trace_scrfun("receive");
             if (m_state & STATE_RECEIVING || m_state & STATE_ERROR 
                     || m_type == TYPE_TCP && !(m_state & STATE_CONNECTED))
                 return false;
@@ -399,6 +415,7 @@ namespace o3 {
 
         int startnewrecv() 
 		{
+            o3_trace_scrfun("startnewrecv");
             m_tmprecv_blob.empty();
             m_tmprecv_blob.reserve(m_packet_size * 4);
             //m_received_blob.resize(0);            
@@ -418,6 +435,7 @@ namespace o3 {
 
         void close() 
 		{
+			o3_trace_scrfun("close");
 			if (m_pdisc)
 				m_pdisc(m_socket, NULL, 0, 0);
 
@@ -436,6 +454,7 @@ namespace o3 {
 
         void onevent(iUnk*) 
 		{ 
+            o3_trace_scrfun("onevent"); 
             WSANETWORKEVENTS networkEvents;
             int e,res = WSAEnumNetworkEvents(m_socket,m_signal->handle(), &networkEvents);      
             if (res) {
@@ -457,6 +476,7 @@ namespace o3 {
 
         void onacc(iUnk*) 
 		{             
+            o3_trace_scrfun("onacc");             
             if (!(m_state & STATE_ACCEPTING))
                 return;
 
@@ -489,6 +509,7 @@ namespace o3 {
 
         void onconnect()
 		{ 
+            o3_trace_scrfun("onconnect"); 
             if (! (m_state & STATE_CONNECTING))
                 return;
 
@@ -500,6 +521,7 @@ namespace o3 {
 
         void onreceive(iUnk*) 
 		{ 
+            o3_trace_scrfun("onreceive"); 
             WSAResetEvent(m_read_signal->handle());
             if (!(m_state & STATE_RECEIVING))
                 return;
@@ -545,6 +567,7 @@ namespace o3 {
 
        void onsend(iUnk*) 
 	   { 
+            o3_trace_scrfun("onsend"); 
             WSAResetEvent(m_write_signal->handle());
             if (!(m_state & STATE_SENDING))
                 return;

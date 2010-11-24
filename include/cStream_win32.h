@@ -35,6 +35,7 @@ struct cStream : cStreamBase {
 
     virtual ~cStream() 
     {
+        o3_trace_scrfun("~cStream");
         if (m_handle)
             ::CloseHandle(m_handle);
         m_handle = 0;
@@ -51,14 +52,17 @@ struct cStream : cStreamBase {
 public:
 
     static siStream create(void* handle) {
+        o3_trace_scrfun("create");
         return o3_new(cStream)(handle);
     }
 
     void setHandle(void* handle) {
+        o3_trace_scrfun("setHandle");
         m_handle = (HANDLE) handle;
     }
 
     size_t write(const void* buf, size_t nbytes) {
+	    o3_trace_scrfun("write");
 	    DWORD length;
         if ( ! ::WriteFile( m_handle, buf, DWORD(nbytes), &length, NULL ) )
 		    return 0;
@@ -67,6 +71,7 @@ public:
     }
 
     size_t read(void* buf, size_t nbytes) {
+	    o3_trace_scrfun("read");
 	    DWORD length;
         if ( ! ::ReadFile( m_handle, buf, DWORD(nbytes), &length, NULL ) )
 		    return 0;			
@@ -75,11 +80,13 @@ public:
     }
 
     virtual size_t write(const char* data) {
-        return write(data, strLen(data) * sizeof(char)); 
+        o3_trace_scrfun("write");
+        return write(data, strLen(data)); 
     }
 
 
     o3_get size_t size() {
+	    o3_trace_scrfun("size");
 	    DWORD high = 0;
         DWORD low = ::GetFileSize(m_handle, &high);	    
 		if(INVALID_FILE_SIZE == low) 
@@ -92,10 +99,12 @@ public:
     }
 
     size_t pos() {				
+        o3_trace_scrfun("pos");				
         return ::SetFilePointer(m_handle,0,0,FILE_CURRENT);
     }
 
     size_t setPos(size_t pos) {
+	    o3_trace_scrfun("setPos");
 	    LARGE_INTEGER li;
 	    li.QuadPart = pos;
         li.LowPart = ::SetFilePointer(m_handle,li.LowPart,&li.HighPart,FILE_BEGIN);
@@ -107,6 +116,7 @@ public:
     }
 
     bool eof() {
+	    o3_trace_scrfun("eof");
 	    unsigned char buf[2];
 	    if (0 == read(buf,1))
 		    return true;
@@ -118,6 +128,7 @@ public:
     }
 
     bool close() {
+        o3_trace_scrfun("close");
         BOOL res(TRUE);
         if (m_handle)
             res = ::CloseHandle(m_handle);
@@ -126,20 +137,24 @@ public:
     }
 
     bool flush() { 
+        o3_trace_scrfun("flush"); 
         return true;
     }
 
     static siScr factory() {
+        o3_trace_scrfun("factory");
         siScr ret = o3_new(cStream);
         return ret;
     }
 
     bool error(){
+        o3_trace_scrfun("error");
         return false;
     }
 
     void* unwrap()
     {
+        o3_trace_scrfun("unwrap");
         return m_handle; 
     }
 };

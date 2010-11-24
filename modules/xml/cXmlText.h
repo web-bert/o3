@@ -22,7 +22,7 @@ namespace o3 {
 	struct cXmlText : cXmlCharacterData, iXmlText2 {
         cXmlText(xmlNodePtr node, iXmlNode2* owner_node, NodeMap* node_map) 
             : cXmlCharacterData(node, owner_node, node_map) {
-                o3_trace3 trace;                
+                o3_trace_scrfun("cXmlText");                
         }
 
 		virtual ~cXmlText()
@@ -37,7 +37,7 @@ namespace o3 {
         o3_glue_gen()
 
 		siXmlText2 splitText(int /*offset*/) {
-            o3_trace3 trace;
+            o3_trace_scrfun("splitText");
 			return siXmlText2();
 		}
 	};

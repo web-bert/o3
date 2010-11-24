@@ -48,12 +48,13 @@ namespace o3
 
 		static o3_ext("cO3") o3_fun siScr canvas()
 		{
-			o3_trace3 trace;
+			o3_trace_scrfun("canvas");
 			return o3_new(cCanvas)();
 		}
 
 		static o3_ext("cO3") o3_fun siScr canvas(size_t w, size_t h, const char* mode = "argb" )
 		{
+			o3_trace_scrfun("canvas");
 			return o3_new(cCanvas)(w,h,mode);
 		}
 
@@ -147,6 +148,7 @@ namespace o3
 #pragma region ObjectLifeCycleManagement
 		cCanvas()
 		{
+			o3_trace_scrfun("cCanvas");
 			m_w = m_h = m_stride = 0;
 			m_bitdepth = 32;
 			m_bytesperpixel = 4;
@@ -164,6 +166,7 @@ namespace o3
 
 		cCanvas(size_t w, size_t h, const Str &mode)
 		{
+			o3_trace_scrfun("cCanvas");
 			m_currentrenderstate = SetupRenderState();
 			m_renderstates.push(m_currentrenderstate);
 			SetupMode(w,h,mode);
@@ -172,6 +175,7 @@ namespace o3
 
 		void ClearAllRenderStates()
 		{
+			o3_trace_scrfun("ClearAllRenderStates");
 			for (unsigned int i = 0;i<m_renderstates.size();i++)
 			{
 				delete m_renderstates[i];
@@ -181,11 +185,13 @@ namespace o3
 
 		virtual ~cCanvas()
 		{
+			o3_trace_scrfun("~cCanvas");
 			ClearAllRenderStates();
 		};
 
 		void SetupMode(size_t w, size_t h, const Str &mode)
 		{
+			o3_trace_scrfun("SetupMode");
 			m_w = w;
 			m_h = h;
 			m_stride = (m_w+7)&~(7);
@@ -232,6 +238,7 @@ namespace o3
 
 		void SetupBuffer()
 		{	
+			o3_trace_scrfun("SetupBuffer");	
 			size_t newsize = 0;
 			switch(m_mode_int)
 			{
@@ -249,6 +256,7 @@ namespace o3
 
 		void Ensure32BitSurface()
 		{
+			o3_trace_scrfun("Ensure32BitSurface");
 			if (m_mode_int != Image::MODE_ARGB)
 			{
 				// TODO -- convert existing bitmap to 32 bit and remember old mode. 
@@ -267,11 +275,13 @@ namespace o3
 		
 		void ClearAlpha()
 		{			
+			o3_trace_scrfun("ClearAlpha");			
 			if (m_alphamem.size()>0) m_alphamem.set<unsigned char>(0, 0, m_alphamem.size());
 		};
 
 		void AttachAlpha()
 		{
+			o3_trace_scrfun("AttachAlpha");
 			if (m_alphamem.size() < m_stride*m_h)
 			{
 				m_alphamem.resize(m_stride*m_h);
@@ -283,11 +293,13 @@ namespace o3
 
 		void ClearShadow()
 		{			
+			o3_trace_scrfun("ClearShadow");			
 			if (m_shadowmem.size()>0) m_shadowmem.set<unsigned char>(0, 0, m_shadowmem.size());
 		};
 
 		void AttachShadow()
 		{
+			o3_trace_scrfun("AttachShadow");
 			if (m_shadowmem.size() < m_stride*m_h*4)
 			{
 				m_shadowmem.resize(m_stride*m_h*4);
@@ -305,23 +317,24 @@ namespace o3
         //
         // -------------------------------------------------------
 #pragma region ImageAPI_and_iImage
-        o3_get Str mode(){return m_mode;}
+        o3_get Str mode(){o3_trace_scrfun("mode");return m_mode;}
 
-		o3_get size_t x(){return m_w;}
-		o3_get size_t y(){return m_h;}
+		o3_get size_t x(){o3_trace_scrfun("x");return m_w;}
+		o3_get size_t y(){o3_trace_scrfun("y");return m_h;}
 
-		virtual o3_get size_t width(){return m_w;}
-		virtual o3_get size_t height(){return m_h;}
+		virtual o3_get size_t width(){o3_trace_scrfun("width");return m_w;}
+		virtual o3_get size_t height(){o3_trace_scrfun("height");return m_h;}
 
-		virtual size_t stride(){return m_stride;};
-		virtual size_t bpp(){return m_bitdepth;};
-		virtual size_t mode_int(){return m_mode_int;}
+		virtual size_t stride(){o3_trace_scrfun("stride");return m_stride;};
+		virtual size_t bpp(){o3_trace_scrfun("bpp");return m_bitdepth;};
+		virtual size_t mode_int(){o3_trace_scrfun("mode_int");return m_mode_int;}
 
-		virtual unsigned char *getbufptr(){return (unsigned char*)m_mem.ptr();};
-		virtual unsigned char *getrowptr(size_t y){return _getRowPtr(y);};
+		virtual unsigned char *getbufptr(){o3_trace_scrfun("getbufptr");return (unsigned char*)m_mem.ptr();};
+		virtual unsigned char *getrowptr(size_t y){o3_trace_scrfun("getrowptr");return _getRowPtr(y);};
 
 		__inline unsigned char *_getRowPtr(size_t y)
 		{
+			o3_trace_scrfun("_getRowPtr");
 			if (m_mode_int == Image::MODE_BW) 
 			{
 				if (y < (int)m_h) 
@@ -341,6 +354,7 @@ namespace o3
 
 o3_fun void clear(int signed_color)
 		{
+			o3_trace_scrfun("clear");
 			unsigned int color = (unsigned int) signed_color;
 			switch(m_mode_int)
 			{
@@ -372,6 +386,7 @@ o3_fun void clear(int signed_color)
 		};        
 		o3_fun void setPixel(size_t x, size_t y, int signed_color)
 		{
+			o3_trace_scrfun("setPixel");
 			unsigned int color = (unsigned int) signed_color;
 			unsigned char *D = _getRowPtr(y);
 			if(D)
@@ -446,6 +461,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun int getPixel(size_t x, size_t y)
 		{
+			o3_trace_scrfun("getPixel");
 			unsigned char *D = _getRowPtr(y);
 			if(D)
 			{
@@ -476,6 +492,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void img_rect(int x, int y, int w, int h, int signed_color)    // !ALLMODES!
 		{
+			o3_trace_scrfun("img_rect");
 			unsigned int color = (unsigned int) signed_color;
 			switch (m_mode_int)
 			{
@@ -507,6 +524,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void img_line(int x0,int y0,int x1,int y1,int signed_color)    // !ALLMODES!
 		{
+			o3_trace_scrfun("img_line");
 			unsigned int color = (unsigned int) signed_color;
 			bool steep = (abs(y1 - y0) > abs(x1 - x0));
 			if (steep)
@@ -556,6 +574,7 @@ o3_fun void clear(int signed_color)
 
 		o3_set Buf src(const Buf &data, siEx *ex = 0)
 		{
+			o3_trace_scrfun("src");
 			return srcPNG(data, ex);
 		};
 #ifdef CANVAS_USE_JPEG
@@ -565,6 +584,8 @@ o3_fun void clear(int signed_color)
 #pragma endregion JPG_load_and_save
 		oaaa3_set Buf srcJPG(const Buf &data)
 		{
+
+			o3_trace_scrfun("srcJPG");
 
 			using namespace jpg;						
 			struct jpeg_decompress_struct cinfo;
@@ -605,6 +626,7 @@ o3_fun void clear(int signed_color)
 
 		oaaa3_fun Buf jpgBuffer()
 		{
+			o3_trace_scrfun("jpgBuffer");
 			Buf Output;
 			using namespace jpg;
 			
@@ -665,6 +687,7 @@ o3_fun void clear(int signed_color)
 		
 		o3_set Buf srcPNG(const Buf &data, siEx *ex = 0)
 		{
+			o3_trace_scrfun("srcPNG");
 			using namespace png;			
 			// create read struct
 			png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
@@ -762,6 +785,7 @@ o3_fun void clear(int signed_color)
 
 		o3_set siFs src(iFs* file, siEx* ex=0)
 		{
+			o3_trace_scrfun("src");
 			using namespace png;			
 
 			// unable to open
@@ -869,6 +893,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun int savePng_FS(iFs* file, siEx* ex = 0)
 		{
+			o3_trace_scrfun("savePng_FS");
 			using namespace png;
 			png_structp png_ptr;
 			png_infop info_ptr;
@@ -1043,6 +1068,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun Buf pngBuffer(siEx* ex = 0)
 		{
+			o3_trace_scrfun("pngBuffer");
 			Buf data;
 			data.reserve(m_w*m_h*4);
 			using namespace png;
@@ -1234,6 +1260,7 @@ o3_fun void clear(int signed_color)
 
 		bool decodeColor(const Str &style, unsigned int *output)
 		{
+			o3_trace_scrfun("decodeColor");
 			return o3::decodeColor(style , output);
         };
 
@@ -1253,11 +1280,15 @@ o3_fun void clear(int signed_color)
 		double GetCurrentFontHeight()
 		{
 			// TODO! read renderstate
+			o3_trace_scrfun("GetCurrentFontHeight");
+			// TODO! read renderstate
 			return 10.0;
 		};
 
 		double CSSUnitToPixel(double inamount, int unittype, double DPI = 72.0)
 		{
+
+			o3_trace_scrfun("CSSUnitToPixel");
 
 			switch (unittype)
 			{
@@ -1363,6 +1394,7 @@ o3_fun void clear(int signed_color)
 		
 		bool ShadowsEnabled()
 		{
+			o3_trace_scrfun("ShadowsEnabled");
 			if (m_currentrenderstate->ShadowColor >0 && 
 			(m_currentrenderstate->ShadowXDistance !=0  
 			||m_currentrenderstate->ShadowYDistance !=0  
@@ -1375,26 +1407,31 @@ o3_fun void clear(int signed_color)
 
 		o3_set void setShadowOffsetX(double offs)
 		{
+			o3_trace_scrfun("setShadowOffsetX");
 			m_currentrenderstate->ShadowXDistance = offs;
 		};
 
 		o3_set void setShadowOffsetY(double offs)
 		{
+			o3_trace_scrfun("setShadowOffsetY");
 			m_currentrenderstate->ShadowYDistance = offs;
 		};
 
 		o3_set void setShadowBlur(double width)
 		{
+			o3_trace_scrfun("setShadowBlur");
 			m_currentrenderstate->ShadowBlur = width;
 		};
 
 		o3_set void setShadowColor(const Str &color)
 		{
+			o3_trace_scrfun("setShadowColor");
 			decodeColor(color, &m_currentrenderstate->ShadowColor);
 		};
 
 		o3_set void setGlobalCompositeOperation (const Str &op)
 		{
+			o3_trace_scrfun("setGlobalCompositeOperation");
 			op;
 			// todo.. parse ops and feed them to agg compositor.
 		};
@@ -1402,6 +1439,7 @@ o3_fun void clear(int signed_color)
 
 		o3_set void fillStyle(const Var &objectstyle)
 		{
+			o3_trace_scrfun("fillStyle");
 			if (objectstyle.type() == Var::TYPE_STR)
 			{
 				fillStyleStr(objectstyle.toStr());
@@ -1423,6 +1461,7 @@ o3_fun void clear(int signed_color)
 
 		void fillStyleStr(const Str &style)
 		{
+			o3_trace_scrfun("fillStyleStr");
 			if (decodeColor(style, &m_currentrenderstate->FillColor))
 			{
 				m_currentrenderstate->FillGradientEnabled = false;
@@ -1434,6 +1473,7 @@ o3_fun void clear(int signed_color)
 
 		void strokeStyleStr(const Str &style)
 		{
+			o3_trace_scrfun("strokeStyleStr");
 			if (decodeColor(style, &m_currentrenderstate->StrokeColor))
 			{
 				m_currentrenderstate->StrokeGradientEnabled = false;
@@ -1442,6 +1482,7 @@ o3_fun void clear(int signed_color)
 
 		o3_set void strokeStyle(const Var &objectstyle)
 		{
+			o3_trace_scrfun("strokeStyle");
 			if (objectstyle.type() == Var::TYPE_STR)
 			{
 				strokeStyleStr(objectstyle.toStr());
@@ -1464,6 +1505,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun siScr createLinearGradient(double x0, double y0, double x1, double y1)
 		{						
+			o3_trace_scrfun("createLinearGradient");						
 			cImage_CanvasGradient *Gr= o3_new(cImage_CanvasGradient)();
 			Gr->mData.m_CP1.x = x0;
 			Gr->mData.m_CP1.y = y0;
@@ -1476,6 +1518,8 @@ o3_fun void clear(int signed_color)
 
 		o3_fun siScr createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1)
 		{
+
+			o3_trace_scrfun("createRadialGradient");
 
 			cImage_CanvasGradient *Gr= o3_new(cImage_CanvasGradient)();
 			Gr->mData.m_CP1.x = x0;
@@ -1495,11 +1539,14 @@ o3_fun void clear(int signed_color)
 
 		o3_set void lineWidth (double Width)
 		{
+			o3_trace_scrfun("lineWidth");
 			m_currentrenderstate->StrokeWidth = Width;
 		};
 
 		o3_set void lineCap(const Str &cap)
 		{
+			
+			o3_trace_scrfun("lineCap");
 			
 			if (cap == "butt")
 			{
@@ -1517,6 +1564,7 @@ o3_fun void clear(int signed_color)
 
 		o3_set void lineJoin(const Str &join)
 		{
+			o3_trace_scrfun("lineJoin");
 			if (join == "round")
 			{
 				m_currentrenderstate->JoinStyle = agg::Agg2D::JoinRound;
@@ -1536,11 +1584,13 @@ o3_fun void clear(int signed_color)
 
 		o3_set void miterLimit(double limit)
 		{
+			o3_trace_scrfun("miterLimit");
 			m_currentrenderstate->miterLimit = limit;			
 		};
 
 		o3_set void globalAlpha(double alpha)
 		{
+			o3_trace_scrfun("globalAlpha");
 			m_currentrenderstate->GlobalAlpha = alpha;
 		};
 
@@ -1562,11 +1612,13 @@ o3_fun void clear(int signed_color)
 		
 		o3_get siScr onSetFont()
 		{
+			o3_trace_scrfun("onSetFont");
 			return m_on_setfont;
 		}
 		
 		o3_set siScr onSetFont(iScr* cb)
 		{
+			o3_trace_scrfun("onSetFont");
 			return m_on_setfont = cb;
 		}
 		
@@ -1574,6 +1626,7 @@ o3_fun void clear(int signed_color)
 
 		o3_set void setFont(const Str &font, iCtx* ctx)
 		{
+			o3_trace_scrfun("setFont");
 			if (m_on_setfont)
 			{
 				LastSetFont = font;
@@ -1586,16 +1639,19 @@ o3_fun void clear(int signed_color)
 
 		o3_get Str font()
 		{
+			o3_trace_scrfun("font");
 			return LastSetFont;
 		};
 
 		o3_set void fontFamily(const Str &fontstring)
 		{
+			o3_trace_scrfun("fontFamily");
 			m_currentrenderstate->FontFamily = fontstring;
 		};
 
 		o3_set void fontSize(const Str &fontstring)
 		{
+			o3_trace_scrfun("fontSize");
 			mReferenceState.FontSizeText = fontstring;
 			// check units!
 			m_currentrenderstate->FontSize = fontstring.toDouble();			
@@ -1603,6 +1659,7 @@ o3_fun void clear(int signed_color)
 
 		o3_set void fontStyle(const Str &fontstring)
 		{
+			o3_trace_scrfun("fontStyle");
 			if (fontstring == "italic")
 			{
 				m_currentrenderstate->FontStyle = FontStyle_italic;
@@ -1623,11 +1680,13 @@ o3_fun void clear(int signed_color)
 
 		o3_set void fontVariant(const Str &fontstring)
 		{
+			o3_trace_scrfun("fontVariant");
 			fontstring;				
 		};
 
 		o3_set void fontWeight(const Str &fontstring)
 		{
+			o3_trace_scrfun("fontWeight");
 			if (fontstring == "normal")
 			{
 				m_currentrenderstate->FontWeight = FontWeight_normal;
@@ -1697,6 +1756,7 @@ o3_fun void clear(int signed_color)
 
 		o3_set void textDirectionality(const Str &fontstring)// [LTR] RTL
 		{
+			o3_trace_scrfun("textDirectionality");
 			if (fontstring == "ltr")
 			{
 				m_currentrenderstate->TextDirectionality = TextDirectionality_ltr;
@@ -1712,6 +1772,7 @@ o3_fun void clear(int signed_color)
 
 		o3_set void textAlign(const Str &newAlign) // ["start"], "end", "left", "right", "center"
 		{
+			o3_trace_scrfun("textAlign");
 			if (newAlign == "start")
 			{
 				m_currentrenderstate->TextAlign = TextAlign_start;
@@ -1741,6 +1802,8 @@ o3_fun void clear(int signed_color)
 		
 		o3_set void textBaseline(const Str &newBaseline) // "top", "hanging", "middle", ["alphabetic"], "ideographic", "bottom"
 		{
+			
+			o3_trace_scrfun("textBaseline");
 			
 			if (newBaseline == "top")
 			{
@@ -1785,6 +1848,7 @@ o3_fun void clear(int signed_color)
 		
 		void AdjustTextPosition(const Str & text, double &x, double &y)
 		{
+			o3_trace_scrfun("AdjustTextPosition");
 			text,x,y;
 			int Align = m_currentrenderstate->TextAlign;
 			switch (Align)
@@ -1863,6 +1927,7 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void fillText(const Str & text, double x, double y)
 		{
+			o3_trace_scrfun("fillText");
 			UpdateFontState();
 			AdjustTextPosition(text, x, y);
 			SetupFillStyle();
@@ -1872,6 +1937,7 @@ o3_fun void clear(int signed_color)
 
 		void TextCall(double &x, double &y, const char *txt, agg::Agg2D::DrawPathFlag Mode)
 		{
+			o3_trace_scrfun("TextCall");
 			if (m_currentrenderstate->Shadows)
 			{
 				m_graphics.textpath(x,y,txt);
@@ -1887,6 +1953,7 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void fillText(const Str & text, double x, double y, double maxWidth)
 		{
+			o3_trace_scrfun("fillText");
 			UpdateFontState();
 			AdjustTextPosition(text, x, y);
 			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
@@ -1898,6 +1965,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void strokeText(const Str & text, double x, double y)
 		{
+			o3_trace_scrfun("strokeText");
 			UpdateFontState();
 			AdjustTextPosition(text, x, y);
 			SetupStrokeStyle();
@@ -1907,6 +1975,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void strokeText(const Str & text, double x, double y, double maxWidth)
 		{
+			o3_trace_scrfun("strokeText");
 			UpdateFontState();
 			AdjustTextPosition(text, x, y);
 			maxWidth; // todo, wrap around to next line on maxWidth! this sortof needs line-height though which canvas does not support...
@@ -1917,6 +1986,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun siScr measureText(const Str & text) //cImage_TextMetrics 
 		{
+			o3_trace_scrfun("measureText");
 			UpdateFontState();
 			double W = m_graphics.textWidth(text.ptr());
 			cImage_TextMetrics *TM = o3_new(cImage_TextMetrics)();
@@ -1929,6 +1999,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void clearRect(double xx, double yy, double ww, double hh)
 		{
+			o3_trace_scrfun("clearRect");
 			ApplyTransformation();
 
 			Ensure32BitSurface();
@@ -1968,6 +2039,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void fillRect(double xx, double yy, double ww, double hh)
 		{
+			o3_trace_scrfun("fillRect");
 			ApplyTransformation();
 
 			Ensure32BitSurface();
@@ -1995,6 +2067,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void strokeRect(double xx, double yy, double ww, double hh)
 		{
+			o3_trace_scrfun("strokeRect");
 			ApplyTransformation();
 			m_currentrenderstate->m_lastpoint = V2<double>(xx,yy);
 			Ensure32BitSurface();
@@ -2024,6 +2097,7 @@ o3_fun void clear(int signed_color)
 
 		void CallDraw(agg::Agg2D::DrawPathFlag Mode, bool text = false)
 		{
+			o3_trace_scrfun("CallDraw");
 			if (m_currentrenderstate->Shadows)
 			{
 				AttachShadow();
@@ -2088,6 +2162,7 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void closePath()
 		{
+			o3_trace_scrfun("closePath");
 			if (m_paths.size() == 0) return;
 			if (m_paths[0].m_path.size()<2) return;
 
@@ -2101,6 +2176,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void beginPath()
 		{
+			o3_trace_scrfun("beginPath");
 			m_paths.clear();
 		}
 
@@ -2123,6 +2199,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void fill()
 		{
+			o3_trace_scrfun("fill");
 			Ensure32BitSurface();
 			SetupFillStyle();
 			m_graphics.resetPath();
@@ -2157,6 +2234,7 @@ o3_fun void clear(int signed_color)
 		
 		void SetupStrokeStyle()
 		{
+			o3_trace_scrfun("SetupStrokeStyle");
 			m_currentrenderstate->Shadows = ShadowsEnabled();
 			if (m_currentrenderstate->StrokeGradientEnabled)
 			{
@@ -2215,6 +2293,7 @@ o3_fun void clear(int signed_color)
 		
 		void SetupFillStyle()
 		{
+			o3_trace_scrfun("SetupFillStyle");
 			m_currentrenderstate->Shadows = ShadowsEnabled();
 			if (m_currentrenderstate->FillGradientEnabled)
 			{
@@ -2271,6 +2350,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void stroke()
 		{
+			o3_trace_scrfun("stroke");
 			SetupStrokeStyle();
 			Ensure32BitSurface();
 			m_graphics.resetPath();
@@ -2313,6 +2393,8 @@ o3_fun void clear(int signed_color)
 		o3_fun void rect(double x, double y, double w, double h)
 		{
 			//V2<double> storepoint = m_lastpoint;
+			o3_trace_scrfun("rect");
+			//V2<double> storepoint = m_lastpoint;
 			double const x2 = x+w;
 			double const y2 = y+h;
 			moveTo(x,y);
@@ -2325,6 +2407,7 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void moveTo(double x, double y)
 		{
+			o3_trace_scrfun("moveTo");
 			m_paths.push(Path());
 			V2<double> point(x,y);
 			point = NoTransformPoint(point);
@@ -2334,7 +2417,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void lineTo(double x, double y)
 		{
-			//return;
+			o3_trace_scrfun("lineTo");
 			if (m_paths.size() == 0)
 			{
 				moveTo(x,y);
@@ -2351,6 +2434,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void arc(double x0, double y0, double radius, double startAngle, double endAngle, bool anticlockwise = false)
 		{
+			o3_trace_scrfun("arc");
 			if (m_paths.size() == 0)
 			{
 				m_paths.push(Path());
@@ -2407,6 +2491,8 @@ o3_fun void clear(int signed_color)
 		o3_fun void quadraticCurveTo(double cp1x, double cp1y, double x0, double y0)
 		{
 
+			o3_trace_scrfun("quadraticCurveTo");
+
 			V2<double> target(x0,y0);
 			V2<double> cp(cp1x,cp1y);
 
@@ -2434,6 +2520,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void bezierCurveTo(double cp1x, double cp1y, double cp2x, double cp2y, double x0, double y0)
 		{
+			o3_trace_scrfun("bezierCurveTo");
 			V2<double> target(x0,y0);
 			V2<double> cp1(cp1x,cp1y);
 			V2<double> cp2(cp2x,cp2y);
@@ -2465,6 +2552,8 @@ o3_fun void clear(int signed_color)
 #pragma region RenderState_Management
 		RenderState *SetupRenderState(RenderState *source = 0)
 		{
+			
+			o3_trace_scrfun("SetupRenderState");
 			
 			RenderState *RS = new RenderState();
 			
@@ -2575,6 +2664,7 @@ o3_fun void clear(int signed_color)
 
 		void RestoreStateToGraphicsObject()
 		{
+			o3_trace_scrfun("RestoreStateToGraphicsObject");
 			m_graphics.clipBox(m_currentrenderstate->ClipTopLeft.x,
 				m_currentrenderstate->ClipTopLeft.y,
 				m_currentrenderstate->ClipBottomRight.x,
@@ -2583,6 +2673,7 @@ o3_fun void clear(int signed_color)
 		
 		void UpdateFontState()
 		{
+			o3_trace_scrfun("UpdateFontState");
 			bool ReloadFont = false;
 
 			if (mReferenceState.FontFamily != m_currentrenderstate->FontFamily)
@@ -2647,6 +2738,8 @@ o3_fun void clear(int signed_color)
 		o3_fun void save()
 		{
 			//			RenderState *PreviousState = m_currentrenderstate;
+			o3_trace_scrfun("save");
+			//			RenderState *PreviousState = m_currentrenderstate;
 			m_currentrenderstate = SetupRenderState(m_currentrenderstate);
 			m_renderstates.push(m_currentrenderstate);
 
@@ -2658,6 +2751,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void restore()
 		{
+			o3_trace_scrfun("restore");
 			if (m_renderstates.size()>1) 
 			{
 				unsigned int LastClipVertexCount = 0;
@@ -2683,6 +2777,7 @@ o3_fun void clear(int signed_color)
 
 		void SetupClipBox()
 		{
+			o3_trace_scrfun("SetupClipBox");
 			if (m_currentrenderstate->ClipPath.total_vertices() == 0)
 			{
 				double x1=0,y1=0,x2=m_w,y2=m_h;
@@ -2741,6 +2836,7 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void translate(double _x, double _y)
 		{
+			o3_trace_scrfun("translate");
 			M33<double> TransMat;
 			TransMat.setTranslation(_x, _y);
 			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(TransMat);
@@ -2748,6 +2844,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void rotate(double _angle)
 		{
+			o3_trace_scrfun("rotate");
 			M33<double> RotMat;
 			RotMat.setRotation(_angle);//(_angle*pi*2.0f)/360.0f);
 			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(RotMat);
@@ -2755,6 +2852,7 @@ o3_fun void clear(int signed_color)
 
 		o3_fun void scale(double xscale, double yscale)
 		{
+			o3_trace_scrfun("scale");
 			M33<double> ScaleMat;
 			ScaleMat.setScale(xscale, yscale);
 			m_currentrenderstate->Transformation = m_currentrenderstate->Transformation.Multiply(ScaleMat);
@@ -2778,6 +2876,12 @@ o3_fun void clear(int signed_color)
 		
 		o3_fun void clip()
 		{
+			//ApplyTransformation();
+			//double x2=0,y2=0,x1=m_w,y1=m_h;
+			// calculate extends, set 2d clipping rect for now
+
+
+			o3_trace_scrfun("clip");
 			//ApplyTransformation();
 			//double x2=0,y2=0,x1=m_w,y1=m_h;
 			// calculate extends, set 2d clipping rect for now

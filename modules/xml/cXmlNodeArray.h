@@ -22,11 +22,11 @@ namespace o3 {
     struct cXmlNodeArray : cScr, iXmlNodeArray2 {
         cXmlNodeArray(iXmlNode2* owner_node) :
             m_xpath_obj(0), m_nodes(0), m_owner_node(owner_node) {
-               o3_trace3 trace;
+               o3_trace_scrfun("cXmlNodeArray");
         }
 
         virtual ~cXmlNodeArray() {
-            o3_trace3 trace;
+            o3_trace_scrfun("~cXmlNodeArray");
             if (m_xpath_obj)
                 xmlXPathFreeObject(m_xpath_obj);
         }
@@ -39,11 +39,12 @@ namespace o3 {
         o3_glue_gen()
 
         o3_fun bool __query__(int idx) {
-            o3_trace3 trace;
+            o3_trace_scrfun("__query__");
             return (idx < length() && idx > 0);
         } 
         
         o3_fun siXmlNode2 __getter__(iCtx* ctx, int idx, siEx* ex = 0) {
+            o3_trace_scrfun("__getter__");
             ex;
             o3_trace3 trace;
             if (idx >= length() || idx<0) {
@@ -54,13 +55,13 @@ namespace o3 {
         }
 
         virtual siXmlNode2 item(iCtx* ctx, int index) {
-            o3_trace3 trace;
+            o3_trace_scrfun("item");
             o3_assert(m_nodes->nodeTab[index]);
             return wrapNode(ctx, m_nodes->nodeTab[index], m_owner_node ? m_owner_node : this);
         }
         
         virtual o3_get int length() {
-            o3_trace3 trace;
+            o3_trace_scrfun("length");
             return  (int) (m_nodes ? m_nodes->nodeNr : 0);                
         }
 

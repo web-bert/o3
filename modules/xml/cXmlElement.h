@@ -23,7 +23,7 @@ namespace o3 {
     struct cXmlElement : cXmlNode, iXmlElement2 {
         cXmlElement(xmlNodePtr node, iXmlNode2* owner_node, NodeMap* node_map) 
             : cXmlNode(node, owner_node, node_map) {
-            o3_trace3 trace;
+            o3_trace_scrfun("cXmlElement");
         }
 
 		virtual ~cXmlElement()
@@ -38,6 +38,7 @@ namespace o3 {
         o3_glue_gen()
         
         o3_fun siXmlNode2 selectSingleNode(iCtx* ctx, const char* selection, iScr* ctxt = 0) {
+            o3_trace_scrfun("selectSingleNode");
             xmlXPathObjectPtr res = selectNodesInternal(
                 selection, siXmlDocument2(ctxt), ctx);
             if (!res || !res->nodesetval || !res->nodesetval->nodeTab) 
@@ -48,7 +49,7 @@ namespace o3 {
         }
 
         o3_fun siXmlNodeArray2 selectNodes(iCtx* ctx, const char* selection, iScr* ctxt = 0) {
-            o3_trace3 trace;
+            o3_trace_scrfun("selectNodes");
             xmlXPathObjectPtr res = selectNodesInternal(
                 selection, siXmlDocument2(ctxt), ctx);
             if (!res || !res->nodesetval)
@@ -60,12 +61,12 @@ namespace o3 {
         }
         
         virtual o3_get Str tagName() {
-            o3_trace3 trace;
+            o3_trace_scrfun("tagName");
             return Str((const char*) m_node->name);
         }
         
         virtual o3_fun Str getAttribute(iCtx* ctx, const char* name) {
-			o3_trace3 trace;
+			o3_trace_scrfun("getAttribute");
 			o3_assert(name);
 			siXmlAttr2 attr = getAttributeNode(ctx, name);
 			if (attr)
@@ -91,7 +92,7 @@ namespace o3 {
         }
         
         virtual o3_fun void setAttribute(iCtx* ctx, const char* name, const char* value) {
-            o3_trace3 trace;
+            o3_trace_scrfun("setAttribute");
             o3_assert(name);
             o3_assert(value);
             siXmlAttr2 new_attr;
@@ -107,13 +108,13 @@ namespace o3 {
         }
         
         virtual o3_fun void removeAttribute(iCtx* ctx, const char* name) {
-            o3_trace3 trace;
+            o3_trace_scrfun("removeAttribute");
             o3_assert(name);
             removeAttributeNode(getAttributeNode(ctx, name));
         }
         
         o3_fun siXmlAttr2 getAttributeNode(iCtx* ctx, const char* name) {
-            o3_trace3 trace;
+            o3_trace_scrfun("getAttributeNode");
             o3_assert(name);
             xmlAttrPtr attr = xmlHasProp(m_node, BAD_CAST name);
             
@@ -123,22 +124,23 @@ namespace o3 {
         }
         
         o3_fun siXmlAttr2 setAttributeNode(iCtx* ctx, iXmlAttr2* new_attr, siEx* ex = 0) {
-            o3_trace3 trace;            
+            o3_trace_scrfun("setAttributeNode");            
             return new_attr ? appendChild(ctx, siXmlNode2(new_attr), ex) : siXmlNode2();
         }
         
         o3_fun siXmlAttr2 removeAttributeNode(iXmlAttr2* old_attr) {
-            o3_trace3 trace;                
+            o3_trace_scrfun("removeAttributeNode");                
             return old_attr ? removeChild(siXmlNode2(old_attr)) : siXmlNode2();
         }
         
 		o3_fun siXmlNodeList2 getElementsByTagName(const char* name) {
-            o3_trace3 trace;
+            o3_trace_scrfun("getElementsByTagName");
             o3_assert(name);
             return siXmlNodeList2(o3_new(cXmlNodeList)(this, name));
 		}
 
         o3_fun siXmlElement2 getElementById(iCtx* ctx, const char* id) {
+            o3_trace_scrfun("getElementById");
             if (strEquals(getAttribute(ctx, "id").ptr(), id))
                 return this;
             for (siXmlNode2 child = firstChild(ctx); child; child = child->nextSibling(ctx))
@@ -149,7 +151,7 @@ namespace o3 {
         }
         
         xmlXPathObjectPtr selectNodesInternal(const char* expr, iXmlDocument2* ctxt, iCtx* ctx) {
-            o3_trace3 trace;
+            o3_trace_scrfun("selectNodesInternal");
             o3_assert(expr);
 
             xmlXPathObjectPtr xpathObj;
@@ -192,7 +194,7 @@ namespace o3 {
         }
         
         o3_fun void normalize(iCtx* ctx) {
-            o3_trace3 trace;
+            o3_trace_scrfun("normalize");
 
             siXmlNode2 child = firstChild(ctx);
             while (child != NULL) {
@@ -221,7 +223,7 @@ namespace o3 {
         }
         
         virtual xmlAttrPtr firstAttr() {
-            o3_trace3 trace;
+            o3_trace_scrfun("firstAttr");
             return m_node->properties;
         }
     };

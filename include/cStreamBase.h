@@ -41,30 +41,30 @@ struct cStreamBase : cScr, iStream {
 
     virtual o3_fun Buf readBlob(size_t n)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("readBlob");
 
         return Buf(this, n);
     }
 
     virtual o3_fun Str read(size_t n)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("read");
 
-        return Str(readBlob(n * sizeof(char)));
+        return Str(readBlob(n));
     }
 
     virtual size_t write(const void* data, size_t size) = 0;
 
     virtual o3_fun size_t write(const Buf& buf)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("write");
 
         return write(buf.ptr(), buf.size());
     }
 
     virtual o3_fun size_t write(const Str& str)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("write");
 
         return write(str.ptr(), str.size());
     }
@@ -75,7 +75,7 @@ struct cStreamBase : cScr, iStream {
 
     o3_fun void print(const Str& str)
     {
-        o3_trace3 trace;
+        o3_trace_scrfun("print");
 
         write(str.ptr(), str.size());
         flush();

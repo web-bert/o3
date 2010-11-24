@@ -42,7 +42,7 @@
         int index, int argc,const Var* argv, Var* rval);
 #else // !O3_WITH_GLUE
 #define o3_glue_gen() \
-    static Trait* extTraits(){return 0;}
+    static Trait* extTraits(){o3_trace_comglue("extTraits");return 0;}
 #endif // O3_WITH_GLUE
 
 namespace o3 {
@@ -61,6 +61,7 @@ struct cEx : cUnk, iEx {
     }
 
 	static iEx* fmt(siEx *ex, const char *fmt, ...){
+		o3_trace_comglue("fmt");
 		if(!ex) return 0;
 		cEx *x = o3_new(cEx);
 		x->addRef();
@@ -73,6 +74,7 @@ struct cEx : cUnk, iEx {
 
     Str message()
     {
+        o3_trace_comglue("message");
         return m_message;
     }
 
@@ -88,7 +90,7 @@ struct cScr : cUnk, iScr {
 
     cScr() : m_index(O3_VALUE_OFFSET)
     {
-        o3_trace2 trace;
+        o3_trace_comglue("cScr");
     }
 
     o3_begin_class(cUnk)
@@ -97,7 +99,7 @@ struct cScr : cUnk, iScr {
 
     int enumerate(iCtx* ctx, int idx)
     {
-        o3_trace2 trace;
+        o3_trace_comglue("enumerate");
 		Trait* ptrait = select();
         int index = idx;
 		int base = 0;
@@ -136,7 +138,7 @@ struct cScr : cUnk, iScr {
 
     Str name(iCtx* ctx, int index)
     {
-        o3_trace2 trace;
+        o3_trace_comglue("name");
 
         if (index < O3_VALUE_OFFSET) {
             Trait* ptrait = select();
@@ -161,7 +163,7 @@ struct cScr : cUnk, iScr {
 
     int resolve(iCtx* ctx, const char* name, bool set)
     {
-        o3_trace2 trace;
+        o3_trace_comglue("resolve");
         tMap<Str, int>::ConstIter iter;
         int base;	
         iter = m_indices.find(name);
@@ -195,7 +197,7 @@ struct cScr : cUnk, iScr {
     siEx invoke(iCtx* ctx, Access access, int index, int argc, const Var* argv,
                 Var* rval)
     {
-        o3_trace2 trace;
+        o3_trace_comglue("invoke");
         tMap<int, Var>::Iter iter;
         Trait* ptrait;
 
@@ -292,11 +294,13 @@ struct cScr : cUnk, iScr {
 
     virtual Trait* select()
     {
+        o3_trace_comglue("select");
         return clsTraits();
     }
 
     static Trait* clsTraits()
     {
+        o3_trace_comglue("clsTraits");
         static Trait TRAITS[] = {
             {   0,  Trait::TYPE_BEGIN,  "cScr", 0,  0,  0,  0   },
             {   0,  Trait::TYPE_END,    "cScr", 0,  0,  0,  0   },
@@ -328,16 +332,18 @@ struct cScrFun : cScr, iScrFun {
     cScrFun(iScr* scr, Trait::invoke_t invoke, int index) : m_scr(scr),
         m_invoke(invoke), m_index(index)
     {
-        o3_trace2 trace;
+        o3_trace_comglue("cScrFun");
     }
 
     Trait* select()
     {
+        o3_trace_comglue("select");
         return clsTraits();
     }
 
     static Trait* clsTraits()
     {
+        o3_trace_comglue("clsTraits");
         static Trait TRAITS[] = {
             {   0,  Trait::TYPE_BEGIN,  "cScrFun",  0,          0,          0,  cScr::clsTraits()   },
             {   0,  Trait::TYPE_FUN,    "cScrFun",  "__self__", clsInvoke,  0,  0                   },
@@ -350,6 +356,7 @@ struct cScrFun : cScr, iScrFun {
     static siEx clsInvoke(iScr* pthis, iCtx* ctx, int, int argc,
                           const Var* argv, Var* rval)
     {
+        o3_trace_comglue("clsInvoke");
         cScrFun* pthis1 = (cScrFun*) pthis;
 
         return (*pthis1->m_invoke)(pthis1->m_scr, ctx, pthis1->m_index, argc,
@@ -359,13 +366,14 @@ struct cScrFun : cScr, iScrFun {
 
 inline siScr cScr::createFun(iScr* scr, Trait::invoke_t invoke, int index)
 {
-    o3_trace2 trace;
+    o3_trace_comglue("createFun");
 
     return o3_new(cScrFun)(scr, invoke, index);
 }
 
 bool setProperty(iCtx* ctx, iScr* obj, const char* name, const Var& val)
 {
+	o3_trace_comglue("setProperty");
 	Var rval;
 	int i = obj->resolve(ctx, name,true);
 	return !obj->invoke(ctx,iScr::ACCESS_SET,i,1,&val,&rval).valid();
@@ -373,6 +381,7 @@ bool setProperty(iCtx* ctx, iScr* obj, const char* name, const Var& val)
 
 Var property(iCtx* ctx, iScr* obj, const char* name)
 {
+	o3_trace_comglue("property");
 	Var rval;
 	int i = obj->resolve(ctx, name,false);
 	if (i>=0)

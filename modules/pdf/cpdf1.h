@@ -36,6 +36,7 @@ namespace o3
 		
 		cPdf1_Object()
 		{
+			o3_trace_scrfun("cPdf1_Object");
 			mID = -1;
 			mType = pdf::type_undefined;
 		};
@@ -46,25 +47,29 @@ namespace o3
 
 		void SetType(unsigned long newtype)
 		{
+			o3_trace_scrfun("SetType");
 			newtype;
 			// mm?
 		};
 
 		unsigned long GetType()
 		{
+			o3_trace_scrfun("GetType");
 			return mType;
 		};
 
 		unsigned long GetLength()
 		{
+			o3_trace_scrfun("GetLength");
 			return mData.size();
 		};
 		
-		virtual void PrepareData(){;};
-		virtual int GetSize(){return 0;};
+		virtual void PrepareData(){o3_trace_scrfun("PrepareData");;};
+		virtual int GetSize(){o3_trace_scrfun("GetSize");return 0;};
 		
 		unsigned char *GetData()
 		{
+			o3_trace_scrfun("GetData");
 			if (mData.size() == 0) return NULL;
 			return &mData[0];
 		};
@@ -72,17 +77,21 @@ namespace o3
 		
 		void WriteBytes(unsigned char *bytes, unsigned int len)
 		{
+			o3_trace_scrfun("WriteBytes");
 			for (unsigned int i = 0;i<len;i++) mData.push(bytes[i]);
 		};
 		
 		void WriteString(Str data)
 		{
+			o3_trace_scrfun("WriteString");
 			WriteBytes((unsigned char*)data.ptr(), data.size());
 			WriteBytes((unsigned char*)"\n",1);
 		}	
 
 		Str Escape(Str in)
 		{
+			// todo.. do proper escaping as the PDF-spec says
+			o3_trace_scrfun("Escape");
 			// todo.. do proper escaping as the PDF-spec says
 			return in;
 		};
@@ -95,12 +104,14 @@ namespace o3
 
 		virtual ~cPdf1_Dictionary()
 		{
+			o3_trace_scrfun("~cPdf1_Dictionary");
 			mValues.clear();
 			mValueOrder.clear();
 		};
 
 		virtual void PrepareData()
 		{
+			o3_trace_scrfun("PrepareData");
 			mData.clear();
 			WriteString("<<");
 			
@@ -126,6 +137,7 @@ namespace o3
 
 		void AddKey_Obj(Str A, cPdf1_Object *O)
 		{
+			o3_trace_scrfun("AddKey_Obj");
 			mValueOrder.push(A);
 			O->PrepareData();
 			if (O->GetLength()>0)
@@ -144,24 +156,28 @@ namespace o3
 
 		void AddKey_Name(Str A, Str B)
 		{
+			o3_trace_scrfun("AddKey_Name");
 			mValueOrder.push(A);
 			mValues[A] = "/"+ B;
 		}
 
 		void AddKey_String(Str A, Str B)
 		{
+			o3_trace_scrfun("AddKey_String");
 			mValueOrder.push(A);
 			mValues[A] = "("+ Escape(B) + ")";
 		}
 
 		void AddKey_LiteralString(Str A, Str B)
 		{
+			o3_trace_scrfun("AddKey_LiteralString");
 			mValueOrder.push(A);
 			mValues[A] = B;
 		}
 
 		void AddKey_Int(Str A, int B)
 		{
+			o3_trace_scrfun("AddKey_Int");
 			mValueOrder.push(A);
 			Str ss = Str::fromInt32(B);
 			mValues[A] = ss;
@@ -169,6 +185,7 @@ namespace o3
 
 		void AddKey_ObjRef(Str A, int B)
 		{
+			o3_trace_scrfun("AddKey_ObjRef");
 			mValueOrder.push(A);
 			Str ss;
 			ss= Str::fromInt32(B+1) + " 0 R";
@@ -184,11 +201,13 @@ namespace o3
 	public:
 		void AddObj(cPdf1_Object *O)
 		{
+			o3_trace_scrfun("AddObj");
 			mObjects.push(O);
 		};
 
 		virtual void PrepareData()
 		{
+			o3_trace_scrfun("PrepareData");
 			mData.clear();
 			WriteBytes((unsigned char*)"[", 1);
 			for (unsigned int i =0 ;i<mObjects.size();i++)
@@ -210,12 +229,14 @@ namespace o3
 	public:
 		cPdf1_ObjectReference(int ID = -1, int Gen = 0)
 		{
+			o3_trace_scrfun("cPdf1_ObjectReference");
 			mRefID = ID;
 			mGenID = Gen;
 		};
 
 		virtual void PrepareData()
 		{
+			o3_trace_scrfun("PrepareData");
 			mData.clear();
 			Str ss;
 			ss = Str::fromInt32(mRefID+1) + " " + Str::fromInt32(mGenID) + " R";			
@@ -231,11 +252,13 @@ namespace o3
 
 		cPdf1_Name(Str name="")
 		{
+			o3_trace_scrfun("cPdf1_Name");
 			mName = name;
 		};
 
 		virtual void PrepareData()
 		{
+			o3_trace_scrfun("PrepareData");
 			mData.clear();
 			WriteBytes((unsigned char*)"/", 1);
 			WriteBytes((unsigned char*)mName.ptr(), mName.size());
@@ -248,6 +271,7 @@ namespace o3
 	public:
 		cPdf1_Stream(bool compress = true)
 		{
+			o3_trace_scrfun("cPdf1_Stream");
 			mCompress = compress;
 		};
 
@@ -255,6 +279,9 @@ namespace o3
 		
 		virtual void PrepareData()
 		{			
+		//	return;
+
+			o3_trace_scrfun("PrepareData");			
 		//	return;
 
 			if (mCompress)
@@ -323,11 +350,13 @@ namespace o3
 		
 		void StreamBytes(unsigned char *bytes, unsigned int len)
 		{
+			o3_trace_scrfun("StreamBytes");
 			for (unsigned int i = 0;i<len;i++) mStreamData.push(bytes[i]);
 		};
 
 		void StreamString(Str data)
 		{
+			o3_trace_scrfun("StreamString");
 			StreamBytes((unsigned char*)data.ptr(), data.size());
 			StreamBytes((unsigned char*)"\n",1);
 		};
@@ -347,6 +376,7 @@ namespace o3
 		double mWidth, mHeight;
 		cPdf1_Page(double width, double height)
 		{
+			o3_trace_scrfun("cPdf1_Page");
 			mWidth  = width;
 			mHeight = height;
 			mPageContents = new cPdf1_Stream();
@@ -373,6 +403,7 @@ namespace o3
 
 		cPdf1()
 		{
+			o3_trace_scrfun("cPdf1");
 			mCurrentPage = -1;
 
 			mRoot = new cPdf1_Dictionary();
@@ -411,6 +442,7 @@ namespace o3
 
 		void AddObject(cPdf1_Object *O)
 		{
+			o3_trace_scrfun("AddObject");
 			if (O == NULL) return;
 			O->mID = mObjects.size();
 			mObjects.push(O);		
@@ -419,6 +451,7 @@ namespace o3
 
 		~cPdf1()
 		{
+			o3_trace_scrfun("~cPdf1");
 			for (unsigned int i =0 ;i<mCollectableObjects.size();i++)
 			{
 				delete mCollectableObjects[i];
@@ -428,12 +461,13 @@ namespace o3
 
 		static o3_ext("cO3") o3_fun siScr pdf()
 		{
-			o3_trace3 trace;
+			o3_trace_scrfun("pdf");
 			return o3_new(cPdf1)();
 		};
 
 		o3_fun int AddImage(iScr *newImage)
 		{
+			o3_trace_scrfun("AddImage");
 			o3::siImage image= o3::siImage(newImage);
 			if (image)
 			{
@@ -508,6 +542,7 @@ namespace o3
 
 		o3_fun void PlaceImage(int imageID, double X, double Y, double Width, double Height)
 		{
+			o3_trace_scrfun("PlaceImage");
 			if (mCurrentPage == -1) return;
 			
 			if (!(imageID>=0 && imageID < (int)mImageLibrary.size())) return;
@@ -522,6 +557,7 @@ namespace o3
 		
 		o3_fun int AddPage(double width, double height)
 		{
+			o3_trace_scrfun("AddPage");
 			cPdf1_Page *P = new cPdf1_Page(width, height);
 			
 			AddObject(P->mPageDict);
@@ -544,6 +580,7 @@ namespace o3
 
 		o3_fun void SetCurrentPage(int newpage)
 		{
+			o3_trace_scrfun("SetCurrentPage");
 			if (newpage >=0 && newpage < (int)mPages.size())
 			{
 				mCurrentPage = newpage;
@@ -566,12 +603,14 @@ namespace o3
 
 		o3_fun void SetMetadata(const Str &newdata)
 		{
+			o3_trace_scrfun("SetMetadata");
 			mMetadata->mStreamData.clear();
 			mMetadata->StreamString(newdata);
 		};
 
 		o3_fun int Write(iFs *outFile, siEx* ex = 0)
 		{
+			o3_trace_scrfun("Write");
 			if (mPages.size() == 0) return 0;
 			
 			stream = outFile->open("w", ex);
@@ -618,6 +657,7 @@ namespace o3
 
 		void WriteBytes(unsigned char *data, unsigned long len)
 		{
+			o3_trace_scrfun("WriteBytes");
 			if (!stream) return;
 			stream->write((void*)data, (size_t)len);
 			mWrittenBytes += len;
@@ -625,12 +665,14 @@ namespace o3
 
 		void WriteString(Str data)
 		{
+			o3_trace_scrfun("WriteString");
 			WriteBytes((unsigned char*)data.ptr(), data.size());
 			WriteBytes((unsigned char*)"\n", 1);
 		};
 
 		void WriteHeader()
 		{
+			o3_trace_scrfun("WriteHeader");
 			WriteString("%PDF-1.3");
 			unsigned char force8bit[] = {0x25,0xb5,0xb5,0xb5,0xb5, 0x0a};			
 			WriteBytes(force8bit, 6);
@@ -638,6 +680,7 @@ namespace o3
 
 		void WriteBody()
 		{
+			o3_trace_scrfun("WriteBody");
 			for (unsigned int i =0;i<mObjects.size();i++)
 			{
 				mObjects[i]->mOffset = mWrittenBytes;
@@ -651,6 +694,7 @@ namespace o3
 
 		void WriteCrossReferenceTable()
 		{
+			o3_trace_scrfun("WriteCrossReferenceTable");
 			mCrossReferenceOffset = mWrittenBytes;
 			WriteString("xref");
 			char txt[255];
@@ -666,6 +710,7 @@ namespace o3
 
 		void WriteTrailer()
 		{
+			o3_trace_scrfun("WriteTrailer");
 			WriteString("trailer");
 
 			cPdf1_Dictionary PageDictionary;

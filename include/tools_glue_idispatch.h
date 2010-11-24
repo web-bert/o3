@@ -29,6 +29,8 @@ namespace o3 {
 	DEFINE_GUID(IID_IDispArray, 
 	0x85de6f5, 0xa868, 0x4f14, 0xab, 0xfd, 0xbc, 0x19, 0x7a, 0xc2, 0x82, 0x69);
 
+	 mscom_ptr(IDispatch);
+
     struct iScrBridge : iUnk{		
 		virtual IDispatchEx* getBridge() = 0;
 	};
@@ -43,10 +45,12 @@ namespace o3 {
         cScrBridge(iCtx* ctx, IDispatchEx* bridge) 
             : ComTrack(siCtx1(ctx)->track()), m_ctx(ctx) , m_disp_bridge(bridge)
 		{
+            o3_trace_hostglue("cScrBridge");
             incWrapperCount();
 		}
 		
 		virtual ~cScrBridge() {
+            o3_trace_hostglue("~cScrBridge");
             m_disp_bridge = 0;
             decWrapperCount();
         }
@@ -59,12 +63,14 @@ namespace o3 {
         siWeak                  m_ctx;
 
 		IDispatchEx* getBridge(){
+			o3_trace_hostglue("getBridge");
 			return m_disp_bridge;
 		};
 
 		siEx invoke(iCtx* ctx, Access access, int index, int va_argc,
 				const Var* va_argv, Var* va_rval)
         {
+            o3_trace_hostglue("invoke");
             if (!m_disp_bridge) {
                 return o3_new(cEx)(ex_cleanup);
             }
@@ -119,11 +125,13 @@ namespace o3 {
 
         virtual bool invokeExt(iUnk *target, Access type, int id, int o3_argc, const Var* o3_argv, 
                     Var* o3_rval, siEx *o3_ex,iAlloc* alloc){              
+                o3_trace_hostglue("invokeExt");              
                 return false;                
         }
 
 		virtual int resolve(iCtx* ctx, const char* name, bool create)
 		{
+            o3_trace_hostglue("resolve");
             if (!m_disp_bridge)
                 return -1;
 			
@@ -146,19 +154,24 @@ namespace o3 {
 
         int o3::iScr::enumerate(o3::iCtx *,int) {
             //!TODO: implement
+            o3_trace_hostglue("enumerate");
+            //!TODO: implement
             return -1;
         }   
 
         Trait* select() {
+            o3_trace_hostglue("select");
             return 0;
         }
 
         void tear(){
+            o3_trace_hostglue("tear");
             m_disp_bridge = 0;
         }
 
         Str name(iCtx* ctx, int index)
         {
+            o3_trace_hostglue("name");
             return Str(); // TODO: Implement
         }
 	};
@@ -171,6 +184,8 @@ namespace o3 {
 	struct CDispBridge : public IDispBridge, ComTrack{
         CDispBridge(iCtx1 *ctx, iScr *bridge) : ComTrack(ctx->track()) 
 		{
+            // db_mtrace();
+            o3_trace_hostglue("CDispBridge");
             // db_mtrace();
             m_bridge = bridge;
             m_ctx = ctx;            
@@ -187,6 +202,9 @@ namespace o3 {
 		siScr getBridge(){
             // db_mtrace();
             //decWrapperCount();
+			o3_trace_hostglue("getBridge");
+            // db_mtrace();
+            //decWrapperCount();
 			return m_bridge;
 		}
 
@@ -200,12 +218,16 @@ namespace o3 {
 
         ULONG STDMETHODCALLTYPE AddRef() {
             // db_mtrace();
+            o3_trace_hostglue("AddRef");
+            // db_mtrace();
             int32_t ret = atomicInc(_m_com.ref_count);
             if (ret == 1)
                 incWrapperCount();
             return (ULONG)ret;
         } 
         ULONG STDMETHODCALLTYPE Release() {              
+            // db_mtrace();
+            o3_trace_hostglue("Release");              
             // db_mtrace();
             int ret = atomicDec(_m_com.ref_count);
             if( ret == 0){ 
@@ -221,6 +243,8 @@ namespace o3 {
 																DWORD *pdwEnabledOptions	)
 		{
             // db_mtrace();
+			o3_trace_hostglue("GetInterfaceSafetyOptions");
+            // db_mtrace();
 			*pdwSupportedOptions = INTERFACESAFE_FOR_UNTRUSTED_DATA|INTERFACESAFE_FOR_UNTRUSTED_CALLER;
 			*pdwEnabledOptions	 = INTERFACESAFE_FOR_UNTRUSTED_DATA|INTERFACESAFE_FOR_UNTRUSTED_CALLER;
 			return S_OK;
@@ -229,27 +253,35 @@ namespace o3 {
 		//IDispatch:
 		HRESULT STDMETHODCALLTYPE SetInterfaceSafetyOptions( REFIID riid, 
 			DWORD dwOptionSetMask, DWORD dwEnabledOptions	) { // db_mtrace();
+                o3_trace_hostglue("SetInterfaceSafetyOptions"); // db_mtrace();
                 return E_NOTIMPL; }
 		
 		HRESULT STDMETHODCALLTYPE GetTypeInfoCount(UINT* pctinfo)
 		{
+            // db_mtrace();
+			o3_trace_hostglue("GetTypeInfoCount");
             // db_mtrace();
 			*pctinfo = 0;
 			return S_OK;
 		}
 
 		HRESULT STDMETHODCALLTYPE GetTypeInfo(UINT itinfo, LCID lcid, ITypeInfo** pptinfo) { // db_mtrace();
+            o3_trace_hostglue("GetTypeInfo"); // db_mtrace();
             return E_NOTIMPL; }		
 		HRESULT STDMETHODCALLTYPE Invoke(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags,
 			DISPPARAMS* pdispparams, VARIANT* pvarResult, EXCEPINFO* pexcepinfo, UINT* puArgErr){ // db_mtrace();
+                o3_trace_hostglue("Invoke"); // db_mtrace();
                 return E_NOTIMPL; }
 		HRESULT STDMETHODCALLTYPE GetIDsOfNames(REFIID riid, LPOLESTR* rgszNames, UINT cNames,
 			LCID lcid, DISPID* rgdispid){ // db_mtrace();
+                o3_trace_hostglue("GetIDsOfNames"); // db_mtrace();
                 return E_NOTIMPL; }				
 
 		//IDispatchEx
 		HRESULT STDMETHODCALLTYPE DeleteMemberByDispID(DISPID id)
 		{		
+            // db_mtrace();
+            o3_trace_hostglue("DeleteMemberByDispID");		
             // db_mtrace();
             siEx ex = m_bridge->invoke(siCtx(m_ctx),iScr::ACCESS_DEL, id, 
                 0,0,0); 
@@ -260,6 +292,8 @@ namespace o3 {
 		HRESULT STDMETHODCALLTYPE DeleteMemberByName(BSTR bstrName, DWORD grfdex)
 		{
             // db_mtrace();
+			o3_trace_hostglue("DeleteMemberByName");
+            // db_mtrace();
 			DISPID id;
 			GetDispID(bstrName, grfdex, &id);
 			return DeleteMemberByDispID(id);
@@ -268,6 +302,7 @@ namespace o3 {
 		#define __ARRAY_IDX_DISPID 2000
 		HRESULT STDMETHODCALLTYPE GetDispID(BSTR bstrName, DWORD grfdex, DISPID *pid)
 		{
+            o3_trace_hostglue("GetDispID");
             if(!m_bridge)
 			return S_FALSE;
             // db_mtrace();
@@ -293,6 +328,7 @@ namespace o3 {
 
 		HRESULT STDMETHODCALLTYPE GetMemberName(DISPID id, BSTR *pbstrName)
 		{		
+            o3_trace_hostglue("GetMemberName");		
             if(!m_bridge)
                 return S_FALSE;
             
@@ -310,11 +346,16 @@ namespace o3 {
 		}
 
 		HRESULT STDMETHODCALLTYPE GetMemberProperties(DISPID id, DWORD grfdexFetch, DWORD *pgrfdex){//db_assert(false); 
+            o3_trace_hostglue("GetMemberProperties");//db_assert(false); 
             return(E_NOTIMPL);}
 		HRESULT STDMETHODCALLTYPE GetNameSpaceParent(IUnknown **ppunk){//db_assert(false);
+            o3_trace_hostglue("GetNameSpaceParent");//db_assert(false);
             return(E_NOTIMPL); }
 
 		HRESULT STDMETHODCALLTYPE GetNextDispID(DWORD grfdex, DISPID id, DISPID *pid){  
+            // db_mtrace();
+            
+            o3_trace_hostglue("GetNextDispID");  
             // db_mtrace();
             
             if(!m_bridge)
@@ -333,6 +374,8 @@ namespace o3 {
 		HRESULT STDMETHODCALLTYPE InvokeEx(	DISPID id, LCID lcid, WORD wFlags, 
 											DISPPARAMS *pdp, VARIANT *pVarRes, 
 											EXCEPINFO *pei, IServiceProvider *pspCaller){
+            // db_mtrace();
+			o3_trace_hostglue("InvokeEx");
             // db_mtrace();
 			if(!m_bridge)
 			return S_FALSE;
@@ -410,6 +453,8 @@ namespace o3 {
 
         void tear(){
             // db_mtrace();
+            o3_trace_hostglue("tear");
+            // db_mtrace();
             m_bridge = (iUnk*)0;
         }
 
@@ -417,6 +462,7 @@ namespace o3 {
 
     //Utility functions
 	bool VARIANT_to_Var(const VARIANT &in, Var &out, iCtx* ctx){
+		o3_trace_hostglue("VARIANT_to_Var");
 		switch(in.vt)
 		{	
 			case VT_I1:     // Char.
@@ -523,6 +569,7 @@ namespace o3 {
 
 
 	bool Var_to_VARIANT(const Var &in, VARIANT &out, iCtx* ctx){
+		o3_trace_hostglue("Var_to_VARIANT");
 		VariantInit(&out);
 		switch(in.type())
 		{
@@ -572,10 +619,11 @@ namespace o3 {
                 if(bridge)
 				{
 					//unwrap the object
-					IDispatch* sc = bridge->getBridge();
-					//sc->AddRef();
+					IDispatchEx* sc = bridge->getBridge();
+					SIDispatch disp(sc);
+					sc->AddRef();
 					out.vt=VT_DISPATCH;
-					out.pdispVal = sc;
+					out.pdispVal = disp;
 					ret = true;
                 }else{				
 					siScr iscr = in.toScr();													

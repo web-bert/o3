@@ -37,6 +37,7 @@ struct cScreen: cScreenBase
 
     o3_ext("cO3") o3_get static siScr screen(iCtx* ctx)
     {
+        o3_trace_scrfun("screen");
         Var v = ctx->value("screen");
         siScr ret = v.toScr();
         if (ret)
@@ -51,11 +52,13 @@ struct cScreen: cScreenBase
 
     o3_get int width()
     {
+        o3_trace_scrfun("width");
         return GetSystemMetrics(SM_CXSCREEN);
     }
 
     o3_get int height()
     {
+        o3_trace_scrfun("height");
         return GetSystemMetrics(SM_CYSCREEN);
     }
 

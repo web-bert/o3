@@ -36,6 +36,7 @@ struct cTools : cScr{
 
     static Var getProperty(iCtx* ctx, iScr* obj, const char* prop_name)
     {
+        o3_trace_scrfun("getProperty");
         if (!obj || !ctx)
             return Var(Var::TYPE_VOID);
 
@@ -47,6 +48,7 @@ struct cTools : cScr{
 
     static o3_ext("cO3") o3_get Str tempPath()
     {
+        o3_trace_scrfun("tempPath");
         Str ret = tmpPath(false);            
         ret.findAndReplaceAll("\\", "/");
         return ret;
@@ -54,6 +56,7 @@ struct cTools : cScr{
 
     static o3_ext("cO3") o3_get Str selfPath() 
     {
+        o3_trace_scrfun("selfPath");
         Str ret = getSelfPath();
         ret.findAndReplaceAll("\\", "/");
         return ret;
@@ -61,12 +64,16 @@ struct cTools : cScr{
 
     static o3_ext("cO3") o3_fun bool checkIfInstalled(const Str& app)
     {
+        o3_trace_scrfun("checkIfInstalled");
         WStr app_name(app);
         return o3::checkIfInstalled(app_name);
     }
 
     static o3_ext("cO3") o3_fun bool regDll(const Str& name, bool all_usr)
     {
+        //Var rval(g_sys);  
+        //getProperty(scr_iscr(0),rval,"name");
+        o3_trace_scrfun("regDll");
         //Var rval(g_sys);  
         //getProperty(scr_iscr(0),rval,"name");
         WStr wpath(name);
@@ -82,6 +89,8 @@ struct cTools : cScr{
     static o3_ext("cO3") o3_fun bool unregDll(const Str& name, bool all_usr)
     {
         //WStr wpath(name);
+        o3_trace_scrfun("unregDll");
+        //WStr wpath(name);
         HMODULE hModule = LoadLibraryA(name.ptr());            
 	    UNREGSVRCUST lpProc = (UNREGSVRCUST) GetProcAddress(hModule, "DllUnregisterServerCust");
         if(lpProc) 
@@ -93,6 +102,7 @@ struct cTools : cScr{
 
     static o3_ext("cO3") o3_fun bool regUninstaller(iCtx* ctx, bool all_usr, iScr* iobj) 
     {
+        o3_trace_scrfun("regUninstaller");
         siScr obj(iobj);
         if (!obj)
             return false;
@@ -114,18 +124,21 @@ struct cTools : cScr{
 
     static o3_ext("cO3") o3_fun bool unregUninstaller(bool all_usr, const Str& name) 
     {         
+        o3_trace_scrfun("unregUninstaller");         
         WStr wname = WStr(name);
         return removeUninstallerEntry(all_usr, wname);
     }
 
     static o3_ext("cO3") o3_fun Str getUninstPath(const Str& name) 
     {
+        o3_trace_scrfun("getUninstPath");
         WStr wname = WStr(name);
         return uninstallerString(wname);    
     }
 
     static o3_ext("cO3") o3_fun bool regMozillaPlugin(iCtx* ctx, bool all_usr, iScr* iobj) 
     {
+        o3_trace_scrfun("regMozillaPlugin");
         siScr obj(iobj);
         if (!obj)
             return false;
@@ -146,16 +159,20 @@ struct cTools : cScr{
     static o3_ext("cO3") o3_fun bool unregMozillaPlugin(bool all_usr, const Str& company, 
         const Str& app, const Str& version) 
     {
+        o3_trace_scrfun("unregMozillaPlugin");
         return removeMozillaEntry(all_usr, WStr(company), WStr(app), WStr(version));            
     }
 
     static o3_ext("cO3") o3_get bool adminUser() 
     {
+        o3_trace_scrfun("adminUser");
         return (TRUE==IsUserAnAdmin());
     }
 
     static o3_ext("cO3") o3_get int winVersionMajor()
     {
+
+        o3_trace_scrfun("winVersionMajor");
 
         OSVERSIONINFO osvi;
 
@@ -168,6 +185,7 @@ struct cTools : cScr{
 
 	static o3_ext("cO3") o3_set int exitCode(iCtx* ctx, int code)
 	{
+		o3_trace_scrfun("exitCode");
 		ctx->setValue("exitCode", Var(code));
 		return code;
 	}
@@ -176,6 +194,7 @@ struct cTools : cScr{
 		const wchar_t* appname, const wchar_t* version, const wchar_t* path,
 		const wchar_t* prodname, const wchar_t* descr, const wchar_t* mime) 
 	{
+		o3_trace_scrfun("regMozillaEntry");
 		WStr base(L"Software\\MozillaPlugins\\@");
 		base.append(company); base.append(L"/");
 		base.append(appname); base.append(L";version=");
@@ -211,6 +230,7 @@ struct cTools : cScr{
 	static o3_ext("cO3") o3_fun bool unregMozillaEntry(bool all_usr, const wchar_t* company, 
 		const wchar_t* appname, const wchar_t* version) 
 	{
+		o3_trace_scrfun("unregMozillaEntry");
 		WStr base(L"Software\\MozillaPlugins\\@");
 		base.append(company); base.append(L"/");
 		base.append(appname); base.append(L";version=");
@@ -222,6 +242,7 @@ struct cTools : cScr{
 	static o3_ext("cO3") o3_fun bool regIEExtension(bool all_usr, const wchar_t* id, const wchar_t* o3id, 
 		 const wchar_t* text)
 	{
+		o3_trace_scrfun("regIEExtension");
 		WStr reg("Software\\Microsoft\\Internet Explorer\\Extensions\\");
 		WStr id2 = WStr("{") + id + L"}";
 		HKEY hkey1(0);
@@ -241,6 +262,7 @@ struct cTools : cScr{
 
 	static o3_ext("cO3") o3_fun bool unregIEExtension(bool all_usr, const wchar_t* id)
 	{
+		o3_trace_scrfun("unregIEExtension");
 		WStr reg("Software\\Microsoft\\Internet Explorer\\Extensions\\");
 		reg.append(WStr("{") + id + L"}");
 		recursiveDeleteKey(all_usr ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER, reg);
@@ -249,6 +271,7 @@ struct cTools : cScr{
 
 	static o3_ext("cO3") o3_fun bool regFFExtension(bool all_usr, const wchar_t* name, const wchar_t* path)
 	{
+		o3_trace_scrfun("regFFExtension");
 		WStr reg("Software\\Mozilla\\Firefox\\Extensions");
 		HKEY hkey1(0);
 		if (ERROR_SUCCESS != regCreate(
@@ -264,6 +287,7 @@ struct cTools : cScr{
 
 	static o3_ext("cO3") o3_fun bool unregFFExtension(bool all_usr, const wchar_t* name)
 	{
+		o3_trace_scrfun("unregFFExtension");
 		WStr reg("Software\\Mozilla\\Firefox\\Extensions");
 		HKEY hkey1(0);
 		if (ERROR_SUCCESS != RegOpenKeyExW(all_usr ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER, 
@@ -279,6 +303,7 @@ struct cTools : cScr{
 	static o3_ext("cO3") o3_fun bool regChromeExtension(bool all_usr, const wchar_t* id, 
 		const wchar_t* path, const wchar_t* version)
 	{
+		o3_trace_scrfun("regChromeExtension");
 		all_usr;
 		WStr reg("SOFTWARE\\Google\\Chrome\\Extensions\\");
 		reg.append(id);
@@ -298,6 +323,7 @@ struct cTools : cScr{
 
 	static o3_ext("cO3") o3_fun bool unregChromeExtension(bool all_usr, const wchar_t* id)
 	{
+		o3_trace_scrfun("unregChromeExtension");
 		all_usr;
 		WStr reg("Software\\Google\\Chrome\\Extensions\\");
 		reg.append(id);
@@ -307,11 +333,13 @@ struct cTools : cScr{
 
 	static o3_ext("cO3") o3_fun bool createShortcut(const wchar_t* linkto, const wchar_t* store, const wchar_t* desc)
 	{
+		o3_trace_scrfun("createShortcut");
 		return S_OK == createLink(linkto, store, desc);
 	}
 	
 	static o3_ext("cO3") o3_fun Str startMenuPath(bool all_usr)
 	{
+		o3_trace_scrfun("startMenuPath");
 		WStr path; path.reserve(MAX_PATH);
 
 		if (!SHGetSpecialFolderPathW( NULL, path.ptr(),

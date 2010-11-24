@@ -28,18 +28,19 @@ public:
     explicit tVec(size_t capacity, iAlloc* alloc = g_sys) :
         m_buf(capacity * sizeof(T), alloc)
     {
-        o3_trace1 trace;
+        o3_trace_containers("tVec");
     }
 
     explicit tVec(iAlloc* alloc = g_sys)
     {
-        o3_trace1 trace;
+        o3_trace_containers("tVec");
 
         new(this) tVec(0, alloc);
     }
 
 	tVec(const tVec& that)
 	{
+		o3_trace_containers("tVec");
 		if (that.m_buf.capacity() <= O3_AUTO_CAPACITY) {
 			new(this) tVec(that.capacity(), that.alloc());
 
@@ -62,7 +63,7 @@ public:
 
     ~tVec()
     {
-        o3_trace1 trace;
+        o3_trace_containers("~tVec");
 
         if (m_buf.unique())
             clear();
@@ -115,7 +116,7 @@ public:
 
     T* ptr()
     {
-        o3_trace1 trace;
+        o3_trace_containers("ptr");
 
         if (!m_buf.unique()) {
             tVec tmp(capacity(), alloc());
@@ -133,12 +134,13 @@ public:
 
     T& back()
     {
+        o3_trace_containers("back");
         return ptr()[size() - 1];
     }
 
     void insert(size_t pos, const T& x, size_t n = 1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
         T* ptr;
 
         m_buf.shift(pos * sizeof(T), n * sizeof(T));
@@ -149,7 +151,7 @@ public:
 
     void insert(size_t pos, const T* ptr, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("insert");
         T* ptr1;
 
         m_buf.shift(pos * sizeof(T), n * sizeof(T));
@@ -160,21 +162,21 @@ public:
 
     void append(const T& x, size_t n = 1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("append");
 
         insert(size(), x, n);
     }
 
     void append(const T* ptr, size_t n)
     {
-        o3_trace1 trace;
+        o3_trace_containers("append");
 
         insert(size(), ptr, n);
     }
 
     void remove(size_t pos, size_t n = 1)
     {
-        o3_trace1 trace;
+        o3_trace_containers("remove");
         T* ptr = this->ptr();
 
         for (size_t i = n; i > 0; --i)
@@ -184,21 +186,21 @@ public:
 
     void clear()
     {
-        o3_trace1 trace;
+        o3_trace_containers("clear");
 
         remove((size_t) 0, size());
     }
 
     void push(const T& x)
     {
-        o3_trace1 trace;
+        o3_trace_containers("push");
 
         append(x);
     }
 
     void pop()
     {
-        o3_trace1 trace;
+        o3_trace_containers("pop");
 
         remove(size() - 1);
     }

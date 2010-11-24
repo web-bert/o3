@@ -33,6 +33,7 @@ namespace o3 {
 
 		static o3_ext("cO3") o3_get siScr sha1(iCtx* ctx)
 		{
+			o3_trace_scrfun("sha1");
 			Var var = ctx->value("sha1");
 			siScr sha1 = var.toScr();
 			if (sha1)
@@ -44,16 +45,19 @@ namespace o3 {
 
         o3_fun Buf hash(const Buf& buf)
 		{                
+			o3_trace_scrfun("hash");                
 			return sh1((const uint8_t*)buf.ptr(), buf.size());
         }
 
 		o3_fun Buf hash(const Str& str)
 		{
+			o3_trace_scrfun("hash");
 			return sh1((const uint8_t*)str.ptr(), str.size());
 		}
 
 		Buf sh1( const uint8_t* in, size_t in_len ) 
 		{
+			o3_trace_scrfun("sh1");
 			size_t size = SHA1_SIZE;
 			Buf out;
 

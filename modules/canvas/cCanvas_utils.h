@@ -31,6 +31,7 @@ namespace o3
 	void o3_read_data(png::png_structp png_ptr,
 		png::png_bytep data, png::png_size_t length) 
 	{
+		o3_trace_scrfun("o3_read_data");
 		siStream stream = (iStream*) png_ptr->io_ptr;
 		if ( !stream || length != 
 			stream->read((void*) data, (size_t) length )) 
@@ -42,6 +43,7 @@ namespace o3
 	void o3_read_data_bufstream(png::png_structp png_ptr,
 		png::png_bytep data, png::png_size_t length) 
 	{
+		o3_trace_scrfun("o3_read_data_bufstream");
 		cBufStream *stream = (cBufStream *) png_ptr->io_ptr;
 		if ( !stream || length != 
 			stream->read((void*) data, (size_t) length )) 
@@ -53,6 +55,7 @@ namespace o3
 	void o3_write_data(png::png_structp png_ptr,
 		png::png_bytep data, png::png_size_t length)
 	{
+		o3_trace_scrfun("o3_write_data");
 		siStream stream = (iStream*) png_ptr->io_ptr;
 		if ( !stream || length != 
 			stream->write((void*) data, (size_t) length )) 
@@ -64,12 +67,14 @@ namespace o3
 	void o3_write_data_bufstream(png::png_structp png_ptr,
 		png::png_bytep data, png::png_size_t length)
 	{
+		o3_trace_scrfun("o3_write_data_bufstream");
 		Buf *buf= (Buf*) png_ptr->io_ptr;
 		buf->append((void*) data, (size_t) length);
 	}
 
 	void o3_flush_data(png::png_structp png_ptr)
 	{
+		o3_trace_scrfun("o3_flush_data");
 		siStream stream = (iStream*) png_ptr->io_ptr;
 		if ( !stream ) 
 		{				
@@ -83,11 +88,13 @@ namespace o3
 
 	void o3_flush_data_bufstream(png::png_structp png_ptr)
 	{		
+		o3_trace_scrfun("o3_flush_data_bufstream");		
 		png_ptr;
 	}
 
 	bool decodeColor(const Str &style, unsigned int *color)
 	{
+		o3_trace_scrfun("decodeColor");
 		unsigned int stylesize = style.size();
 		if (stylesize>0)
 		{

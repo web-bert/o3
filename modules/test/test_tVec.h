@@ -27,16 +27,19 @@ struct X {
 
     X(int x) : x(x)
     {
+        o3_trace_scrfun("X");
         ++c;
     }
 
     X(const X& that) : x(that.x)
     {
+        o3_trace_scrfun("X");
         ++c;
     }
 
     ~X()
     {
+        o3_trace_scrfun("~X");
         ++d;
     }
 };
@@ -46,6 +49,7 @@ unsigned X::d;
 
 void test_tVec()
 {
+    o3_trace_scrfun("test_tVec");
     o3_log("Testing explicit tVec::tVec(size_t, iAlloc*)\n"); 
     {
         tVec<X> vec(100);

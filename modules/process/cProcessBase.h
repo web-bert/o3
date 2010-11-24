@@ -45,11 +45,13 @@ struct cProcessBase : cScr {
 
     virtual o3_get siScr onterminate()
     {
+        o3_trace_scrfun("onterminate");
         return m_onterminate;
     }
 
     virtual o3_set siScr setOnterminate(iCtx* ctx, iScr* onterminate)
     {
+        o3_trace_scrfun("setOnterminate");
         m_ctx = ctx;
         if (m_onterminate = onterminate)
             startListening();

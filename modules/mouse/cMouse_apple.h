@@ -28,6 +28,7 @@ struct cMouse : cMouseBase {
         
     static o3_ext("cO3") o3_get siScr mouse(iCtx* ctx)
     {
+        o3_trace_scrfun("mouse");
         static Var mouse = ctx->value("mouse");
         
         if (mouse.type() == Var::TYPE_VOID)
@@ -42,6 +43,7 @@ struct cMouse : cMouseBase {
     
     void sendMouseMoved(int x, int y)
     {
+        o3_trace_scrfun("sendMouseMoved");
         CGEventRef event;
         
         m_position.x = x;
@@ -53,6 +55,7 @@ struct cMouse : cMouseBase {
     
     void sendLeftMouseDown()
     {
+        o3_trace_scrfun("sendLeftMouseDown");
         CGEventRef event;
         
         event = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseDown, m_position,
@@ -62,6 +65,7 @@ struct cMouse : cMouseBase {
     
     void sendLeftMouseUp()
     {
+        o3_trace_scrfun("sendLeftMouseUp");
         CGEventRef event;
         
         event = CGEventCreateMouseEvent(NULL, kCGEventLeftMouseUp, m_position,
@@ -71,6 +75,7 @@ struct cMouse : cMouseBase {
     
     void sendRightMouseDown()
     {
+        o3_trace_scrfun("sendRightMouseDown");
         CGEventRef event;
         
         event = CGEventCreateMouseEvent(NULL, kCGEventRightMouseDown,
@@ -79,6 +84,7 @@ struct cMouse : cMouseBase {
     
     void sendRightMouseUp()
     {
+        o3_trace_scrfun("sendRightMouseUp");
         CGEventRef event;
         
         event = CGEventCreateMouseEvent(NULL, kCGEventRightMouseUp, m_position,
@@ -88,6 +94,7 @@ struct cMouse : cMouseBase {
 
     virtual o3_fun void sendMouseScrolled(int dy)
     {
+        o3_trace_scrfun("sendMouseScrolled");
         CGEventRef event;
         
         event = CGEventCreateScrollWheelEvent (NULL, kCGScrollEventUnitPixel, 1,

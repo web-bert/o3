@@ -22,6 +22,7 @@ namespace o3 {
 
 void test_Var()
 {
+    o3_trace_scrfun("test_Var");
     o3_log("Testing Var::Var(iAlloc*)\n");
     {
         Var val;

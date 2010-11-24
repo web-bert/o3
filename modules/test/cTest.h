@@ -36,36 +36,43 @@ struct cTest1 : cScr {
 
     static o3_ext("cO3") o3_fun void testBuf()
     {
+        o3_trace_scrfun("testBuf");
         o3::test_Buf();
     }
 
     static o3_ext("cO3") o3_fun void testVec()
     {
+        o3_trace_scrfun("testVec");
         o3::test_tVec();
     }
 
     static o3_ext("cO3") o3_fun void testStr()
     {
+        o3_trace_scrfun("testStr");
         o3::test_Str();
     }
 
     static o3_ext("cO3") o3_fun void testWStr()
     {
+        o3_trace_scrfun("testWStr");
         o3::test_WStr();
     }
 
     static o3_ext("cO3") o3_fun void testVar()
     {
+        o3_trace_scrfun("testVar");
         o3::test_Var();
     }
 
     static o3_ext("cO3") o3_fun void testList()
     {
+        o3_trace_scrfun("testList");
         o3::test_tList();
     }
 
     static o3_ext("cO3") o3_fun void testMap()
     {
+        o3_trace_scrfun("testMap");
         o3::test_tMap();
     }
 };

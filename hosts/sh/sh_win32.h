@@ -15,14 +15,14 @@
  * this library; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-
+#define O3_V8
 #include <js/js.h>
 //#include <test/proto_v1.h>
 #include "fastxml/fastxml.h"
 #include "xml/xml.h"
-#include "socket/socket.h"
+//#include "socket/socket.h"
 #include "fs/fs.h"
-#include "buffer/buffer.h"
+//#include "buffer/buffer.h"
 #include "console/console.h"
 #include "http/http.h"
 #include "process/process.h"
@@ -45,7 +45,7 @@
 //#include "canvas/cCanvas1_win32.h"
 
 #include "zip/zip.h"
-#include "socket/socket.h"
+//#include "socket/socket.h"
 
 //int WINAPI WinMain(HINSTANCE hi, HINSTANCE hp, LPSTR arg, int show){
 int main(int argc, char **argv) {
@@ -57,17 +57,17 @@ int main(int argc, char **argv) {
     cSys sys;
 
     siMgr mgr = o3_new(cMgr)();
-    siCtx ctx = o3_new(cJs)(mgr, --argc, ++argv,0,true);
+    siCtx ctx = o3_new(cJs)(mgr, --argc, ++argv,0);
    
     
     //mgr->addExtTraits(cCanvas1::extTraits());
     mgr->addExtTraits(cFs::extTraits());
     mgr->addExtTraits(cHttp::extTraits());
-    mgr->addExtTraits(cBuffer::extTraits());
+    //mgr->addExtTraits(cBuffer::extTraits());
     mgr->addExtTraits(cConsole::extTraits());
     mgr->addExtTraits(cFastXml::extTraits());
     //mgr->addExtTraits(cJs1::extTraits());
-    mgr->addExtTraits(cSocket::extTraits());
+    //mgr->addExtTraits(cSocket::extTraits());
     mgr->addExtTraits(cResource::extTraits());
     mgr->addExtTraits(cResourceBuilder::extTraits());
     mgr->addExtTraits(cScreen::extTraits());
@@ -101,8 +101,10 @@ int main(int argc, char **argv) {
 
 		if (buf.size() > 0) {
 			ctx->eval(Str(buf));
+#ifndef O3_V8			
 			if (((cJs*)ctx.ptr())->scriptError())
 				return -1;
+#endif		
 		}
 
 		HANDLE script_file = CreateFileA(argv[0],GENERIC_READ,
@@ -128,11 +130,15 @@ int main(int argc, char **argv) {
 		}		
 		
 		ctx->eval(script);
+#ifndef O3_V8			
 		if (((cJs*)ctx.ptr())->scriptError())
 			ret = -1;
-		
+#endif		
 
-        siCtx1(ctx)->tear();
+		siCtx1 ctx1;
+		if (ctx1){
+			ctx1->tear();
+		}
 	}
     
     //CoUninitialize(); 

@@ -44,18 +44,22 @@ struct cButton : cWindow
     static o3_ext("cWindow") o3_fun siWindow createButton(o3_tgt iScr* target, const char* text, 
         int x, int y, int w, int h, int font_size = 16, int font_style = 0)
     {              
+        o3_trace_scrfun("createButton");              
         return create(TYPE_PUSH,target,text,x,y,w,h,font_size,font_style, 0);
     }
 
     static o3_ext("cWindow") o3_fun siWindow createRButton(o3_tgt iScr* target, const char* text, 
         int x, int y, int w, int h, int font_size = 16, int font_style = 0, int bkcolor = 0)
     {
+        o3_trace_scrfun("createRButton");
         return create(TYPE_RADIO,target,text,x,y,w,h,font_size,font_style, bkcolor);
     }
 
     static siWindow create(ButtonType type, iScr* target, const char* text,
         int x, int y, int w, int h, int font_size, int font_style, int bkcolor)
     {
+        // create the component
+        o3_trace_scrfun("create");
         // create the component
         cButton* ret = o3_new(cButton)();
         ret->m_type = type;
@@ -94,6 +98,7 @@ struct cButton : cWindow
 
     virtual LRESULT CALLBACK wndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
     {
+        o3_trace_scrfun("wndProc");
         siCtx ctx(m_ctx);
         switch(message){
             case WM_COMMAND:{
@@ -117,6 +122,7 @@ struct cButton : cWindow
 
     o3_set siScr setOnclick(iCtx* ctx, iScr* cb)
     {
+        o3_trace_scrfun("setOnclick");
         m_ctx = ctx;
         return m_onclick = cb;
     }

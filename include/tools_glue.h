@@ -23,6 +23,7 @@ namespace o3 {
 
 struct ComTrack {
     ComTrack(ComTrack** phead) {
+    	o3_trace_tools("ComTrack");
     	m_phead = phead;
 	    m_prev  = 0;
         if (*phead)
@@ -33,6 +34,7 @@ struct ComTrack {
     }
 
     virtual ~ComTrack() {
+	    o3_trace_tools("~ComTrack");
 	    if (m_phead && *m_phead == this)
             *m_phead = m_next;
 	    if (m_next)
@@ -62,6 +64,7 @@ struct ScrInfo {
 };
 
 inline void scrInfo(iScr* pthis, iCtx* ctx, int index, ScrInfo* info) {
+    o3_trace_tools("scrInfo");
     cScr* pthis1 = (cScr*) pthis;
 
     if (index < O3_VALUE_OFFSET) {

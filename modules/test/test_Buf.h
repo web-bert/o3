@@ -22,6 +22,7 @@ namespace o3 {
 
 inline void test_Buf()
 {
+    o3_trace_scrfun("test_Buf");
     const char STR[] = "The quick brown fox jumps over the lazy dog";
     const wchar_t WSTR[] = L"The quick brown fox jumps over the lazy dog";
     void* ptr = memCopy(memAlloc(sizeof(STR)), STR, sizeof(STR));
