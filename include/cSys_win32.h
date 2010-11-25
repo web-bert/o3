@@ -610,6 +610,9 @@ namespace o3 {
                     //no messages                    
                     //timeout -= (GetTickCount() - before) / 10;
 					spent = (GetTickCount() - start)/10;
+					if (timeout==0)
+						break;
+
 					continue;
                 }
 
@@ -639,6 +642,9 @@ namespace o3 {
              
                 //timeout -= (GetTickCount() - before) / 10;
 				spent = (GetTickCount() - start)/10;
+				if (timeout==0)
+					break;
+
 			}
             
         }

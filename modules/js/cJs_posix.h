@@ -324,6 +324,8 @@ struct cJs : cJsBase {
 			pthis->m_wrappers.remove(scr);
             //pthis->m_objects.remove(*object);        
 		}
+		value.Dispose();
+		value.Clear();
     }
 
 #ifdef O3_NODE
@@ -346,6 +348,7 @@ struct cJs : cJsBase {
     Handle<Object> createObject(iScr* scr)
     { 
         o3_trace_hostglue("createObject"); 
+		HandleScope handle_scope;
         Persistent<Object> object;
 
 		tMap<iScr*, Handle<Object> >::Iter it = 
@@ -360,7 +363,8 @@ struct cJs : cJsBase {
         object->SetInternalField(0, External::New(scr));
         //m_objects[*object] = *object;
         m_wrappers[scr] = object;
-		return object;
+		//return object;
+		return handle_scope.Close(object);
     }
 
     Var toVar(Handle<Value> value)
@@ -504,10 +508,9 @@ public:
 
     static o3_ext("cO3") o3_get siScr js(iCtx* ctx)
     {
-o3_trace_hostglue("js");
-#ifndef O3_NODE
         o3_trace_hostglue("js", __FILE__, __LINE__);
-        Var js = ctx->value("js");
+#ifndef O3_NODE
+		Var js = ctx->value("js");
 
         if (js.type() == Var::TYPE_VOID)
             js = ctx->setValue("js", (iScr*) o3_new(cJs)(ctx->mgr(), 0, 0, 0));
