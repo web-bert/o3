@@ -228,19 +228,27 @@ struct cMgr : cUnk, iMgr {
 	Buf downloadInstaller(iCtx* ctx)
 	{
 		o3_trace_comglue("downloadInstaller");
+#ifdef O3_PLUGIN
 		Str url = Str(O3_REPO_URL) 
 			+ O3_PLUGIN_INSTALLER;
 
 		return downloadFile(url, ctx, Delegate(), Delegate());
+#else
+		return Buf();
+#endif
 	}
 
 	Buf downloadHashes( iCtx* ctx ) 
 	{
 		o3_trace_comglue("downloadHashes");
+#ifdef O3_PLUGIN
 		Str url = Str(O3_REPO_URL) 
 			+ O3_PLUGIN_VERSION;
 
 		return downloadFile(url, ctx, Delegate(), Delegate());
+#else
+		return Buf();
+#endif
 	}
 
 	Buf downloadFile( Str url, iCtx* ctx, Delegate onreadystatechange, 

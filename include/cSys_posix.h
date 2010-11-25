@@ -556,7 +556,7 @@ struct cMessageLoop : cUnk, iMessageLoop {
 
 o3_cls(cSys);
 
-struct cSys : cSysBase, file(0) {
+struct cSys : cSysBase {
     int fd;
 	size_t m_overall;
 	struct sockaddr_in addr;
@@ -565,6 +565,7 @@ struct cSys : cSysBase, file(0) {
     cSys()
     {
 		o3_trace_no_trace;
+		file = 0;
 		m_overall = 0;
 #ifdef O3_LOGFILE
 		removeLogFile();
