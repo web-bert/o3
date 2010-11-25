@@ -82,6 +82,10 @@ struct cJs : cJsBase {
             }
             return 0;
         }
+
+		virtual Str className(){
+			return "ScrObj";
+		}
     };
 
     static void* cast(Local<Value> value)
@@ -508,7 +512,7 @@ public:
 
     static o3_ext("cO3") o3_get siScr js(iCtx* ctx)
     {
-        o3_trace_hostglue("js", __FILE__, __LINE__);
+        o3_trace_hostglue("js");
 #ifndef O3_NODE
 		Var js = ctx->value("js");
 

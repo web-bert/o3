@@ -215,8 +215,8 @@ struct cScrBuf : cScr, iBuf {
 		sourceEnd = (sourceEnd<0 || sourceEnd>target->unwrap().size()) 
 			? target->unwrap().size() : sourceEnd;
 
-		int tl = max(target->unwrap().size()-targetStart, 0);
-		int sl = max(min(sourceEnd-sourceStart, m_buf.size()-sourceStart),0);
+		int tl = max((int)target->unwrap().size()-targetStart, 0);
+		int sl = max(min(sourceEnd-sourceStart, (int)m_buf.size()-sourceStart),0);
 		int l = min(tl,sl);
 
 		memCopy((uint8_t*)m_buf.ptr() + sourceStart, 
@@ -226,7 +226,7 @@ struct cScrBuf : cScr, iBuf {
 	o3_fun siScr slice(int start, int end)
 	{
 		start = max(0,start);
-		end = min(end, m_buf.size());
+		end = min(end, (int)m_buf.size());
 		return o3_new(cScrBuf)(Buf((uint8_t*)m_buf.ptr()+start, end-start));
 	}
 

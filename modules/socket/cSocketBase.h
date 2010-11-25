@@ -301,17 +301,27 @@ namespace o3 {
 			return m_on_error = cb;
 		}
 
+		Str className()
+		{
+			if (m_class_name.size())
+				return m_class_name;
+			else
+				return cScr::className();
+		}
+
 		o3_fun void close() = 0;
 
 		o3_fun void shutdown() = 0;
 
         o3_prop     size_t  m_packet_size;
         o3_prop     size_t  m_min_receive_size;
+					Str		m_class_name;
 		o3_get		size_t  m_bytes_sent;
         o3_get		size_t  m_bytes_received;                
         o3_get      Type    m_type;
         o3_get		Str     m_src_address;
 		
+
 		siScr m_on_accept;
 		siScr m_on_connect;
 		siScr m_on_receive;

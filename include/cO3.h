@@ -165,6 +165,7 @@ struct cO3 : cScr {
     o3_fun void doInstall()
     {
         o3_trace_scrfun("doInstall");
+#ifdef O3_PLUGIN
         siCtx ctx = m_ctx;
 
 		siFs dir_of_installer = ctx->mgr()->factory("installerDir")(0);
@@ -216,6 +217,7 @@ struct cO3 : cScr {
             execve("/usr/bin/open", cmd, env);
         }
 #endif // O3_APPLE
+#endif // O3_PLUGIN
     }
 
     o3_get tVec<Str> args()
@@ -685,6 +687,7 @@ o3_trace_scrfun("moduleUpdating");
     o3_set siScr setOnupdate(iCtx* ctx, iScr* onupdate)
     {
         o3_trace_scrfun("setOnupdate");
+#ifdef O3_PLUGIN
         siFs updater = siFs(ctx->mgr()->factory("pluginDir")(0))->get(O3_PLUGIN_UPDATER);
 
         if (!m_installer)
@@ -706,7 +709,10 @@ o3_trace_scrfun("moduleUpdating");
         }
 #endif // O3_APPLE
         return onupdate;
-    }
+#else // O3_PLUGIN
+		return siScr();
+#endif //O3_PLUGIN
+	}
 
     o3_get siScr oninstall()
     {
