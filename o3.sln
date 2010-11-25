@@ -248,6 +248,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "window", "window", "{DB2F31
 		modules\window\cWindow_apple.h = modules\window\cWindow_apple.h
 		modules\window\cWindow_win32.h = modules\window\cWindow_win32.h
 		modules\window\cWindowBase.h = modules\window\cWindowBase.h
+		modules\glwindow\glwindow.h = modules\glwindow\glwindow.h
 		modules\window\window.h = modules\window\window.h
 	EndProjectSection
 EndProject
