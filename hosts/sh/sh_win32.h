@@ -78,6 +78,8 @@ int main(int argc, char **argv) {
 	mgr->addExtTraits(cWindow::extTraits());
 	mgr->addExtTraits(cGLWindow::extTraits());
 	mgr->addExtTraits(cGLTexture::extTraits());
+	mgr->addExtTraits(cGLVertexArray::extTraits());
+	mgr->addExtTraits(cGLShaderProgram::extTraits());
 
 	mgr->addExtTraits(cCanvas::extTraits());
 	//mgr->addExtTraits(cBarcode::extTraits());
@@ -139,6 +141,7 @@ int main(int argc, char **argv) {
 		if (ex) 
 		{
 			fprintf(stderr, "%s\n", ex->message().ptr());
+			MessageBoxA(NULL, ex->message().ptr(), "Javascript error!", MB_OK);
 		}
 
 //		ctx->eval(script);

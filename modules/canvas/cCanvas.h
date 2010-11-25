@@ -2137,9 +2137,9 @@ o3_fun void clear(int signed_color)
 				unsigned char G = sc[1];
 				unsigned char B = sc[0];
 				unsigned int alphafac = (unsigned int)(sc[3] * m_currentrenderstate->GlobalAlpha);
-				int lx = __max(0, m_currentrenderstate->ClipTopLeft.x - blurint);
-				int rx = __min(m_w, m_currentrenderstate->ClipBottomRight.x + blurint);
-				for (int y = __max(0, m_currentrenderstate->ClipTopLeft.y - blurint);y<__min(m_h, m_currentrenderstate->ClipBottomRight.y + blurint);y++)
+				int lx = (int)__max(0, m_currentrenderstate->ClipTopLeft.x - blurint);
+				int rx = (int)__min(m_w, m_currentrenderstate->ClipBottomRight.x + blurint);
+				for (int y = (int)__max(0, m_currentrenderstate->ClipTopLeft.y - blurint);y<(int)__min(m_h, m_currentrenderstate->ClipBottomRight.y + blurint);y++)
 				{
 					unsigned char *rowptr =(unsigned char*)m_shadowmem.ptr() + (y * m_stride)*4;
 					for (int x = lx*4;x<rx*4;x+=4)

@@ -21,8 +21,8 @@
 #include "Glee-5.4/GLee.h"
 #include "Glee-5.4/GLee.c"
 #ifdef WIN32
-#pragma comment(lib,"opengl32.lib");
-#pragma comment(lib,"glu32.lib");
+#pragma comment(lib,"opengl32.lib")
+#pragma comment(lib,"glu32.lib")
 #endif
 #include <gl/glu.h>
 
@@ -30,20 +30,294 @@
 
 namespace o3 
 {
-	
-	
+	o3_iid(iShaderProgram, 0xdaf5e662, 0x66c, 0x483f, 0x89, 0x20, 0x9a, 0xf8, 0x49, 0x5c, 0x83, 0x2c);
+	o3_iid(iVertexArray, 0xd15010ef, 0xc2c6, 0x4b3c, 0xad, 0xf1, 0x3e, 0xb7, 0x42, 0xde, 0xa4, 0x75);
 	o3_iid(iTexture, 0x1d657e65, 0xf75a, 0x48f0, 0x8e, 0x67, 0xab, 0xee, 0x5, 0xc2, 0x8b, 0x43);
 
-	struct iTexture: iUnk 
+	struct iShaderProgram: iUnk{virtual void *getThis() = 0;};
+	struct iVertexArray: iUnk{virtual void *getThis() = 0;};
+	struct iTexture: iUnk {virtual void *getThis() = 0;};
+	
+	struct cGLVertex
 	{
-		virtual void upload(iScr* target, size_t width, size_t height) = 0;
-		virtual void bind() = 0;
-		virtual void unbind() = 0;
+		cGLVertex(){};
+		cGLVertex(float _x, float _y, float _z, float _nx, float _ny, float _nz, float _u, float _v)
+		{
+			x = _x;y = _y;z=_z;
+			nx = _nx;ny = _ny;nz = _nz;
+			u=_u;v=_v;
+		};
+		float x,y,z;	// position
+		float nx,ny,nz; // normal
+		float u,v;      // texcoord0
 	};
+	
+	struct cGLVertexArray: cScr, iVertexArray
+	{
+		o3_begin_class(cScr);
+		o3_add_iface(iVertexArray);
+		o3_end_class();
+
+		o3_glue_gen();
+		
+		virtual void *getThis(){return this;};
+		
+		tVec<cGLVertex> mVertices;
+		bool mHasVBO;
+		unsigned int mBufferID;
+		bool mUploadNeeded;
+		
+		cGLVertexArray(size_t initialsize)
+		{
+			GLeeInit();
+			if (_GLEE_ARB_vertex_buffer_object)
+			{
+				mHasVBO = true;
+				mUploadNeeded = true;
+				glGenBuffers(1, &mBufferID);
+				glBindBufferARB(GL_ARRAY_BUFFER_ARB, mBufferID);         // for vertex coordinates
+
+				while (initialsize--) mVertices.push(cGLVertex());
+				glBufferDataARB(GL_ARRAY_BUFFER_ARB, mVertices.size()*sizeof(cGLVertex), mVertices.ptr(), GL_STREAM_DRAW_ARB);
+			}
+			else
+			{
+				// gl vertex array fallback!
+				mUploadNeeded = false;
+			};
+		};
+
+		~cGLVertexArray()
+		{
+			if (mHasVBO) 
+			{
+				glDeleteBuffers(1, &mBufferID);
+			};
+		};
+		static o3_ext("cGLWindow") o3_fun siVertexArray vertexarray(size_t intitialsize)
+		{
+			cGLVertexArray* ret = o3_new(cGLVertexArray)(intitialsize);
+			return ret;
+		};
+
+		static o3_ext("cGLWindow") o3_fun siVertexArray cube(double s = 1.0)
+		{
+			s/= 2.0;
+			cGLVertexArray* ret = o3_new(cGLVertexArray)(18*2);
+			ret->mVertices[0] = cGLVertex(-s,-s,-s,  0,0,-1,0,0);
+			ret->mVertices[1] = cGLVertex( s,-s,-s,  0,0,-1,1,0);
+			ret->mVertices[2] = cGLVertex( s, s,-s,  0,0,-1,1,1);
+			
+			ret->mVertices[3] = cGLVertex(-s,-s,-s,  0,0,-1,0,0);
+			ret->mVertices[4] = cGLVertex( s, s,-s,  0,0,-1,1,1);
+			ret->mVertices[5] = cGLVertex(-s, s,-s,  0,0,-1,0,1);
+
+			ret->mVertices[6] = cGLVertex(-s,-s,-s,  0,-1,0,0,0);
+			ret->mVertices[7] = cGLVertex( s,-s,-s,  0,-1,0,1,0);
+			ret->mVertices[8] = cGLVertex( s,-s, s,  0,-1,0,1,1);
+											   
+			ret->mVertices[9] = cGLVertex( -s,-s,-s,  0,-1,0,0,0);
+			ret->mVertices[10] = cGLVertex( s,-s, s,  0,-1,0,1,1);
+			ret->mVertices[11] = cGLVertex(-s,-s, s,  0,-1,0,0,1);
+
+			ret->mVertices[12] = cGLVertex(-s,-s,-s,  -1,0,0,0,0);
+			ret->mVertices[13] = cGLVertex(-s, s,-s,  -1,0,0,1,0);
+			ret->mVertices[14] = cGLVertex(-s, s, s,  -1,0,0,1,1);
+											 
+			ret->mVertices[15] = cGLVertex(-s,-s,-s,  -1,0,0,0,0);
+			ret->mVertices[16] = cGLVertex(-s, s, s,  -1,0,0,1,1);
+			ret->mVertices[17] = cGLVertex(-s,-s, s,  -1,0,0,0,1);
+
+			ret->mVertices[18+0] = cGLVertex(-s,-s,s,  0,0,1,0,0);
+			ret->mVertices[18+1] = cGLVertex( s,-s,s,  0,0,1,1,0);
+			ret->mVertices[18+2] = cGLVertex( s, s,s,  0,0,1,1,1);
+			
+			ret->mVertices[18+3] = cGLVertex(-s,-s,s,  0,0,1,0,0);
+			ret->mVertices[18+4] = cGLVertex( s, s,s,  0,0,1,1,1);
+			ret->mVertices[18+5] = cGLVertex(-s, s,s,  0,0,1,0,1);
+
+			ret->mVertices[18+6] = cGLVertex(-s,s,-s,  0,1,0,0,0);
+			ret->mVertices[18+7] = cGLVertex( s,s,-s,  0,1,0,1,0);
+			ret->mVertices[18+8] = cGLVertex( s,s, s,  0,1,0,1,1);
+											   
+			ret->mVertices[18+9] = cGLVertex( -s,s,-s,  0,1,0,0,0);
+			ret->mVertices[18+10] = cGLVertex( s,s, s,  0,1,0,1,1);
+			ret->mVertices[18+11] = cGLVertex(-s,s, s,  0,1,0,0,1);
+
+			ret->mVertices[18+12] = cGLVertex(s,-s,-s,  1,0,0,0,0);
+			ret->mVertices[18+13] = cGLVertex(s, s,-s,  1,0,0,1,0);
+			ret->mVertices[18+14] = cGLVertex(s, s, s,  1,0,0,1,1);
+											 
+			ret->mVertices[18+15] = cGLVertex(s,-s,-s,  1,0,0,0,0);
+			ret->mVertices[18+16] = cGLVertex(s, s, s,  1,0,0,1,1);
+			ret->mVertices[18+17] = cGLVertex(s,-s, s,  1,0,0,0,1);
+			ret->mUploadNeeded = true;
+
+			return ret;
+		};
+
+		o3_fun void Render(size_t mode = GL_TRIANGLES, size_t startvertex = 0, size_t endvertex = 0xffffffff)
+		{
+			if (endvertex == 0xffffffff) 
+			{
+				endvertex = mVertices.size();
+			}
+			endvertex = __min(mVertices.size(), endvertex);
+			if (endvertex <= startvertex) return;
+			
+			if (mHasVBO)
+			{
 
 
+				glBindBufferARB(GL_ARRAY_BUFFER_ARB, mBufferID);         // for vertex coordinates
+				if (mUploadNeeded)
+				{
+					unsigned char *d = (unsigned char *)glMapBuffer(GL_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB);
+					if (d)
+					{
+						int VertexBytes = sizeof(cGLVertex) * mVertices.size();
+						cGLVertex *VertexData = mVertices.ptr();
+						memcpy(d, VertexData, VertexBytes);
+						glUnmapBuffer(GL_ARRAY_BUFFER_ARB);
+						mUploadNeeded = false;
+					};
+					
+				};
+				glEnableClientState(GL_VERTEX_ARRAY);             
+				glEnableClientState(GL_NORMAL_ARRAY);             
+				glEnableClientState(GL_TEXTURE_COORD_ARRAY);           
+				glVertexPointer(3, GL_FLOAT, sizeof(cGLVertex), 0);              
+				glNormalPointer(GL_FLOAT, sizeof(cGLVertex), (void*)(sizeof(float)*3));               
+				glTexCoordPointer(2, GL_FLOAT, sizeof(cGLVertex), (void*)(sizeof(float)*6));          
+				
+				glDrawArrays(mode, startvertex, endvertex);
+
+				glDisableClientState(GL_VERTEX_ARRAY);            
+				glDisableClientState(GL_NORMAL_ARRAY);            
+				glDisableClientState(GL_TEXTURE_COORD_ARRAY);     
+
+				glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+			};		
+		};
+
+		o3_fun size_t getSize()
+		{
+			return mVertices.size();
+		};
+
+		o3_fun void setVertex(size_t index,
+							  double x,double y, double z, 
+							  double nx, double ny , double nz,
+							  double u, double v)
+		{
+			if (index < mVertices.size())
+			{
+				cGLVertex &V = mVertices[index];
+				V.x = x;
+				V.y = y;
+				V.z = z;
+				V.nx = nx;
+				V.ny = ny;
+				V.nz = nz;
+				V.u = u;
+				V.v = v;
+			};
+		}
+
+		
+	};
+	
+	struct cGLShaderProgram:cScr, iShaderProgram
+	{
+		o3_begin_class(cScr);
+		o3_add_iface(iShaderProgram);
+		o3_end_class();
+
+		o3_glue_gen();
+
+		virtual void *getThis(){return this;};
+		
+		unsigned int mProgram;
+
+		static o3_ext("cGLWindow") o3_fun siShaderProgram shaderprogram(const Str &vertexsource, const Str &fragmentsource)
+		{
+			cGLShaderProgram* ret = o3_new(cGLShaderProgram)(vertexsource, fragmentsource);
+			return ret;
+		};
+
+
+
+		cGLShaderProgram(const Str &VertexSource, const Str &FragmentSource)
+		{
+			int W = 0;
+			char text[10000];
+
+			GLenum vshader;
+
+			vshader = glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
+			const char *v = VertexSource.ptr();
+			glShaderSourceARB(vshader, 1, &v, NULL);
+			glGetInfoLogARB(vshader, 10000, &W, text);
+			if (W>0) printf("fragment shader compiler error: %s\n", text);
+
+			GLenum fshader;
+			fshader = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
+			const char *f = FragmentSource.ptr();
+			glShaderSourceARB(fshader, 1,&f, NULL);
+			glGetInfoLogARB(fshader, 10000, &W, text);
+			if (W>0) printf("fragment shader compiler error: %s\n", text);
+
+			mProgram = glCreateProgramObjectARB();
+
+			glCompileShaderARB(fshader);
+			glGetInfoLogARB(fshader, 10000, &W, text);
+			if (W>0) printf("fragment shader compiler error: %s\n", text);
+
+			glCompileShaderARB(vshader);
+			glGetInfoLogARB(vshader, 10000, &W, text);
+			if (W>0) printf("fragment shader compiler error: %s\n", text);
+
+			glAttachObjectARB(mProgram, fshader);
+			glGetInfoLogARB(fshader, 10000, &W, text);
+			if (W>0) printf("fragment shader compiler error: %s\n", text);
+			glAttachObjectARB(mProgram, vshader);
+			glGetInfoLogARB(vshader, 10000, &W, text);
+			if (W>0) printf("fragment shader compiler error: %s\n", text);
+
+			glLinkProgramARB(mProgram);
+			glGetInfoLogARB(mProgram, 10000, &W, text);
+			if (W>0) printf("fragment shader compiler error: %s\n", text);
+			
+
+		};
+
+		~cGLShaderProgram()
+		{
+			glDeleteProgram(mProgram);
+		}
+
+		o3_fun void bind()
+		{
+			glUseProgramObjectARB(mProgram);
+		};
+
+		o3_fun void unbind()
+		{
+			glUseProgramObjectARB(0);
+		};
+	};
+	
 	struct cGLTexture: cScr, iTexture
 	{
+		o3_begin_class(cScr);
+		o3_add_iface(iTexture);
+		o3_end_class();
+
+		o3_glue_gen();
+
+
+		virtual void *getThis(){return this;};
+
 		cGLTexture(int w, int h)
 		{
 			if (w<1 || h<1) return;
@@ -86,6 +360,7 @@ namespace o3
 			if (mLocalData) delete [] mLocalData;
 			glDeleteTextures(1, &mTextureID);
 		};
+		
 		static o3_ext("cGLWindow") o3_fun siTexture texture(size_t width, size_t height)
 		{
 			cGLTexture* ret = o3_new(cGLTexture)(width, height);
@@ -94,11 +369,6 @@ namespace o3
 
 		int mW, mH, mActualW, mActualH;
 
-		o3_begin_class(cScr);
-		o3_add_iface(iTexture);
-		o3_end_class();
-
-		o3_glue_gen();
 
 		unsigned int mColorMode;
 		unsigned int mTextureID;
@@ -119,11 +389,11 @@ namespace o3
 			
 			if (Image)
 			{
-				for (int y =0;y<__min(__min(mActualH, height), Image->height());y++)
+				for (size_t y =0;y<__min(__min(mActualH, height), Image->height());y++)
 				{
 					unsigned char *P = Image->getrowptr(y);
 					unsigned char *localp = mLocalData + (y*mActualW)*4;
-					for (int x = 0;x<__min(__min(mActualW, width),Image->width());x++)
+					for (size_t x = 0;x<__min(__min(mActualW, width),Image->width());x++)
 					{
 						localp[0] = P[2];
 						localp[1] =  P[1];
@@ -168,23 +438,40 @@ namespace o3
 		HDC mCurrentDC;
 
 		o3_enum("GLCONSTANTS", 
-
-			GL_COLOR_BUFFER_BIT  = GL_COLOR_BUFFER_BIT,
-			GL_DEPTH_BUFFER_BIT  = GL_DEPTH_BUFFER_BIT,
-			GL_TEXTURE_2D = GL_TEXTURE_2D,
-			GL_BLEND  = GL_BLEND,
-			GL_ALPHA_TEST  = GL_ALPHA_TEST,
-			GL_RGB  = GL_RGB,
-			GL_RGBA =GL_RGBA,
-			GL_MODELVIEW =GL_MODELVIEW,
-			GL_PROJECTION = GL_PROJECTION,
-			GL_TEXTURE = GL_TEXTURE,
-			GL_POINTS = GL_POINTS,
-			GL_LINES = GL_LINES,
-			GL_QUADS = GL_QUADS,
-			GL_QUAD_STRIP = GL_QUAD_STRIP,
-			GL_TRIANGLES = GL_TRIANGLES,
-			GL_TRIANGLE_STRIP = GL_TRIANGLE_STRIP
+				
+			COLOR_BUFFER_BIT  = GL_COLOR_BUFFER_BIT,
+			DEPTH_BUFFER_BIT  = GL_DEPTH_BUFFER_BIT,
+			TEXTURE_2D = GL_TEXTURE_2D,
+			BLEND  = GL_BLEND,
+			ALPHA_TEST  = GL_ALPHA_TEST,
+			RGB  = GL_RGB,
+			RGBA =GL_RGBA,
+			MODELVIEW =GL_MODELVIEW,
+			PROJECTION = GL_PROJECTION,
+			TEXTURE = GL_TEXTURE,
+			POINTS = GL_POINTS,
+			LINES = GL_LINES,
+			QUADS = GL_QUADS,
+			QUAD_STRIP = GL_QUAD_STRIP,
+			TRIANGLES = GL_TRIANGLES,
+			TRIANGLE_STRIP = GL_TRIANGLE_STRIP,
+			
+		    
+			LIGHTING = GL_LIGHTING,
+			LIGHT0 = GL_LIGHT0 ,
+			LIGHT1 = GL_LIGHT1 ,
+			LIGHT2 = GL_LIGHT2 ,
+			LIGHT3 = GL_LIGHT3 ,
+			LIGHT4 = GL_LIGHT4 ,
+			LIGHT5 = GL_LIGHT5 ,
+			LIGHT6 = GL_LIGHT6 ,
+			LIGHT7 = GL_LIGHT7 ,
+			AMBIENT = GL_AMBIENT,
+			DIFFUSE = GL_DIFFUSE,
+			SPECULAR = GL_SPECULAR,
+			POSITION = GL_POSITION,
+			DEPTH_TEST = GL_DEPTH_TEST,
+			NORMALIZE = GL_NORMALIZE
 			);
 
 		o3_fun void BeginFrame()
@@ -194,8 +481,6 @@ namespace o3
 				mCurrentDC  = GetDC(m_hwnd);
 				wglMakeCurrent ( mCurrentDC , mGLContext );
 			}
-
-
 		};
 
 		o3_fun void EndFrame()
@@ -215,7 +500,13 @@ namespace o3
 
 		o3_fun void ClearColor(double r,double g, double b, double a)
 		{
-			glClearColor(r,g,b,a);
+			glClearColor((float)r,(float)g,(float)b,(float)a);
+		};
+		
+		o3_fun void Light(size_t target, size_t attribute, double r, double g, double b, double a)
+		{
+			float params[4] = {(float)r, (float)g, (float)b, (float)a};
+			glLightfv(target, attribute, params);
 		};
 
 		o3_fun void Clear(size_t bits)
@@ -255,12 +546,12 @@ namespace o3
 
 		o3_fun void PointSize(double ps)
 		{
-			glPointSize(ps);
+			glPointSize((float)ps);
 		};
 
 		o3_fun void LineWidth(double lw)
 		{
-			glLineWidth(lw);
+			glLineWidth((float)lw);
 		};
 
 		o3_fun void Vertex3(double x, double y, double z)
@@ -297,7 +588,12 @@ namespace o3
 		{
 			glColor4d(r,g,b,a);
 		}
-
+		
+		o3_fun void Scale(double x, double y, double z)
+		{
+			glScaled(x,y,z);
+		};
+		
 		o3_fun void Translate(double x, double y, double z)
 		{
 			glTranslated(x,y,z);
@@ -307,7 +603,29 @@ namespace o3
 		{
 			glMatrixMode(Mode);
 		};
-
+		o3_fun void UseProgram(iScr *inprogram)
+		{
+			siShaderProgram SP(inprogram);
+			if (SP)
+			{
+				cGLShaderProgram *shad = (cGLShaderProgram *)SP->getThis();
+				shad->bind();
+			}
+			else
+			{
+				glUseProgramObjectARB(0);
+			}
+		};
+		o3_fun void Render(iScr *vbo, size_t mode = GL_TRIANGLES, size_t startvertex = 0, size_t endvertex = 0xffffffff)
+		{
+			siVertexArray VA(vbo);
+			if (VA)
+			{
+				cGLVertexArray *arr = (cGLVertexArray *)VA->getThis();
+				arr->Render(mode, startvertex, endvertex);
+			}
+			
+		};
 		o3_fun void Perspective(double fov, double aspect, double nearplane, double farplane)
 		{
 			gluPerspective(fov, aspect,nearplane, farplane);
@@ -364,7 +682,11 @@ namespace o3
 			ret->mGLContext = wglCreateContext(hDC);
 			wglMakeCurrent ( hDC, ret->mGLContext );
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+//			glColorMaterial(GL_BOTH, GL_AMBIENT_AND_DIFFUSE);
+			glShadeModel(GL_SMOOTH);
+			glDisable(GL_CULL_FACE);
+	        glEnable(GL_DEPTH_TEST);
+			glEnable(GL_NORMALIZE);
 			GLeeInit();
 			ReleaseDC(ret->m_hwnd, hDC);
 
