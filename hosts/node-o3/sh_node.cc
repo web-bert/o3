@@ -42,7 +42,7 @@ init (Handle<Object> target)
   mgr->addExtTraits(cFastXml::extTraits());
   mgr->addExtTraits(cXml::extTraits());
   mgr->addExtTraits(cCanvas::extTraits());	
-  mgr->addExtTraits(cBuffer::extTraits());    
+  //mgr->addExtTraits(cBuffer::extTraits());    
 
   iCtx* ctx = o3_new(cJs)(target, mgr, 0, 0, 0);
   ctx->addRef(); // will be released by a clenup callback in the cJs1
