@@ -20,7 +20,7 @@
 #include <v8.h>
 #include <o3.h>
 #include <js/js.h>
-#include <buffer/buffer.h>
+//#include <buffer/buffer.h>
 #include <xml/xml.h>
 #include <fastxml/fastxml.h>
 
