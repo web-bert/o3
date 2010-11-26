@@ -2147,7 +2147,7 @@ o3_fun void clear(int signed_color)
 						rowptr[x+0] = B;
 						rowptr[x+1] = G;
 						rowptr[x+2] = R;
-						rowptr[x+3] = (rowptr[x+3]*alphafac)>>8;
+						rowptr[x+3] = (unsigned char)( (rowptr[x+3]*alphafac)>>8);
 					};
 				};
 				//m_graphics.imageBlendColor(sc[2], sc[1], sc[0],(unsigned int)( sc[3]* m_currentrenderstate->GlobalAlpha));

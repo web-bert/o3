@@ -34,10 +34,112 @@ namespace o3
 	o3_iid(iVertexArray, 0xd15010ef, 0xc2c6, 0x4b3c, 0xad, 0xf1, 0x3e, 0xb7, 0x42, 0xde, 0xa4, 0x75);
 	o3_iid(iTexture, 0x1d657e65, 0xf75a, 0x48f0, 0x8e, 0x67, 0xab, 0xee, 0x5, 0xc2, 0x8b, 0x43);
 
+	o3_iid(iVector4, 0x71d38725, 0xf793, 0x41f3, 0x9e, 0x67, 0x59, 0x5c, 0xe6, 0x8f, 0x35, 0x8e);
+	o3_iid(iVector3, 0x14be7bf0, 0x6ea7, 0x46dd, 0xbb, 0x60, 0x1b, 0xad, 0x36, 0x70, 0xb9, 0x4);
+	o3_iid(iVector2, 0x3a8efd5c, 0xe360, 0x4cc1, 0xb9, 0xa6, 0xa3, 0x9, 0x85, 0x43, 0x9c, 0xe);
+	o3_iid(iMat44, 0x6e24a8f1, 0x2441, 0x4056, 0xba, 0x17, 0x4a, 0xa2, 0x93, 0x50, 0xaa, 0x8e);
+
 	struct iShaderProgram: iUnk{virtual void *getThis() = 0;};
 	struct iVertexArray: iUnk{virtual void *getThis() = 0;};
 	struct iTexture: iUnk {virtual void *getThis() = 0;};
-	
+
+	struct iVector4: iUnk {float x,y,z,w;};
+	struct iVector3: iUnk {float x,y,z;};
+	struct iVector2: iUnk {float x,y;};
+	struct iMat44: iUnk {float v[16];};
+
+	struct cVector4: cScr, iVector4
+	{
+		o3_begin_class(cScr);
+		o3_add_iface(iVector4);
+		o3_add_iface(iVector3);
+		o3_add_iface(iVector2);
+		o3_end_class();
+
+		o3_glue_gen();
+
+		cVector4(double xx,double yy, double zz, double ww)
+		{
+			x = (float)xx;
+			y = (float)yy;
+			z = (float)zz;
+			w = (float)ww;
+		}
+
+		static o3_ext("cO3") o3_fun siVector4 vec4(double xx,double yy, double zz, double ww)
+		{              
+			cVector4* ret = o3_new(cVector4)(xx,yy,zz,ww);
+			return ret;		
+		}
+	};
+
+	struct cVector3: cScr, iVector3
+	{
+		o3_begin_class(cScr);
+		o3_add_iface(iVector3);
+		o3_add_iface(iVector2);
+		o3_end_class();
+
+		o3_glue_gen();
+
+		cVector3(double xx,double yy, double zz)
+		{
+			x = (float)xx;
+			y = (float)yy;
+			z = (float)zz;
+		}
+
+		static o3_ext("cO3") o3_fun siVector3 vec3(double xx,double yy, double zz)
+		{              
+			cVector3* ret = o3_new(cVector3)(xx,yy,zz);
+			return ret;		
+		}
+	};
+
+	struct cVector2: cScr, iVector2
+	{
+		o3_begin_class(cScr);
+		o3_add_iface(iVector2);
+		o3_end_class();
+
+		o3_glue_gen();
+
+		cVector2(double xx,double yy)
+		{
+			x = (float)xx;
+			y = (float)yy;			
+		}
+
+		static o3_ext("cO3") o3_fun siVector3 vec2(double xx,double yy)
+		{              
+			cVector2* ret = o3_new(cVector2)(xx,yy);
+			return ret;		
+		}
+	};
+
+	struct cMat44: cScr, iMat44
+	{
+		o3_begin_class(cScr);
+		o3_add_iface(iMat44);
+		o3_add_iface(iVector4);
+		o3_add_iface(iVector3);
+		o3_add_iface(iVector2);
+		o3_end_class();
+
+		o3_glue_gen();
+
+		cMat44()
+		{
+			
+		}
+
+		static o3_ext("cO3") o3_fun siMat44 mat44()
+		{              
+			cMat44 *ret = o3_new(cMat44)();
+			return ret;		
+		}
+	};
+
 	struct cGLVertex
 	{
 		cGLVertex(){};
@@ -102,55 +204,55 @@ namespace o3
 
 		static o3_ext("cGLWindow") o3_fun siVertexArray cube(double s = 1.0)
 		{
-			s/= 2.0;
+			float s2 = (float)(s/2.0);
 			cGLVertexArray* ret = o3_new(cGLVertexArray)(18*2);
-			ret->mVertices[0] = cGLVertex(-s,-s,-s,  0,0,-1,0,0);
-			ret->mVertices[1] = cGLVertex( s,-s,-s,  0,0,-1,1,0);
-			ret->mVertices[2] = cGLVertex( s, s,-s,  0,0,-1,1,1);
+			ret->mVertices[0] = cGLVertex(-s2,-s2,-s2,  0,0,-1,0,0);
+			ret->mVertices[1] = cGLVertex( s2,-s2,-s2,  0,0,-1,1,0);
+			ret->mVertices[2] = cGLVertex( s2, s2,-s2,  0,0,-1,1,1);
 			
-			ret->mVertices[3] = cGLVertex(-s,-s,-s,  0,0,-1,0,0);
-			ret->mVertices[4] = cGLVertex( s, s,-s,  0,0,-1,1,1);
-			ret->mVertices[5] = cGLVertex(-s, s,-s,  0,0,-1,0,1);
+			ret->mVertices[3] = cGLVertex(-s2,-s2,-s2,  0,0,-1,0,0);
+			ret->mVertices[4] = cGLVertex( s2, s2,-s2,  0,0,-1,1,1);
+			ret->mVertices[5] = cGLVertex(-s2, s2,-s2,  0,0,-1,0,1);
 
-			ret->mVertices[6] = cGLVertex(-s,-s,-s,  0,-1,0,0,0);
-			ret->mVertices[7] = cGLVertex( s,-s,-s,  0,-1,0,1,0);
-			ret->mVertices[8] = cGLVertex( s,-s, s,  0,-1,0,1,1);
+			ret->mVertices[6] = cGLVertex(-s2,-s2,-s2,  0,-1,0,0,0);
+			ret->mVertices[7] = cGLVertex( s2,-s2,-s2,  0,-1,0,1,0);
+			ret->mVertices[8] = cGLVertex( s2,-s2, s2,  0,-1,0,1,1);
 											   
-			ret->mVertices[9] = cGLVertex( -s,-s,-s,  0,-1,0,0,0);
-			ret->mVertices[10] = cGLVertex( s,-s, s,  0,-1,0,1,1);
-			ret->mVertices[11] = cGLVertex(-s,-s, s,  0,-1,0,0,1);
+			ret->mVertices[9] = cGLVertex( -s2,-s2,-s2,  0,-1,0,0,0);
+			ret->mVertices[10] = cGLVertex( s2,-s2, s2,  0,-1,0,1,1);
+			ret->mVertices[11] = cGLVertex(-s2,-s2, s2,  0,-1,0,0,1);
 
-			ret->mVertices[12] = cGLVertex(-s,-s,-s,  -1,0,0,0,0);
-			ret->mVertices[13] = cGLVertex(-s, s,-s,  -1,0,0,1,0);
-			ret->mVertices[14] = cGLVertex(-s, s, s,  -1,0,0,1,1);
+			ret->mVertices[12] = cGLVertex(-s2,-s2,-s2,  -1,0,0,0,0);
+			ret->mVertices[13] = cGLVertex(-s2, s2,-s2,  -1,0,0,1,0);
+			ret->mVertices[14] = cGLVertex(-s2, s2, s2,  -1,0,0,1,1);
 											 
-			ret->mVertices[15] = cGLVertex(-s,-s,-s,  -1,0,0,0,0);
-			ret->mVertices[16] = cGLVertex(-s, s, s,  -1,0,0,1,1);
-			ret->mVertices[17] = cGLVertex(-s,-s, s,  -1,0,0,0,1);
+			ret->mVertices[15] = cGLVertex(-s2,-s2,-s2,  -1,0,0,0,0);
+			ret->mVertices[16] = cGLVertex(-s2, s2, s2,  -1,0,0,1,1);
+			ret->mVertices[17] = cGLVertex(-s2,-s2, s2,  -1,0,0,0,1);
 
-			ret->mVertices[18+0] = cGLVertex(-s,-s,s,  0,0,1,0,0);
-			ret->mVertices[18+1] = cGLVertex( s,-s,s,  0,0,1,1,0);
-			ret->mVertices[18+2] = cGLVertex( s, s,s,  0,0,1,1,1);
+			ret->mVertices[18+0] = cGLVertex(-s2,-s2,s2,  0,0,1,0,0);
+			ret->mVertices[18+1] = cGLVertex( s2,-s2,s2,  0,0,1,1,0);
+			ret->mVertices[18+2] = cGLVertex( s2, s2,s2,  0,0,1,1,1);
 			
-			ret->mVertices[18+3] = cGLVertex(-s,-s,s,  0,0,1,0,0);
-			ret->mVertices[18+4] = cGLVertex( s, s,s,  0,0,1,1,1);
-			ret->mVertices[18+5] = cGLVertex(-s, s,s,  0,0,1,0,1);
+			ret->mVertices[18+3] = cGLVertex(-s2,-s2,s2,  0,0,1,0,0);
+			ret->mVertices[18+4] = cGLVertex( s2, s2,s2,  0,0,1,1,1);
+			ret->mVertices[18+5] = cGLVertex(-s2, s2,s2,  0,0,1,0,1);
 
-			ret->mVertices[18+6] = cGLVertex(-s,s,-s,  0,1,0,0,0);
-			ret->mVertices[18+7] = cGLVertex( s,s,-s,  0,1,0,1,0);
-			ret->mVertices[18+8] = cGLVertex( s,s, s,  0,1,0,1,1);
+			ret->mVertices[18+6] = cGLVertex(-s2,s2,-s2,  0,1,0,0,0);
+			ret->mVertices[18+7] = cGLVertex( s2,s2,-s2,  0,1,0,1,0);
+			ret->mVertices[18+8] = cGLVertex( s2,s2, s2,  0,1,0,1,1);
 											   
-			ret->mVertices[18+9] = cGLVertex( -s,s,-s,  0,1,0,0,0);
-			ret->mVertices[18+10] = cGLVertex( s,s, s,  0,1,0,1,1);
-			ret->mVertices[18+11] = cGLVertex(-s,s, s,  0,1,0,0,1);
+			ret->mVertices[18+9] = cGLVertex( -s2,s2,-s2,  0,1,0,0,0);
+			ret->mVertices[18+10] = cGLVertex( s2,s2, s2,  0,1,0,1,1);
+			ret->mVertices[18+11] = cGLVertex(-s2,s2, s2,  0,1,0,0,1);
 
-			ret->mVertices[18+12] = cGLVertex(s,-s,-s,  1,0,0,0,0);
-			ret->mVertices[18+13] = cGLVertex(s, s,-s,  1,0,0,1,0);
-			ret->mVertices[18+14] = cGLVertex(s, s, s,  1,0,0,1,1);
+			ret->mVertices[18+12] = cGLVertex(s2,-s2,-s2,  1,0,0,0,0);
+			ret->mVertices[18+13] = cGLVertex(s2, s2,-s2,  1,0,0,1,0);
+			ret->mVertices[18+14] = cGLVertex(s2, s2, s2,  1,0,0,1,1);
 											 
-			ret->mVertices[18+15] = cGLVertex(s,-s,-s,  1,0,0,0,0);
-			ret->mVertices[18+16] = cGLVertex(s, s, s,  1,0,0,1,1);
-			ret->mVertices[18+17] = cGLVertex(s,-s, s,  1,0,0,0,1);
+			ret->mVertices[18+15] = cGLVertex(s2,-s2,-s2,  1,0,0,0,0);
+			ret->mVertices[18+16] = cGLVertex(s2, s2, s2,  1,0,0,1,1);
+			ret->mVertices[18+17] = cGLVertex(s2,-s2, s2,  1,0,0,0,1);
 			ret->mUploadNeeded = true;
 
 			return ret;
@@ -213,14 +315,15 @@ namespace o3
 			if (index < mVertices.size())
 			{
 				cGLVertex &V = mVertices[index];
-				V.x = x;
-				V.y = y;
-				V.z = z;
-				V.nx = nx;
-				V.ny = ny;
-				V.nz = nz;
-				V.u = u;
-				V.v = v;
+				V.x = (float)x;
+				V.y = (float)y;
+				V.z = (float)z;
+				V.nx = (float)nx;
+				V.ny = (float)ny;
+				V.nz = (float)nz;
+				V.u = (float)u;
+				V.v = (float)v;
+				mUploadNeeded = true;
 			};
 		}
 
@@ -389,11 +492,11 @@ namespace o3
 			
 			if (Image)
 			{
-				for (size_t y =0;y<__min(__min(mActualH, height), Image->height());y++)
+				for (size_t y =0;y<(size_t)__min(__min(mActualH, height), Image->height());y++)
 				{
 					unsigned char *P = Image->getrowptr(y);
 					unsigned char *localp = mLocalData + (y*mActualW)*4;
-					for (size_t x = 0;x<__min(__min(mActualW, width),Image->width());x++)
+					for (size_t x = 0;x<(size_t)__min(__min(mActualW, width),Image->width());x++)
 					{
 						localp[0] = P[2];
 						localp[1] =  P[1];
@@ -496,6 +599,76 @@ namespace o3
 		o3_fun void invalidate()
 		{
 			InvalidateRect(m_hwnd,NULL, false);
+		};
+
+		o3_fun void SetUniform(iScr* shader, const Str &name, const Var &Value, size_t textureslot = -1)
+		{
+			siShaderProgram SP(shader);
+			if (SP)
+			{
+				cGLShaderProgram *shad = (cGLShaderProgram *)SP->getThis();
+				
+				int uniform = glGetUniformLocation(shad->mProgram, name.ptr());
+				if (uniform > -1)
+				{
+					switch (Value.type())
+					{
+					case Var::TYPE_DOUBLE:
+							glUniform1fARB(uniform, (float)Value.toDouble());
+							break;
+					case Var::TYPE_INT32:
+							glUniform1iARB(uniform, Value.toInt32());
+							break;
+					case Var::TYPE_SCR:
+						{
+							siScr S(Value.toScr());
+							siTexture Tex(S);
+							if (Tex)
+							{
+								cGLTexture *T = (cGLTexture *)Tex->getThis();
+								if (textureslot == -1 ) textureslot = uniform;
+								glActiveTexture(GL_TEXTURE0 + textureslot);
+								glBindTexture(GL_TEXTURE_2D, T->mTextureID);
+								glUniform1iARB(uniform, textureslot);
+								glActiveTexture(GL_TEXTURE0);
+								break;
+							}
+							
+							
+							siMat44 Mat44(S);
+							if (Mat44)
+							{
+								glUniformMatrix4fv(uniform, 16,false, Mat44->v);
+								break;
+							}
+							siVector4 Vec4(S);
+							if (Vec4)
+							{
+								::glUniform4fv(uniform, 4, &Vec4->x);
+								break;
+							}
+							siVector3 Vec3(S);
+							if (Vec3)
+							{
+								::glUniform3fv(uniform, 3, &Vec3->x);
+								break;
+							}
+							siVector2 Vec2(S);
+							if (Vec2)
+							{
+								::glUniform2fv(uniform, 2, &Vec2->x);
+								break;
+							}
+
+							
+						
+						};
+						break;
+					};
+				};
+			}
+
+			
 		};
 
 		o3_fun void ClearColor(double r,double g, double b, double a)

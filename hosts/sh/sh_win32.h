@@ -15,7 +15,7 @@
  * this library; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#define O3_V8
+//#define O3_V8
 #include <js/js.h>
 //#include <test/proto_v1.h>
 #include "fastxml/fastxml.h"
@@ -80,6 +80,12 @@ int main(int argc, char **argv) {
 	mgr->addExtTraits(cGLTexture::extTraits());
 	mgr->addExtTraits(cGLVertexArray::extTraits());
 	mgr->addExtTraits(cGLShaderProgram::extTraits());
+
+	mgr->addExtTraits(cVector2::extTraits());
+	mgr->addExtTraits(cVector3::extTraits());
+	mgr->addExtTraits(cVector4::extTraits());
+	mgr->addExtTraits(cMat44::extTraits());
+
 
 	mgr->addExtTraits(cCanvas::extTraits());
 	//mgr->addExtTraits(cBarcode::extTraits());

@@ -6,7 +6,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{475BCB3E-D
 		include\Buf.h = include\Buf.h
 		include\cBufStream.h = include\cBufStream.h
 		include\cCtx.h = include\cCtx.h
-		include\cMgr.h = include\cMgr.h
 		include\cO3.h = include\cO3.h
 		include\config.h = include\config.h
 		include\crypto.h = include\crypto.h
