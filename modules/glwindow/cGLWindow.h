@@ -52,8 +52,6 @@ namespace o3
 	{
 		o3_begin_class(cScr);
 		o3_add_iface(iVector4);
-		o3_add_iface(iVector3);
-		o3_add_iface(iVector2);
 		o3_end_class();
 
 		o3_glue_gen();
@@ -77,7 +75,6 @@ namespace o3
 	{
 		o3_begin_class(cScr);
 		o3_add_iface(iVector3);
-		o3_add_iface(iVector2);
 		o3_end_class();
 
 		o3_glue_gen();
@@ -121,9 +118,6 @@ namespace o3
 	{
 		o3_begin_class(cScr);
 		o3_add_iface(iMat44);
-		o3_add_iface(iVector4);
-		o3_add_iface(iVector3);
-		o3_add_iface(iVector2);
 		o3_end_class();
 
 		o3_glue_gen();
