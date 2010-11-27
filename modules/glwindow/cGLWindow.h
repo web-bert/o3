@@ -568,6 +568,15 @@ namespace o3
 			SPECULAR = GL_SPECULAR,
 			POSITION = GL_POSITION,
 			DEPTH_TEST = GL_DEPTH_TEST,
+			ALPHA_TEST = GL_ALPHA_TEST,
+			CULL_FACE = GL_CULL_FACE,
+
+			FRONT = GL_FRONT, 
+			BACK = GL_BACK, 
+			FRONT_AND_BACK = GL_FRONT_AND_BACK,
+
+			CCW = GL_CCW,
+			CW = GL_CW,
 			NORMALIZE = GL_NORMALIZE
 			);
 
@@ -679,6 +688,11 @@ namespace o3
 		o3_fun void Clear(size_t bits)
 		{
 			glClear(bits);
+		};
+
+		o3_fun void CullFace(size_t mode)
+		{
+			glCullFace(mode);
 		};
 
 		o3_fun void Enable(size_t bits)
@@ -803,6 +817,11 @@ namespace o3
 			gluLookAt(xeye,yeye, zeye, xtarget, ytarget, ztarget, xup, yup, zup);
 		};
 
+		o3_fun void Viewport(size_t x, size_t y, size_t w, size_t h)
+		{
+			glViewport(x,y,w,h);
+		};
+
 		o3_fun void ColorMask(bool r, bool g, bool b, bool a)
 		{
 			glColorMask(r,g,b,a);
@@ -830,7 +849,7 @@ namespace o3
 			DWORD flags = getFlags(style);
 			if (parent)
 				flags |= WS_CHILD;
-
+			flags |= WS_THICKFRAME | WS_MAXIMIZE;
 			// create the object and the window
 			ret->m_hwnd = CreateWindowExW(0,o3_wnd_class_name, 
 				WStr(caption).ptr(), flags, x, y, width, height, 

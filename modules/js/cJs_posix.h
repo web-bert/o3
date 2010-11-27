@@ -315,6 +315,8 @@ struct cJs : cJsBase {
     static void finalize(Persistent<Value> value, void* parameter)
     {
 		o3_trace_hostglue("finalize");
+		HandleScope handle_scope;
+
 		if (!value.IsNearDeath())
 			return;
 

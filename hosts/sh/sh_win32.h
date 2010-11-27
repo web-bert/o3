@@ -34,6 +34,7 @@
 #include "tools/tools.h"
 #include "process/process.h"
 //#include "test/test.h" 
+#include "kinect/kinect.h"
 
 #include "canvas/canvas.h"
 #include "pdf/pdf.h"
@@ -85,6 +86,7 @@ int main(int argc, char **argv) {
 	mgr->addExtTraits(cVector3::extTraits());
 	mgr->addExtTraits(cVector4::extTraits());
 	mgr->addExtTraits(cMat44::extTraits());
+	mgr->addExtTraits(cKinect::extTraits());
 
 
 	mgr->addExtTraits(cCanvas::extTraits());

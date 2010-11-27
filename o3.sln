@@ -302,6 +302,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "canvas", "canvas", "{A56057
 		modules\canvas\cCanvas_utils.h = modules\canvas\cCanvas_utils.h
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "kinect", "kinect", "{B936F03C-E904-4FF7-B6E9-A0F4B40A5FB0}"
+	ProjectSection(SolutionItems) = preProject
+		modules\kinect\cKinect.h = modules\kinect\cKinect.h
+		modules\kinect\kinect.h = modules\kinect\kinect.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -351,5 +357,6 @@ Global
 		{DC9D04B9-6E24-4A7E-97D7-65EB0CCDB82A} = {E190BAD3-A698-45AF-9B6C-95E03D776584}
 		{FB7D1463-CE62-4924-8A29-F4310CF44326} = {E190BAD3-A698-45AF-9B6C-95E03D776584}
 		{A560576A-F03F-448E-AC10-742560981AEF} = {E190BAD3-A698-45AF-9B6C-95E03D776584}
+		{B936F03C-E904-4FF7-B6E9-A0F4B40A5FB0} = {E190BAD3-A698-45AF-9B6C-95E03D776584}
 	EndGlobalSection
 EndGlobal
