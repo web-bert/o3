@@ -20,6 +20,8 @@
 
 #include <libfreenect.h>
 
+#include "canvas/canvas.h"
+
 namespace o3 
 {
 	
@@ -49,6 +51,8 @@ namespace o3
 		int mDepthFrameCount;
 		int mRGBFrame;
 		int mDepthFrame;
+		unsigned char mRGBFrameStore[640*480*3];
+		unsigned short mDepthFrameStore[640*480];
 
 		cKinect(size_t kinectnumber = 0)
 		{
@@ -67,7 +71,7 @@ namespace o3
 			gFreenectContextCount++;
 
 
-			int DeviceCount = freenect_num_devices(gFreenectContext);
+			unsigned int DeviceCount = freenect_num_devices(gFreenectContext);
 			if (DeviceCount > 0)
 			{
 				if (kinectnumber>=DeviceCount) kinectnumber = 0;
@@ -88,16 +92,16 @@ namespace o3
 			if (gFreenectContext) freenect_process_events(gFreenectContext);
 		};
 
-		void DepthCallback()
+		void DepthCallback(unsigned short *depth)
 		{
 			mDepthFrameCount++;
-		//	printf("depth!\n");
+			memcpy(mDepthFrameStore, depth, sizeof(unsigned short)*640*480);
 		};
 
-		void RGBCallback()
+		void RGBCallback(unsigned char *rgb)
 		{
 			mRGBFrameCount++;
-		//	printf("rgb!\n");
+			memcpy(mRGBFrameStore, rgb, 3*640*480);
 		};
 		
 		o3_fun bool newDepthAvailable()
@@ -120,12 +124,57 @@ namespace o3
 			return false;
 		};
 
-		o3_fun void DepthToCanvas(iScr *canvas)
-		{
-		};
-
 		o3_fun void RGBToCanvas(iScr *canvas)
 		{
+			siImage img(canvas);
+			if (img)
+			{
+				switch (img->mode_int())					
+				{
+				case Image::MODE_ARGB:
+					{
+						int w = __min(img->width(), 640);
+						int h = __min(img->height(), 480);
+						for (int y =0;y<h;y++)
+						{
+							unsigned char *src = mRGBFrameStore + (640*y*3);
+							unsigned char *dst = img->getrowptr(y);
+							for (int x = 0;x<w;x++)
+							{
+								dst[2]  = *src++;
+								dst[1]  = *src++;
+								dst[0]  = *src++;
+								dst[3] = 255;
+								dst+=4;
+							};
+						}
+					};
+					break;
+				case Image::MODE_RGB:
+					{
+						int w = __min(img->width(), 640);
+						int h = __min(img->height(), 480);
+						for (int y =0;y<h;y++)
+						{
+							unsigned char *src = mRGBFrameStore + 640*y;
+							unsigned char *dst = img->getrowptr(y);
+							for (int x = 0;x<w;x++)
+							{
+								dst[2]  = *src++;
+								dst[1]  = *src++;
+								dst[0]  = *src++;
+								dst+=3;
+							};
+						}
+					};
+					break;
+				};					
+			};
+		};
+
+		o3_fun void DepthToCanvas(iScr *canvas)
+		{
+
 		};
 
 		o3_fun void DepthToVBO(iScr *vbo)
@@ -158,7 +207,7 @@ namespace o3
 		cKinect *K = (cKinect *)freenect_get_user(dev);
 		if (K)
 		{
-			K->DepthCallback();
+			K->DepthCallback(depth);
 		};
 	};
 	
@@ -167,7 +216,7 @@ namespace o3
 		cKinect *K = (cKinect *)freenect_get_user(dev);
 		if (K)
 		{
-			K->RGBCallback();
+			K->RGBCallback(rgb);
 		};
 	};
 }

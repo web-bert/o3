@@ -125,8 +125,14 @@ public:
     Buf(iBuf* buf)
     {
         o3_trace_containers("Buf");
-
-        new(this) Buf(buf->unwrap());
+		if (buf == NULL)
+		{
+			new(this) Buf();
+		}
+		else
+		{
+		    new(this) Buf(buf->unwrap());
+		};
     }
 
     Buf(iStream* stream, iAlloc* alloc = g_sys)

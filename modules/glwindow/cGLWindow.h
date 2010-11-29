@@ -280,7 +280,8 @@ namespace o3
 					
 				};
 				glEnableClientState(GL_VERTEX_ARRAY);             
-				glEnableClientState(GL_NORMAL_ARRAY);             
+				glEnableClientState(GL_NORMAL_ARRAY);    
+				glClientActiveTexture(GL_TEXTURE0);
 				glEnableClientState(GL_TEXTURE_COORD_ARRAY);           
 				glVertexPointer(3, GL_FLOAT, sizeof(cGLVertex), 0);              
 				glNormalPointer(GL_FLOAT, sizeof(cGLVertex), (void*)(sizeof(float)*3));               
@@ -343,49 +344,66 @@ namespace o3
 		};
 
 
+		void CheckError(unsigned int obj)
+		{
+			int infologLength = 0;
+			int maxLength = 0;
+			
+			if(glIsShader(obj))
+			{
+				glGetShaderiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
+			}
+			else
+			{
+				glGetProgramiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
+			};
+			if (maxLength<=0) return;
+			char *infoLog = new char[maxLength];
+ 
+			if (glIsShader(obj))
+			{
+				glGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
+			}
+			else
+			{
+				glGetProgramInfoLog(obj, maxLength, &infologLength, infoLog);
+			};
+ 
+			if (infologLength > 0)
+			{
+				printf("%s\n",infoLog);
+			};
+			delete [] infoLog;
+		};
 
 		cGLShaderProgram(const Str &VertexSource, const Str &FragmentSource)
 		{
-			int W = 0;
-			char text[10000];
-
+		
 			GLenum vshader;
 
 			vshader = glCreateShaderObjectARB(GL_VERTEX_SHADER_ARB);
 			const char *v = VertexSource.ptr();
 			glShaderSourceARB(vshader, 1, &v, NULL);
-			glGetInfoLogARB(vshader, 10000, &W, text);
-			if (W>0) printf("fragment shader compiler error: %s\n", text);
 
 			GLenum fshader;
 			fshader = glCreateShaderObjectARB(GL_FRAGMENT_SHADER_ARB);
 			const char *f = FragmentSource.ptr();
 			glShaderSourceARB(fshader, 1,&f, NULL);
-			glGetInfoLogARB(fshader, 10000, &W, text);
-			if (W>0) printf("fragment shader compiler error: %s\n", text);
 
 			mProgram = glCreateProgramObjectARB();
 
 			glCompileShaderARB(fshader);
-			glGetInfoLogARB(fshader, 10000, &W, text);
-			if (W>0) printf("fragment shader compiler error: %s\n", text);
 
 			glCompileShaderARB(vshader);
-			glGetInfoLogARB(vshader, 10000, &W, text);
-			if (W>0) printf("fragment shader compiler error: %s\n", text);
 
 			glAttachObjectARB(mProgram, fshader);
-			glGetInfoLogARB(fshader, 10000, &W, text);
-			if (W>0) printf("fragment shader compiler error: %s\n", text);
+
 			glAttachObjectARB(mProgram, vshader);
-			glGetInfoLogARB(vshader, 10000, &W, text);
-			if (W>0) printf("fragment shader compiler error: %s\n", text);
 
 			glLinkProgramARB(mProgram);
-			glGetInfoLogARB(mProgram, 10000, &W, text);
-			if (W>0) printf("fragment shader compiler error: %s\n", text);
-			
-
+			CheckError(vshader);
+			CheckError(fshader);
+			CheckError(mProgram);
 		};
 
 		~cGLShaderProgram()
@@ -480,27 +498,56 @@ namespace o3
 			glBindTexture(GL_TEXTURE_2D, 0);
 		};
 
-		virtual o3_fun void upload(iScr* source, size_t width, size_t height)
+		virtual o3_fun void upload(iScr* source, size_t width = 0, size_t height =0)
 		{
+
 			tSi<iImage> Image(source);
 			
 			if (Image)
 			{
-				for (size_t y =0;y<(size_t)__min(__min(mActualH, height), Image->height());y++)
+				if (width == 0) width = Image->width();
+				if (height == 0) height = Image->height();
+				switch(Image->mode_int())
 				{
-					unsigned char *P = Image->getrowptr(y);
-					unsigned char *localp = mLocalData + (y*mActualW)*4;
-					for (size_t x = 0;x<(size_t)__min(__min(mActualW, width),Image->width());x++)
+				case Image::MODE_ARGB:
 					{
-						localp[0] = P[2];
-						localp[1] =  P[1];
-						localp[2] =  P[0];
-						localp[3] =  P[3];
+						for (size_t y =0;y<(size_t)__min(__min(mActualH, height), Image->height());y++)
+						{
+							unsigned char *P = Image->getrowptr(y);
+							unsigned char *localp = mLocalData + (y*mActualW)*4;
+							for (size_t x = 0;x<(size_t)__min(__min(mActualW, width),Image->width());x++)
+							{
+								localp[0] = P[2];
+								localp[1] =  P[1];
+								localp[2] =  P[0];
+								localp[3] =  P[3];
 
-						P+=4;
-						localp+=4;
+								P+=4;
+								localp+=4;
+							};
+						};
 					};
-				};
+					break;
+				case Image::MODE_RGB:
+					{
+						for (size_t y =0;y<(size_t)__min(__min(mActualH, height), Image->height());y++)
+						{
+							unsigned char *P = Image->getrowptr(y);
+							unsigned char *localp = mLocalData + (y*mActualW)*4;
+							for (size_t x = 0;x<(size_t)__min(__min(mActualW, width),Image->width());x++)
+							{
+								localp[0] = P[2];
+								localp[1] =  P[1];
+								localp[2] =  P[0];
+								localp[3] =  255;
+
+								P+=4;
+								localp+=4;
+							};
+						};
+					};
+					break;
+				}
 			};
 			bind();
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0,mActualW,__min(height, mActualH), GL_RGBA, GL_UNSIGNED_BYTE, mLocalData);
@@ -565,6 +612,8 @@ namespace o3
 			LIGHT7 = GL_LIGHT7 ,
 			AMBIENT = GL_AMBIENT,
 			DIFFUSE = GL_DIFFUSE,
+			EMISSION = GL_EMISSION,
+			SHININESS = GL_SHININESS,
 			SPECULAR = GL_SPECULAR,
 			POSITION = GL_POSITION,
 			DEPTH_TEST = GL_DEPTH_TEST,
@@ -647,19 +696,22 @@ namespace o3
 							siVector4 Vec4(S);
 							if (Vec4)
 							{
-								::glUniform4fv(uniform, 4, &Vec4->x);
+								float V[4] = {Vec4->x, Vec4->y, Vec4->z, Vec4->w};
+								::glUniform4f(uniform, V[0],V[1],V[2],V[3]);
 								break;
 							}
 							siVector3 Vec3(S);
 							if (Vec3)
 							{
-								::glUniform3fv(uniform, 3, &Vec3->x);
+								float V[3] = {Vec3->x, Vec3->y, Vec3->z};
+								::glUniform3f(uniform, V[0],V[1],V[2]);
 								break;
 							}
 							siVector2 Vec2(S);
 							if (Vec2)
 							{
-								::glUniform2fv(uniform, 2, &Vec2->x);
+								float V[2] = {Vec2->x, Vec2->y};
+								::glUniform2f(uniform, V[0],V[1]);
 								break;
 							}
 
@@ -679,6 +731,12 @@ namespace o3
 			glClearColor((float)r,(float)g,(float)b,(float)a);
 		};
 		
+		o3_fun void Material(size_t target, size_t attribute, double r, double g, double b, double a)
+		{
+			float params[4] = {(float)r, (float)g, (float)b, (float)a};
+			glMaterialfv(target, attribute, params);
+		};
+
 		o3_fun void Light(size_t target, size_t attribute, double r, double g, double b, double a)
 		{
 			float params[4] = {(float)r, (float)g, (float)b, (float)a};
@@ -822,6 +880,10 @@ namespace o3
 			glViewport(x,y,w,h);
 		};
 
+		o3_fun size_t Time()
+		{
+			return GetTickCount();
+		};
 		o3_fun void ColorMask(bool r, bool g, bool b, bool a)
 		{
 			glColorMask(r,g,b,a);
@@ -871,8 +933,11 @@ namespace o3
 //			glColorMaterial(GL_BOTH, GL_AMBIENT_AND_DIFFUSE);
 			glShadeModel(GL_SMOOTH);
 			glDisable(GL_CULL_FACE);
+			glEnable(GL_COLOR_MATERIAL);
+			glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
 	        glEnable(GL_DEPTH_TEST);
 			glEnable(GL_NORMALIZE);
+
 			GLeeInit();
 			ReleaseDC(ret->m_hwnd, hDC);
 

@@ -62,9 +62,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="libcurld.lib wldap32.lib ws2_32.lib libxml2d.lib winmm.lib v8d.lib"
+				AdditionalDependencies="libcurld.lib wldap32.lib ws2_32.lib libxml2d.lib winmm.lib v8d.lib Kinectd.lib"
 				OutputFile="$(OutDir)\o3.exe"
 				AdditionalLibraryDirectories="../../deps/win32lib"
+				IgnoreDefaultLibraryNames="libcmt.lib"
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile="$(TargetDir)intermediate\$(TargetName).pdb"
 				RandomizedBaseAddress="1"
@@ -137,7 +138,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="libcurld.lib wldap32.lib ws2_32.lib libxml2d.lib winmm.lib v8.lib"
+				AdditionalDependencies="libcurld.lib wldap32.lib ws2_32.lib libxml2d.lib winmm.lib v8.lib Kinect.lib"
 				OutputFile="$(OutDir)\o3.exe"
 				AdditionalLibraryDirectories="../../deps/win32lib"
 				GenerateDebugInformation="true"
@@ -175,10 +176,6 @@
 	<References>
 	</References>
 	<Files>
-		<File
-			RelativePath="..\..\deps\Kinect.lib"
-			>
-		</File>
 		<File
 			RelativePath=".\sh.cpp"
 			>
