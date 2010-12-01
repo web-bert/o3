@@ -171,7 +171,7 @@
         load: function (name, contextName) {
 			var context = require.s.contexts[contextName];
 			context.loaded[name] = false;
-			//require.ready(function() {
+			require.ready(function() {
 				if (!o3){
 					version = detect();
 					if (version == "none") {
@@ -223,7 +223,7 @@
 					context.loaded[name] = true;
 					require.checkLoaded(contextName);	
 				}	
-			//});
+			});
         },
 
         /**

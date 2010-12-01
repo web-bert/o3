@@ -27,8 +27,18 @@ using namespace v8;
 
 namespace o3 {
 
+o3_iid(iScrObj, 0xf3afb7c0, 
+	0x2bf3, 
+	0x4b77, 
+	0x8e, 0x63, 0xd, 0xec, 0x25, 0xc8, 0x9e, 0x96);
+
+struct iScrObj : iUnk {
+	virtual Handle<Object> unwrap() = 0;
+};
+
+
 struct cJs : cJsBase {
-    struct cScrObj : cUnk, iScr {
+    struct cScrObj : cUnk, iScr, iScrObj {
         cJs* m_pthis;
         Persistent<Object> m_object;
 
@@ -45,6 +55,7 @@ struct cJs : cJsBase {
 
         o3_begin_class(cUnk)
             o3_add_iface(iScr)
+			o3_add_iface(iScrObj)
         o3_end_class()        
 
         virtual int enumerate(iCtx* ctx, int index)
@@ -86,6 +97,11 @@ struct cJs : cJsBase {
 		virtual Str className(){
 			return "ScrObj";
 		}
+
+		virtual Handle<Object> unwrap(){
+			HandleScope handle_scope;
+			return handle_scope.Close(m_object);
+		}
     };
 
     static void* cast(Local<Value> value)
@@ -123,8 +139,14 @@ struct cJs : cJsBase {
         int index = scr->resolve(pthis, name);
         Var rval((iAlloc*) pthis);
 
-        if (index < 0)
-            return Handle<Value>();
+		if (index < 0) {
+			Handle<Object> proto = pthis->prototype(scr);
+			if (strEquals(name.ptr(), "prototype"))
+				return proto;						
+			if (proto.IsEmpty())			
+				return Handle<Value>();
+			return proto->Get(property);
+		}
         if (siEx ex = scr->invoke(pthis, ACCESS_GET, index, 0, 0, &rval))
             return ThrowException(String::New(ex->message()));
         return pthis->toValue(rval);
@@ -138,12 +160,17 @@ struct cJs : cJsBase {
         cJs* pthis = (cJs*) cast(info.Data());
         iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
         Str name = *String::Utf8Value(property);
-        int index = scr->resolve(pthis, name, true);
+        int index = scr->resolve(pthis, name);
         Var arg(pthis->toVar(value));
         Var rval((iAlloc*) pthis);
 
-        if (index < 0)
-            return Handle<Value>();
+		if (index < 0) {
+			if (strEquals(name.ptr(), "prototype")) {
+				pthis->setValue(scr->className(), arg);
+				return value;
+			}
+		}
+		index = scr->resolve(pthis, name, true);
         if (siEx ex = scr->invoke(pthis, ACCESS_SET, index, 1, &arg, &rval))
             return ThrowException(String::New(ex->message()));
         return pthis->toValue(rval);
@@ -158,9 +185,17 @@ struct cJs : cJsBase {
         Str name = *String::Utf8Value(property);
         int index = scr->resolve(pthis, name);
 
-        //return index >= 0 ? True() : False();
-		return index >= 0 ? v8::Integer::New(v8::None)
-			: v8::Handle<v8::Integer>();		
+		if (index < 0) {
+			Handle<Object> proto = pthis->prototype(scr);
+			if (strEquals(name.ptr(), "prototype"))
+				return proto.IsEmpty() ? v8::Handle<v8::Integer>() : v8::Integer::New(v8::None);						
+			if (proto.IsEmpty())			
+				return v8::Handle<v8::Integer>();
+			return proto->Has(property) ? v8::Integer::New(v8::None)
+				: v8::Handle<v8::Integer>();
+		}
+
+		return v8::Integer::New(v8::None);		
 	}
 
     static Handle<Boolean> namedDeleter(Local<String> property,
@@ -413,8 +448,14 @@ struct cJs : cJsBase {
         case Var::TYPE_INT64:
         case Var::TYPE_DOUBLE:
             return Number::New(val.toDouble());
-        case Var::TYPE_SCR:
-            return createObject(val.toScr());
+		case Var::TYPE_SCR: {
+			siScr obj = val.toScr();
+			siScrObj wrapped(obj);
+			if (wrapped) {
+				return wrapped->unwrap();
+			}
+            return createObject(obj);
+		}
         case Var::TYPE_STR:
             return String::New(val.toStr());
         case Var::TYPE_WSTR:
@@ -613,6 +654,17 @@ public:
 	{
 		o3_trace_hostglue("isIE");
 		return false;
+	}
+
+	Handle<Object> prototype(iScr* scr)
+	{
+		Var proto_var = value(scr->className());
+		if (proto_var.type() == Var::TYPE_SCR){
+			siScrObj proto = proto_var.toScr();
+			if (proto)
+				return proto->unwrap();
+		}
+		return Handle<Object>();
 	}
 };
 
