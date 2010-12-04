@@ -147,7 +147,7 @@ struct cO3 : cScr {
 
 		m_load_progress = o3_new(cLoadProgress);		
 		m_ctx = ctx;
-		ctx->setValue("cO3", this);
+		ctx->setValue("O3", this);
 
 		m_change_event = g_sys->createEvent();
 		m_mutex = g_sys->createMutex();

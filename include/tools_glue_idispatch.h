@@ -29,7 +29,8 @@ namespace o3 {
 	DEFINE_GUID(IID_IDispArray, 
 	0x85de6f5, 0xa868, 0x4f14, 0xab, 0xfd, 0xbc, 0x19, 0x7a, 0xc2, 0x82, 0x69);
 
-	 mscom_ptr(IDispatch);
+	mscom_ptr(IDispatch);
+	mscom_ptr(IDispatchEx);
 
     struct iScrBridge : iUnk{		
 		virtual IDispatchEx* getBridge() = 0;
@@ -300,6 +301,8 @@ namespace o3 {
 		}
 
 		#define __ARRAY_IDX_DISPID 2000
+		#define __PROTO_IDX_DISPID 1800
+		
 		HRESULT STDMETHODCALLTYPE GetDispID(BSTR bstrName, DWORD grfdex, DISPID *pid)
 		{
             o3_trace_hostglue("GetDispID");
@@ -322,8 +325,25 @@ namespace o3 {
 
             //TOCHECK:
 			Str name((wchar_t*)bstrName);
+			if (strEquals(name.ptr(),"prototype")){
+				*pid = __PROTO_IDX_DISPID;
+				return S_OK;
+			}
+
 			*pid = (int) m_bridge->resolve(siCtx(m_ctx), name.ptr(),(fdexNameEnsure & grfdex) != 0 );
-            return (*pid > -1) ? S_OK :  DISP_E_UNKNOWNNAME;
+            if (*pid > -1) 
+				return S_OK; 
+
+
+			SIDispatchEx proto_ex = prototype();
+			if (proto_ex) { 
+				HRESULT hr = proto_ex->GetDispID(bstrName, grfdex, pid) ;
+				if (hr==S_OK)
+					*pid += __PROTO_IDX_DISPID + 1;
+				return hr;
+			}
+
+			return DISP_E_UNKNOWNNAME;
 		}
 
 		HRESULT STDMETHODCALLTYPE GetMemberName(DISPID id, BSTR *pbstrName)
@@ -382,6 +402,7 @@ namespace o3 {
 			int call_id;
             const char* array_acc("__getter__");
 			iScr::Access call_type;
+			SIDispatchEx proto_ex;
 			//set the call type
 			if ((wFlags & DISPATCH_METHOD)){						
 				call_type = iScr::ACCESS_CALL;                
@@ -414,6 +435,35 @@ namespace o3 {
 				else return DISP_E_BADCALLEE;	
                 call_id = m_bridge->resolve(siCtx(m_ctx),array_acc, false);
                 call_type = iScr::ACCESS_CALL;
+			}
+			else if (id == __PROTO_IDX_DISPID)
+			{
+				Var proto_var;
+				switch (call_type) {
+					case iScr::ACCESS_GET:
+						proto_var = siCtx(m_ctx)->value(m_bridge->className());
+						Var_to_VARIANT(proto_var, *pVarRes, siCtx(m_ctx));
+						return S_OK;
+					case iScr::ACCESS_SET:				
+						VARIANT_to_Var(pdp->rgvarg[0], proto_var, siCtx(m_ctx));
+						siCtx(m_ctx)->setValue(m_bridge->className(), proto_var);
+						return S_OK;
+					default:
+						break;
+				}
+			}
+			else if (id > __PROTO_IDX_DISPID)
+			{				
+				proto_ex = prototype();
+				if (proto_ex)
+					return proto_ex->InvokeEx( id-__PROTO_IDX_DISPID-1, lcid, wFlags, 
+						pdp, pVarRes,pei, pspCaller);
+				
+				WStr msg(L"O3 prototype call failed");
+				pei->bstrSource = SysAllocString(L"O3 exception");
+				pei->bstrDescription = SysAllocString(msg.ptr());
+				pei->wCode = 1001;
+				return DISP_E_EXCEPTION;
 			}
 			else
 			{
@@ -458,6 +508,16 @@ namespace o3 {
             m_bridge = (iUnk*)0;
         }
 
+		SIDispatchEx prototype(){
+			SIDispatchEx proto_ex;
+			Var proto = siCtx(m_ctx)->value(m_bridge->className());
+			if (proto.type() == Var::TYPE_SCR){
+				VARIANT v;
+				Var_to_VARIANT(proto, v, siCtx(m_ctx));
+				proto_ex = SIDispatch(v.pdispVal);
+			}
+			return proto_ex;
+		}
 	};//cDispBridge
 
     //Utility functions

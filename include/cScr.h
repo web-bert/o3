@@ -292,6 +292,11 @@ struct cScr : cUnk, iScr {
         return 0;
     } 
 
+	virtual Str className()
+	{
+		return select()->cls_name;
+	}
+
     virtual Trait* select()
     {
         o3_trace_comglue("select");

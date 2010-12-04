@@ -93,8 +93,15 @@ struct cCtx : cMgr, iCtx {
 				int index = m_scr->resolve(ctx, name);
 				
 				::NPN_MemFree(name);
-				if (index < 0)
+				if (index < 0) {
+					Var proto = ctx->value(m_scr->className()) ;
+					if (proto.type() == Var::TYPE_SCR) {
+						NPVariant proto_var = toNPVariant(m_npp, proto);
+						return proto_var.value.objectValue->_class->hasMethod(
+							proto_var.value.objectValue, identifier);
+					}
 					return false;
+				}
 				if (siEx ex = m_scr->invoke(ctx, iScr::ACCESS_GET, index, 0, 0,
 											&rval))
 					return false;
@@ -145,6 +152,14 @@ struct cCtx : cMgr, iCtx {
 				scr = rval.toScr();
 				index = scr->resolve(ctx, "__self__");
 			}
+			if (index<0){
+				Var proto = ctx->value(m_scr->className()) ;
+				if (proto.type() == Var::TYPE_SCR) {
+					NPVariant proto_var = toNPVariant(m_npp, proto);
+					return proto_var.value.objectValue->_class->invoke(
+						proto_var.value.objectValue, identifier, args, argc, result);
+				}
+			}
 			for (size_t i = 0; i < argc; ++i)
 				argv.push(toVar(m_npp, args[i]));
 			if (siEx ex = scr->invoke(ctx, iScr::ACCESS_CALL, index, argc, argv,
@@ -181,11 +196,19 @@ struct cCtx : cMgr, iCtx {
 			
 			if (::NPN_IdentifierIsString(identifier)) {
 				char* name = ::NPN_UTF8FromIdentifier(identifier);
-				int index = m_scr->resolve(ctx, name, true);
+				int index = m_scr->resolve(ctx, name);
 				
 				::NPN_MemFree(name);
-				if (index < 0)
-					return false;
+				if (index < 0) {
+					Var proto = ctx->value(m_scr->className()) ;
+					if (proto.type() == Var::TYPE_SCR) {
+						NPVariant proto_var = toNPVariant(m_npp, proto);
+						return proto_var.value.objectValue->_class->hasProperty(
+							proto_var.value.objectValue, identifier);
+					}
+					else
+						index = m_scr->resolve(ctx, name, true);
+				}
 				if (siEx ex = m_scr->invoke(ctx, iScr::ACCESS_GET, index, 0, 0,
 											&rval))
 					return false;
@@ -221,7 +244,18 @@ struct cCtx : cMgr, iCtx {
 			if (::NPN_IdentifierIsString(identifier)) {
 				char* name = ::NPN_UTF8FromIdentifier(identifier);
 				int index = m_scr->resolve(ctx, name);
-				
+				if (index < 0) {
+					Var proto = ctx->value(m_scr->className()) ;					
+					if (proto.type() == Var::TYPE_SCR) {
+						NPVariant proto_var = toNPVariant(m_npp, proto);
+						if (strEquals(name, "prototype")){
+							*value = proto_var;
+							return true;
+						}
+						return proto_var.value.objectValue->_class->getProperty(
+							proto_var.value.objectValue, identifier, value);
+					}
+				}
 				::NPN_MemFree(name);
 				if (siEx ex = m_scr->invoke(ctx, iScr::ACCESS_GET, index, 0, 0,
 											&rval))
@@ -246,6 +280,11 @@ struct cCtx : cMgr, iCtx {
 			
 			if (::NPN_IdentifierIsString(identifier)) {
 				char* name = ::NPN_UTF8FromIdentifier(identifier);
+				if (strEquals(name, "prototype")){
+					Var var = toVar(m_npp, *value);
+					ctx->setValue(m_scr->className(), var);
+					return true;
+				}
 				int index = m_scr->resolve(ctx, name, true);
 				Var arg = toVar(m_npp, *value);
 				

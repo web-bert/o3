@@ -41,6 +41,8 @@ struct iScr : iUnk {
 
     virtual siEx invoke(iCtx* ctx, Access access, int index, int argc,
                         const Var* argv, Var* rval) = 0;
+
+	virtual Str className() = 0;
 };
 }
 

@@ -55,7 +55,7 @@ namespace o3 {
 	mscom_ptr(IHTMLEventObj);
 	mscom_ptr(IHTMLEventObj2);
 	mscom_ptr(IHTMLElement);
-	mscom_ptr(IDispatchEx);
+//	mscom_ptr(IDispatchEx);
 	mscom_ptr_d(HTMLDocumentEvents);
 	mscom_ptr(IHTMLElementCollection);
 
