@@ -598,7 +598,7 @@ namespace o3 {
             size_t nmessages;
             bool sent = false;
             
-            while(timeout>=spent && !sent)
+            while(timeout>=(int)spent && !sent)
             {                       							       
                 m_event_handler.wait(0);
 

@@ -18,8 +18,8 @@
 #ifndef O3_C_GLWINDOW_H
 #define O3_C_GLWINDOW_H
 
-#include "Glee-5.4/GLee.h"
-#include "Glee-5.4/GLee.c"
+#include <lib_glee.h>
+
 #ifdef WIN32
 #pragma comment(lib,"opengl32.lib")
 #pragma comment(lib,"glu32.lib")
@@ -511,11 +511,11 @@ namespace o3
 				{
 				case Image::MODE_ARGB:
 					{
-						for (size_t y =0;y<(size_t)__min(__min(mActualH, height), Image->height());y++)
+						for (size_t y =0;y<(size_t)__min(__min((unsigned int)mActualH, height), Image->height());y++)
 						{
 							unsigned char *P = Image->getrowptr(y);
-							unsigned char *localp = mLocalData + (y*mActualW)*4;
-							for (size_t x = 0;x<(size_t)__min(__min(mActualW, width),Image->width());x++)
+							unsigned char *localp = mLocalData + (y*(unsigned int)mActualW)*4;
+							for (size_t x = 0;x<(size_t)__min(__min((unsigned int)mActualW, width),Image->width());x++)
 							{
 								localp[0] = P[2];
 								localp[1] =  P[1];
@@ -530,11 +530,11 @@ namespace o3
 					break;
 				case Image::MODE_RGB:
 					{
-						for (size_t y =0;y<(size_t)__min(__min(mActualH, height), Image->height());y++)
+						for (size_t y =0;y<(size_t)__min(__min((unsigned int)mActualH, height), Image->height());y++)
 						{
 							unsigned char *P = Image->getrowptr(y);
-							unsigned char *localp = mLocalData + (y*mActualW)*4;
-							for (size_t x = 0;x<(size_t)__min(__min(mActualW, width),Image->width());x++)
+							unsigned char *localp = mLocalData + (y*(unsigned int)mActualW)*4;
+							for (size_t x = 0;x<(size_t)__min(__min((unsigned int)mActualW, width),Image->width());x++)
 							{
 								localp[0] = P[2];
 								localp[1] =  P[1];
@@ -548,9 +548,10 @@ namespace o3
 					};
 					break;
 				}
+
 			};
 			bind();
-			glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0,mActualW,__min(height, mActualH), GL_RGBA, GL_UNSIGNED_BYTE, mLocalData);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0,mActualW,__min((int)height, mActualH), GL_RGBA, GL_UNSIGNED_BYTE, mLocalData);
 		};
 	};
 

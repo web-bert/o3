@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
+
 // since this is a third party lib anyway, I just turn off these warning in this file
 #pragma warning( disable : 4244)    // conversion without explicit cast
 #pragma warning( disable : 4127)    // conditional expression is constant
@@ -1028,121 +1029,17 @@ namespace o3 {
         #define TRY_FREE(s, p) {if (p) ZFREE(s, p);}
 
 
-        const char * const z_errmsg[10] = {
-        "need dictionary",     /* Z_NEED_DICT       2  */
-        "stream end",          /* Z_STREAM_END      1  */
-        "",                    /* Z_OK              0  */
-        "file error",          /* Z_ERRNO         (-1) */
-        "stream error",        /* Z_STREAM_ERROR  (-2) */
-        "data error",          /* Z_DATA_ERROR    (-3) */
-        "insufficient memory", /* Z_MEM_ERROR     (-4) */
-        "buffer error",        /* Z_BUF_ERROR     (-5) */
-        "incompatible version",/* Z_VERSION_ERROR (-6) */
-        ""};
+       
 
 
-        const char *  zlibVersion()
-        {
-            return ZLIB_VERSION;
-        }
-
-        unsigned long  zlibCompileFlags()
-        {
-            unsigned long flags;
-
-            flags = 0;
-            switch (sizeof(unsigned int)) {
-            case 2:     break;
-            case 4:     flags += 1;     break;
-            case 8:     flags += 2;     break;
-            default:    flags += 3;
-            }
-            switch (sizeof(unsigned long)) {
-            case 2:     break;
-            case 4:     flags += 1 << 2;        break;
-            case 8:     flags += 2 << 2;        break;
-            default:    flags += 3 << 2;
-            }
-            switch (sizeof(void *)) {
-            case 2:     break;
-            case 4:     flags += 1 << 4;        break;
-            case 8:     flags += 2 << 4;        break;
-            default:    flags += 3 << 4;
-            }
-            switch (sizeof(z_off_t)) {
-            case 2:     break;
-            case 4:     flags += 1 << 6;        break;
-            case 8:     flags += 2 << 6;        break;
-            default:    flags += 3 << 6;
-            }
-        #ifdef DEBUG
-            flags += 1 << 8;
-        #endif
-        #if defined(ASMV) || defined(ASMINF)
-            flags += 1 << 9;
-        #endif
-        #ifdef ZLIB_WINAPI
-            flags += 1 << 10;
-        #endif
-        #ifdef BUILDFIXED
-            flags += 1 << 12;
-        #endif
-        #ifdef DYNAMIC_CRC_TABLE
-            flags += 1 << 13;
-        #endif
-        #ifdef NO_GZCOMPRESS
-            flags += 1L << 16;
-        #endif
-        #ifdef NO_GZIP
-            flags += 1L << 17;
-        #endif
-        #ifdef PKZIP_BUG_WORKAROUND
-            flags += 1L << 20;
-        #endif
-        #ifdef FASTEST
-            flags += 1L << 21;
-        #endif
-        #ifdef STDC
-        #  ifdef NO_vsnprintf
-                flags += 1L << 25;
-        #    ifdef HAS_vsprintf_void
-                flags += 1L << 26;
-        #    endif
-        #  else
-        #    ifdef HAS_vsnprintf_void
-                flags += 1L << 26;
-        #    endif
-        #  endif
-        #else
-                flags += 1L << 24;
-        #  ifdef NO_snprintf
-                flags += 1L << 25;
-        #    ifdef HAS_sprintf_void
-                flags += 1L << 26;
-        #    endif
-        #  else
-        #    ifdef HAS_snprintf_void
-                flags += 1L << 26;
-        #    endif
-        #  endif
-        #endif
-            return flags;
-        }
+        const char *  zlibVersion();
+		
+		unsigned long  zlibCompileFlags();
 
         #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 
-        void * zcalloc (void * opaque, unsigned items, unsigned size)
-        {
-            if (opaque) items += size - size; /* make compiler happy */
-            return sizeof(unsigned int) > 2 ? (void *)malloc(items * size) :
-                                      (void *)calloc(items, size);
-        }
-
-        void  zcfree (void * opaque, void * ptr)
-        {
-            free(ptr);
-            if (opaque) return; /* make compiler happy */
-        }
+        void * zcalloc (void * opaque, unsigned items, unsigned size);
+        void  zcfree (void * opaque, void * ptr);
 
         #endif /* MY_ZCALLOC */
 
@@ -2222,51 +2119,8 @@ namespace o3 {
         {{19},{ 5}}, {{11},{ 5}}, {{27},{ 5}}, {{ 7},{ 5}}, {{23},{ 5}}
         };
 
-        const unsigned char _dist_code[DIST_CODE_LEN] = {
-         0,  1,  2,  3,  4,  4,  5,  5,  6,  6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  8,
-         8,  8,  8,  8,  9,  9,  9,  9,  9,  9,  9,  9, 10, 10, 10, 10, 10, 10, 10, 10,
-        10, 10, 10, 10, 10, 10, 10, 10, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-        11, 11, 11, 11, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12,
-        12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 13, 13, 13, 13,
-        13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
-        13, 13, 13, 13, 13, 13, 13, 13, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-        14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-        14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
-        14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 15, 15, 15, 15, 15, 15, 15, 15,
-        15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-        15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,
-        15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15,  0,  0, 16, 17,
-        18, 18, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 22, 22, 22, 22, 22, 22, 22, 22,
-        23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-        24, 24, 24, 24, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
-        26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-        26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27,
-        27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-        27, 27, 27, 27, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
-        28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
-        28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28,
-        28, 28, 28, 28, 28, 28, 28, 28, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-        29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-        29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29,
-        29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29, 29
-        };
 
-        const unsigned char _length_code[MAX_MATCH - MIN_MATCH + 1]= {
-         0,  1,  2,  3,  4,  5,  6,  7,  8,  8,  9,  9, 10, 10, 11, 11, 12, 12, 12, 12,
-        13, 13, 13, 13, 14, 14, 14, 14, 15, 15, 15, 15, 16, 16, 16, 16, 16, 16, 16, 16,
-        17, 17, 17, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19,
-        19, 19, 19, 19, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20,
-        21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 22, 22, 22,
-        22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 23, 23, 23, 23, 23, 23, 23, 23,
-        23, 23, 23, 23, 23, 23, 23, 23, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-        24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24,
-        25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25,
-        25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 25, 26, 26, 26, 26, 26, 26, 26, 26,
-        26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
-        26, 26, 26, 26, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27,
-        27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28
-        };
-
+        
         static const int base_length[LENGTH_CODES] = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56,
         64, 80, 96, 112, 128, 160, 192, 224, 0
@@ -4216,252 +4070,16 @@ namespace o3 {
             return Z_OK;
         }
 
-        // utility:
-
-        size_t zip(iStream *source, iStream *dest, 
-			int level = Z_DEFAULT_COMPRESSION, uint32_t* crc=0)
-        {
-            const size_t CHUNK = 16384;
-            int ret, flush;
-            unsigned have;
-            z_stream strm;
-			size_t zipped_size = 0;
-            unsigned char in[CHUNK];
-            unsigned char out[CHUNK];
-
-			uint32_t crc_check = 0;
-            /* allocate deflate state */
-            strm.zalloc = 0;
-            strm.zfree = 0;
-            strm.opaque = 0;
-            if (crc) // for zip file crc checksum is needed and a different deflate init			
-				ret = deflateInit2(&strm, level, Z_DEFLATED, -MAX_WBITS, DEF_MEM_LEVEL,
-					Z_DEFAULT_STRATEGY);
-			else	// if crc is not needed we let's just use the gzip format
-				ret = deflateInit(&strm, level);
-
-			
-			if (ret != Z_OK)
-                return (size_t) -1;
-
-            /* compress until end of file */
-            do {
-                strm.avail_in = source->read(in, CHUNK); 
-                //if strm.avail_in == 0 ...
-                flush = source->eof() ? Z_FINISH : Z_NO_FLUSH;
-                strm.next_in = in;
-				if (crc)
-					crc_check = crc32(crc_check,in,strm.avail_in);
-                /* run deflate() on input until output buffer not full, finish
-                   compression if all of source has been read in */
-                do {
-                    strm.avail_out = CHUNK;
-                    strm.next_out = out;
-                    ret = deflate(&strm, flush);    /* no bad return value */
-                    // db_assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
-                    have = CHUNK - strm.avail_out;
-                    zipped_size += have;
-					if (dest->write(out,have) != have) {
-                        (void)deflateEnd(&strm);
-                        return (size_t) -1;
-                    }
-				} while (strm.avail_out == 0);
-                // db_assert(strm.avail_in == 0);     /* all input will be used */
-
-                /* done when last data in file processed */
-            } while (flush != Z_FINISH);
-            // db_assert(ret == Z_STREAM_END);        /* stream will be complete */
-
-            /* clean up and return */
-            (void)deflateEnd(&strm);
-			if (crc)
-				*crc = crc_check;
-            return zipped_size;
-        }
-
-
-        size_t unzip(iStream *source, iStream *dest, uint32_t* crc=0)
-        {
-            const size_t CHUNK = 16384;
-            int ret;
-            unsigned have;
-            z_stream strm;
-            unsigned char in[CHUNK];
-            unsigned char out[CHUNK];
-
-			uint32_t crc_check = 0;
-			size_t unzipped_size = 0;
-            /* allocate inflate state */
-            strm.zalloc = 0;
-            strm.zfree = 0;
-            strm.opaque = 0;
-            strm.avail_in = 0;
-            strm.next_in = 0;
-			if (crc) 
-				ret = inflateInit2(&strm, -DEF_WBITS);
-			else
-				ret = inflateInit(&strm);
-
-			if (ret != Z_OK)
-                return false;
-
-            /* decompress until deflate stream ends or end of file */
-            do {
-                strm.avail_in = source->read(in, CHUNK);             
-                if (strm.avail_in == 0)
-                    break;
-                strm.next_in = in;
-
-                /* run inflate() on input until output buffer not full */
-                do {
-                    strm.avail_out = CHUNK;
-                    strm.next_out = out;
-                    ret = inflate(&strm, Z_NO_FLUSH);
-                    // db_assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
-                    switch (ret) {
-                    case Z_NEED_DICT:
-                        ret = Z_DATA_ERROR;     /* and fall through */
-                    case Z_DATA_ERROR:
-                    case Z_MEM_ERROR:
-                        (void)inflateEnd(&strm);
-                        return (size_t) -1;
-                    }
-                    have = CHUNK - strm.avail_out;
-					unzipped_size += have;
-                    if (dest->write(out, have) != have) {
-                        (void)inflateEnd(&strm);
-                        return (size_t) -1;
-                    }
-					if (crc)
-						crc_check = crc32(crc_check,out,have);
-                } while (strm.avail_out == 0);
-
-                /* done when inflate() says it's done */
-            } while (ret != Z_STREAM_END);
-
-            /* clean up and return */
-            (void)inflateEnd(&strm);
-			if (crc)
-				*crc = crc_check;
-
-            return ret == Z_STREAM_END ? unzipped_size : -1;
-        }
-
-        bool zip(const Buf& source, Buf& dest, int level = Z_DEFAULT_COMPRESSION)
-        {
-            const size_t CHUNK = 16384;
-            int ret, flush;
-            unsigned have;
-            z_stream strm;
-            unsigned char in[CHUNK];
-            unsigned char out[CHUNK];
-
-            /* allocate deflate state */
-            strm.zalloc = 0;
-            strm.zfree = 0;
-            strm.opaque = 0;
-            ret = deflateInit(&strm, level);
-            if (ret != Z_OK)
-                return false;
-
-            size_t pos = 0;
-            size_t size = source.size();
-            /* compress until end of file */
-            do {
-                // source->read(in, CHUNK); 
-                strm.avail_in = min(size - pos, CHUNK);
-                memCopy(in, (uint8_t*)source.ptr() + pos, strm.avail_in);
-                pos += strm.avail_in;
-                
-                //flush = source->eof() ? Z_FINISH : Z_NO_FLUSH;
-                flush = (size == pos) ? Z_FINISH : Z_NO_FLUSH;
-                strm.next_in = in;
-
-                /* run deflate() on input until output buffer not full, finish
-                   compression if all of source has been read in */
-                do {
-                    strm.avail_out = CHUNK;
-                    strm.next_out = out;
-                    ret = deflate(&strm, flush);    /* no bad return value */
-                    // db_assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
-                    have = CHUNK - strm.avail_out;
-                    // dest->write(out,have)
-                    dest.append((void*)out, (size_t)have);
-                } while (strm.avail_out == 0);
-                // db_assert(strm.avail_in == 0);     /* all input will be used */
-
-                /* done when last data in file processed */
-            } while (flush != Z_FINISH);
-            // db_assert(ret == Z_STREAM_END);        /* stream will be complete */
-
-            /* clean up and return */
-            (void)deflateEnd(&strm);
-            return true;
-        }
-
-
-        bool unzip(const Buf& source, Buf& dest)
-        {
-            const size_t CHUNK = 16384;
-            int ret;
-            unsigned have;
-            z_stream strm;
-            unsigned char in[CHUNK];
-            unsigned char out[CHUNK];
-
-            /* allocate inflate state */
-            strm.zalloc = 0;
-            strm.zfree = 0;
-            strm.opaque = 0;
-            strm.avail_in = 0;
-            strm.next_in = 0;
-            ret = inflateInit(&strm);
-            if (ret != Z_OK)
-                return false;
-
-            size_t pos = 0;
-            size_t size = source.size();
-            /* decompress until deflate stream ends or end of file */
-            do {
-                // source->read(in, CHUNK); 
-                strm.avail_in = min(size - pos, CHUNK);
-                memCopy(in, (uint8_t*)source.ptr() + pos, strm.avail_in);
-                pos += strm.avail_in;
-                
-                if (strm.avail_in == 0)
-                    break;
-                strm.next_in = in;
-
-                /* run inflate() on input until output buffer not full */
-                do {
-                    strm.avail_out = CHUNK;
-                    strm.next_out = out;
-                    ret = inflate(&strm, Z_NO_FLUSH);
-                    // db_assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
-                    switch (ret) {
-                    case Z_NEED_DICT:
-                        ret = Z_DATA_ERROR;     /* and fall through */
-                    case Z_DATA_ERROR:
-                    case Z_MEM_ERROR:
-                        (void)inflateEnd(&strm);
-                        return false;
-                    }
-                    have = CHUNK - strm.avail_out;
-                    // dest->write(out,have)
-                    dest.append((void*)out, (size_t)have);
-                } while (strm.avail_out == 0);
-
-                /* done when inflate() says it's done */
-            } while (ret != Z_STREAM_END);
-
-            /* clean up and return */
-            (void)inflateEnd(&strm);
-            return ret == Z_STREAM_END ? true : false;
-        }
+       
     }
 }
 
 #pragma warning( default : 4244)    // conversion without explicit cast
 #pragma warning( default : 4127)    // conditional expression is constant
+
+
+#ifdef O3_COMPILE_LIBRARIES
+#include "lib_zlib_impl.h"
+#endif
 
 #endif /* J_ZLIB_H */

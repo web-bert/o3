@@ -64,7 +64,7 @@ struct cScrBuf : cScr, iBuf {
 			}
 			if (strEquals(encoding, "ascii")) {
 				WStr ret = Str(m_buf);
-				if(start > ret.size())
+				if(start > (int)ret.size())
 					return Str();
 				ret = WStr(ret.ptr()+start, end-start);
 				return Str(ret);

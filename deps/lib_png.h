@@ -21,7 +21,8 @@ namespace o3
 #endif
 
 		#include "libpng/png.h"
-		
+
+#ifdef O3_COMPILE_LIBRARIES
 		#include "libpng/pngpriv.h"
 
 
@@ -42,6 +43,7 @@ namespace o3
 		#include "libpng/pngwrite.c"
 		#include "libpng/pngwtran.c"
 		#include "libpng/pngwutil.c"
+#endif
 
 	}
 }

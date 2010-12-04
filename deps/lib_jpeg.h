@@ -14,7 +14,10 @@ namespace o3
 //#include "jpeg-8b/ckconfig.c"
 //#include "jpeg-8b/djpeg.c"
 //#include "jpeg-8b/example.c"
-
+#define JPEG_INTERNALS
+#include "jpeg-8b/jinclude.h"
+#include "jpeg-8b/jpeglib.h"
+#ifdef O3_COMPILE_LIBRARIES
 #include "jpeg-8b/jaricom.c"
 #include "jpeg-8b/jcapimin.c"
 #include "jpeg-8b/jcapistd.c"
@@ -82,6 +85,7 @@ namespace o3
 //#include "jpeg-8b/wrrle.c"
 //#include "jpeg-8b/wrtarga.c"
 
+#endif
 
 #pragma warning( pop)
 	}

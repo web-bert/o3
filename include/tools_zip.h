@@ -1,20 +1,20 @@
 /*
- * Copyright (C) 2010 Ajax.org BV
- *
- * This library is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License as published by the Free Software
- * Foundation; either version 2 of the License, or (at your option) any later
- * version.
- *
- * This library is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this library; if not, write to the Free Software Foundation, Inc., 51
- * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- */
+* Copyright (C) 2010 Ajax.org BV
+*
+* This library is free software; you can redistribute it and/or modify it under
+* the terms of the GNU General Public License as published by the Free Software
+* Foundation; either version 2 of the License, or (at your option) any later
+* version.
+*
+* This library is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+* FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+* details.
+*
+* You should have received a copy of the GNU General Public License along with
+* this library; if not, write to the Free Software Foundation, Inc., 51
+* Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+*/
 #ifndef  O3_ZIP_TOOLS_H
 #define O3_ZIP_TOOLS_H
 
@@ -27,6 +27,254 @@
 	return o3_new(cEx)("write to file failed.")
 
 namespace o3 {
+
+	namespace ZLib
+	{
+		// utility:
+
+		size_t zip(iStream *source, iStream *dest, 
+			int level = Z_DEFAULT_COMPRESSION, uint32_t* crc=0)
+		{
+			const size_t CHUNK = 16384;
+			int ret, flush;
+			unsigned have;
+			z_stream strm;
+			size_t zipped_size = 0;
+			unsigned char in[CHUNK];
+			unsigned char out[CHUNK];
+
+			uint32_t crc_check = 0;
+			/* allocate deflate state */
+			strm.zalloc = 0;
+			strm.zfree = 0;
+			strm.opaque = 0;
+			if (crc) // for zip file crc checksum is needed and a different deflate init			
+				ret = deflateInit2(&strm, level, Z_DEFLATED, -MAX_WBITS, DEF_MEM_LEVEL,
+				Z_DEFAULT_STRATEGY);
+			else	// if crc is not needed we let's just use the gzip format
+				ret = deflateInit(&strm, level);
+
+
+			if (ret != Z_OK)
+				return (size_t) -1;
+
+			/* compress until end of file */
+			do {
+				strm.avail_in = source->read(in, CHUNK); 
+				//if strm.avail_in == 0 ...
+				flush = source->eof() ? Z_FINISH : Z_NO_FLUSH;
+				strm.next_in = in;
+				if (crc)
+					crc_check = crc32(crc_check,in,strm.avail_in);
+				/* run deflate() on input until output buffer not full, finish
+				compression if all of source has been read in */
+				do {
+					strm.avail_out = CHUNK;
+					strm.next_out = out;
+					ret = deflate(&strm, flush);    /* no bad return value */
+					// db_assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+					have = CHUNK - strm.avail_out;
+					zipped_size += have;
+					if (dest->write(out,have) != have) {
+						(void)deflateEnd(&strm);
+						return (size_t) -1;
+					}
+				} while (strm.avail_out == 0);
+				// db_assert(strm.avail_in == 0);     /* all input will be used */
+
+				/* done when last data in file processed */
+			} while (flush != Z_FINISH);
+			// db_assert(ret == Z_STREAM_END);        /* stream will be complete */
+
+			/* clean up and return */
+			(void)deflateEnd(&strm);
+			if (crc)
+				*crc = crc_check;
+			return zipped_size;
+		}
+
+
+		size_t unzip(iStream *source, iStream *dest, uint32_t* crc=0)
+		{
+			const size_t CHUNK = 16384;
+			int ret;
+			unsigned have;
+			z_stream strm;
+			unsigned char in[CHUNK];
+			unsigned char out[CHUNK];
+
+			uint32_t crc_check = 0;
+			size_t unzipped_size = 0;
+			/* allocate inflate state */
+			strm.zalloc = 0;
+			strm.zfree = 0;
+			strm.opaque = 0;
+			strm.avail_in = 0;
+			strm.next_in = 0;
+			if (crc) 
+				ret = inflateInit2(&strm, -DEF_WBITS);
+			else
+				ret = inflateInit(&strm);
+
+			if (ret != Z_OK)
+				return false;
+
+			/* decompress until deflate stream ends or end of file */
+			do {
+				strm.avail_in = source->read(in, CHUNK);             
+				if (strm.avail_in == 0)
+					break;
+				strm.next_in = in;
+
+				/* run inflate() on input until output buffer not full */
+				do {
+					strm.avail_out = CHUNK;
+					strm.next_out = out;
+					ret = inflate(&strm, Z_NO_FLUSH);
+					// db_assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+					switch (ret) {
+					case Z_NEED_DICT:
+						ret = Z_DATA_ERROR;     /* and fall through */
+					case Z_DATA_ERROR:
+					case Z_MEM_ERROR:
+						(void)inflateEnd(&strm);
+						return (size_t) -1;
+					}
+					have = CHUNK - strm.avail_out;
+					unzipped_size += have;
+					if (dest->write(out, have) != have) {
+						(void)inflateEnd(&strm);
+						return (size_t) -1;
+					}
+					if (crc)
+						crc_check = crc32(crc_check,out,have);
+				} while (strm.avail_out == 0);
+
+				/* done when inflate() says it's done */
+			} while (ret != Z_STREAM_END);
+
+			/* clean up and return */
+			(void)inflateEnd(&strm);
+			if (crc)
+				*crc = crc_check;
+
+			return ret == Z_STREAM_END ? unzipped_size : -1;
+		}
+
+		bool zip(const Buf& source, Buf& dest, int level = Z_DEFAULT_COMPRESSION)
+		{
+			const size_t CHUNK = 16384;
+			int ret, flush;
+			unsigned have;
+			z_stream strm;
+			unsigned char in[CHUNK];
+			unsigned char out[CHUNK];
+
+			/* allocate deflate state */
+			strm.zalloc = 0;
+			strm.zfree = 0;
+			strm.opaque = 0;
+			ret = deflateInit(&strm, level);
+			if (ret != Z_OK)
+				return false;
+
+			size_t pos = 0;
+			size_t size = source.size();
+			/* compress until end of file */
+			do {
+				// source->read(in, CHUNK); 
+				strm.avail_in = min(size - pos, CHUNK);
+				memCopy(in, (uint8_t*)source.ptr() + pos, strm.avail_in);
+				pos += strm.avail_in;
+
+				//flush = source->eof() ? Z_FINISH : Z_NO_FLUSH;
+				flush = (size == pos) ? Z_FINISH : Z_NO_FLUSH;
+				strm.next_in = in;
+
+				/* run deflate() on input until output buffer not full, finish
+				compression if all of source has been read in */
+				do {
+					strm.avail_out = CHUNK;
+					strm.next_out = out;
+					ret = deflate(&strm, flush);    /* no bad return value */
+					// db_assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+					have = CHUNK - strm.avail_out;
+					// dest->write(out,have)
+					dest.append((void*)out, (size_t)have);
+				} while (strm.avail_out == 0);
+				// db_assert(strm.avail_in == 0);     /* all input will be used */
+
+				/* done when last data in file processed */
+			} while (flush != Z_FINISH);
+			// db_assert(ret == Z_STREAM_END);        /* stream will be complete */
+
+			/* clean up and return */
+			(void)deflateEnd(&strm);
+			return true;
+		}
+
+
+		bool unzip(const Buf& source, Buf& dest)
+		{
+			const size_t CHUNK = 16384;
+			int ret;
+			unsigned have;
+			z_stream strm;
+			unsigned char in[CHUNK];
+			unsigned char out[CHUNK];
+
+			/* allocate inflate state */
+			strm.zalloc = 0;
+			strm.zfree = 0;
+			strm.opaque = 0;
+			strm.avail_in = 0;
+			strm.next_in = 0;
+			ret = inflateInit(&strm);
+			if (ret != Z_OK)
+				return false;
+
+			size_t pos = 0;
+			size_t size = source.size();
+			/* decompress until deflate stream ends or end of file */
+			do {
+				// source->read(in, CHUNK); 
+				strm.avail_in = min(size - pos, CHUNK);
+				memCopy(in, (uint8_t*)source.ptr() + pos, strm.avail_in);
+				pos += strm.avail_in;
+
+				if (strm.avail_in == 0)
+					break;
+				strm.next_in = in;
+
+				/* run inflate() on input until output buffer not full */
+				do {
+					strm.avail_out = CHUNK;
+					strm.next_out = out;
+					ret = inflate(&strm, Z_NO_FLUSH);
+					// db_assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
+					switch (ret) {
+					case Z_NEED_DICT:
+						ret = Z_DATA_ERROR;     /* and fall through */
+					case Z_DATA_ERROR:
+					case Z_MEM_ERROR:
+						(void)inflateEnd(&strm);
+						return false;
+					}
+					have = CHUNK - strm.avail_out;
+					// dest->write(out,have)
+					dest.append((void*)out, (size_t)have);
+				} while (strm.avail_out == 0);
+
+				/* done when inflate() says it's done */
+			} while (ret != Z_STREAM_END);
+
+			/* clean up and return */
+			(void)inflateEnd(&strm);
+			return ret == Z_STREAM_END ? true : false;
+		}
+	};
+
+
 	namespace zip_tools {
 		struct Record{
 			Record(const char* path, iFs* file)
@@ -35,12 +283,12 @@ namespace o3 {
 			{
 
 			}
-			
+
 			Str path;
 			siFs file;
 		};
 		typedef tVec<Record> ZipRecords;
-		
+
 		static const uint32_t LH_SIGNATURE = 0x04034b50;
 		static const uint32_t CH_SIGNATURE = 0x02014b50;
 		static const uint32_t EH_SIGNATURE = 0x06054b50;
@@ -100,7 +348,7 @@ namespace o3 {
 		//siFs node = mgr->factory("fs")(0);
 		//siStream dest = node->get("dest.zip")->open("w");
 		//siStream unzipped = node->get("unzipped.txt")->open("w");
-		
+
 		// ***create zip files***:
 		// 1 - create a collection of files to be zipped:
 		//ZipRecords records;		
@@ -118,8 +366,8 @@ namespace o3 {
 		// 2 - from there on you can easily read files from it:
 		//readFileFromZip(Str("blah.txt"),source,unzipped,central_dir);
 
-// read zip file
- 
+		// read zip file
+
 		siEx findCentralDirEnd(iStream* src, EndOfCentralDir& eof_cd)
 		{
 			size_t size = src->size();
@@ -132,20 +380,20 @@ namespace o3 {
 #endif
 			size_t pos=(size_t)-1;
 			Buf data(max_back);
-			 
+
 			src->setPos(size-max_back);
 			if (max_back != src->read(data.ptr(), max_back))
 				return o3_new(cEx)("reading from source failed.");
 			data.resize(max_back);
-			 
+
 			pos = data.findRight(max_back-1,&EH_SIGNATURE,4);
 			if (NOT_FOUND == pos)
 				return o3_new(cEx)("not a valid zip file\
-			- end of central directory header not found");
-			 
+								   - end of central directory header not found");
+
 			if (max_back-pos < 20)
 				return o3_new(cEx)("not a valid zip file end of central"
-					" directory header is too short");
+				" directory header is too short");
 			src->setPos(size-max_back+pos);
 			o3_zip_read(&eof_cd.signature,4);
 			o3_zip_read(&eof_cd.disk_no,2);
@@ -158,13 +406,13 @@ namespace o3 {
 			if (eof_cd.disk_no != 0 || eof_cd.disk_no_of_cd != 0
 				|| eof_cd.records_in_central_local !=
 				eof_cd.records_in_central_total)
-						return o3_new(cEx)("zip file with multiple disks not supported");
+				return o3_new(cEx)("zip file with multiple disks not supported");
 			if (eof_cd.central_dir_addr > size)
 				return o3_new(cEx)("end header corrupted");
-			 
+
 			return siEx();
 		}
- 
+
 		siEx parseCentralHeaders(iStream* src, CentralDir& cd)
 		{
 			src->setPos(cd.end_header.central_dir_addr + cd.offset);
@@ -194,72 +442,72 @@ namespace o3 {
 				o3_zip_read(&ch.internal_file_attrib,2);
 				o3_zip_read(&ch.external_file_attrib,4);
 				o3_zip_read(&ch.offset_of_file_header,4);
-				 
+
 				Str name(ch.file_name_length);
 				o3_zip_read(name.ptr(), ch.file_name_length);
 				name.resize(ch.file_name_length);
-				 
+
 				pos = src->pos() + ch.extra_field_length
-				+ ch.file_comment_length;
+					+ ch.file_comment_length;
 				if (pos > src->size())
 					return o3_new(cEx)("unexpected end of file");
-				 
+
 				src->setPos(pos);
 				cd.headers[name] = ch;
 			}
 			return siEx();
 		}
- 
+
 		siEx readCentral(iStream* src, CentralDir& central_dir)
 		{
 			siEx err;
-			
+
 			central_dir.offset = src->pos();
 			if (err = findCentralDirEnd(src, central_dir.end_header))
 				return err;
-			 
+
 			err = parseCentralHeaders(src, central_dir);
 			return err;
 		}
- 
+
 		//Buf readFile(iFs* source, Str path, const CentralDir& central_dir)
 		//{
 		//
 		//}
- 
+
 		tVec<Str> listCentralDir(CentralDir& central_dir)
 		{
 			tVec<Str> names;
 			tMap<Str, CentralHeader>::ConstIter
-			it = central_dir.headers.begin(),
-			end = central_dir.headers.end();
+				it = central_dir.headers.begin(),
+				end = central_dir.headers.end();
 			for (;it != end; ++it) {
 				names.push((*it).key);
 			}
 			return names;
 		}
- 
+
 		siEx readFileFromZip(const Str& zip_path, iStream* src, iStream* dest, const CentralDir& central_dir)
 		{
 			tMap<Str,CentralHeader>::ConstIter it =
-			central_dir.headers.find(zip_path);
+				central_dir.headers.find(zip_path);
 			if (it == central_dir.headers.end() )
 				return o3_new(cEx)("file not found");
-			 
+
 			const CentralHeader& ch = (*it).val;
 			if (!src || !dest)
 				return o3_new(cEx)("invalid file stream");
-			 
+
 			src->setPos(ch.offset_of_file_header + central_dir.offset);
 			LocalHeader lh;
 			o3_zip_read(&lh.signature,4);
 			if (lh.signature != LH_SIGNATURE)
 				return o3_new(cEx)("zip data not found.");
-			 
+
 			o3_zip_read(&lh.min_version,2);
 			if (lh.min_version != ch.min_version)
 				return o3_new(cEx)("zip local file header corrupted.");
-			 
+
 			o3_zip_read(&lh.bit_flags,2);
 			if (lh.bit_flags & 0x01)
 				return o3_new(cEx)("encrypted zip file not supported");
@@ -268,11 +516,11 @@ namespace o3 {
 				return o3_new(cEx)("zip mode not supported");
 			if (lh.bit_flags > 8)
 				return o3_new(cEx)("zip mode not supported");
-			 
+
 			o3_zip_read(&lh.comp_method,2);
 			if (lh.comp_method != 8 && lh.comp_method != 0)
 				return o3_new(cEx)("compression algorithm not supported (only inflate/deflate)");
-			 
+
 			o3_zip_read(&lh.last_mod_time,2);
 			o3_zip_read(&lh.last_mod_date,2);
 			o3_zip_read(&lh.crc32,4);
@@ -284,7 +532,7 @@ namespace o3 {
 			o3_zip_read(name.ptr(),lh.file_name_length);
 			name.resize(lh.file_name_length);
 			src->setPos(src->pos()+lh.extra_field_length);
-			 
+
 			uint32_t crc;
 			if (lh.comp_method == 8) {
 				size_t unzipped_size = ZLib::unzip(src, dest, &crc);
@@ -292,7 +540,7 @@ namespace o3 {
 					return o3_new(cEx)("unzip algorithm failed.");
 				if (lh.crc32 != crc)
 					return o3_new(cEx)("crc32 check sum mismatch.");
-				}
+			}
 			else {
 				Buf data(src, (size_t) lh.size_compressed);
 				dest->write(data.ptr(), data.size());
@@ -300,8 +548,8 @@ namespace o3 {
 
 			return siEx();
 		}
- 
-// write zip file
+
+		// write zip file
 		void dosTime(iFs* node, int16_t* date, int16_t* time)
 		{
 #ifdef O3_WIN32			
@@ -318,13 +566,13 @@ namespace o3 {
 			*time = loc->tm_sec/2
 				+ (loc->tm_min << 5)
 				+ (loc->tm_hour << 11);
-				
+
 			*date = loc->tm_mday
 				+ (loc->tm_mon << 5)
 				+ (loc->tm_year << 11);
 #endif
 		}
- 
+
 		siEx archiveFile(iFs* node, iStream* dest, const Str& path,
 			CentralHeader& central_header )
 		{
@@ -340,7 +588,7 @@ namespace o3 {
 			size_t name_length = path.size();
 			size_t pos = dest->pos();
 			size_t pos_desc,pos_back;
-			 
+
 			o3_zip_write(&LH_SIGNATURE, 4);
 			o3_zip_write(&minversion, 2);
 			o3_zip_write(&bitflag, 2);
@@ -355,19 +603,19 @@ namespace o3 {
 			o3_zip_write(&name_length, 2);
 			o3_zip_write(&zero, 2); // extra_field_length
 			o3_zip_write(path.ptr(), name_length);
-			 
+
 			// TODO: check for big files
 			size = (size_t)node->size();
-			 
+
 			if (!(source = node->open("r")))
 				return o3_new(cEx)("open source file failed.");
-			 
+
 			zipped_size = ZLib::zip(source, dest,
-			ZLib::Z_DEFAULT_COMPRESSION, &crc);
-			 
+				ZLib::Z_DEFAULT_COMPRESSION, &crc);
+
 			if (-1 == zipped_size)
 				return o3_new(cEx)("zip algorithm failed");
-			 
+
 			// descriptor
 			dest->flush();
 			pos_back = dest->pos();
@@ -377,7 +625,7 @@ namespace o3 {
 			o3_zip_write(&size, 4);
 			dest->flush();
 			dest->setPos(pos_back);
-			 
+
 			//central
 			central_header.signature = CH_SIGNATURE;
 			central_header.version = 20;
@@ -396,10 +644,10 @@ namespace o3 {
 			central_header.internal_file_attrib = 0; //should be one if ASCII file...
 			central_header.external_file_attrib = 0;
 			central_header.offset_of_file_header = pos;
-			 
+
 			return siEx();
 		}
- 
+
 		siEx writeCentralRecord(iStream* dest,
 			const CentralHeader& ch, const Str& path)
 		{
@@ -423,7 +671,7 @@ namespace o3 {
 			o3_zip_write(path.ptr(), path.size());
 			return siEx();
 		}
- 
+
 		siEx writeEndOfCentral(iStream* dest, size_t nrecords,
 			size_t size, size_t offset)
 		{
@@ -438,7 +686,7 @@ namespace o3 {
 			o3_zip_write(&zero,2); // comment length
 			return siEx();
 		}
- 
+
 		siEx zipMultipleFiles(const ZipRecords& records, iStream* dest)
 		{
 			//o3_assert(dest);
@@ -451,7 +699,7 @@ namespace o3 {
 				const Record& rec = records[i];
 				if (ret = archiveFile(rec.file, dest, rec.path,
 					central_dir[central_dir.size()-1]))
-						return ret;
+					return ret;
 			}
 			start_central = dest->pos();
 			// write central dir headers to dest
@@ -462,14 +710,16 @@ namespace o3 {
 			end_central = dest->pos();
 			// write end of central dir to dest
 			ret = writeEndOfCentral(dest, central_dir.size(),
-			end_central-start_central, start_central);
-			 
+				end_central-start_central, start_central);
+
 			return ret;
 		}
- 
+
+	}
+
+
 }
-}
- 
+
 #undef o3_zip_write
 #undef o3_zip_read
 

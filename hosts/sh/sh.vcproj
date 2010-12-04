@@ -181,6 +181,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\sh_libs.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\sh_win32.h"
 			>
 		</File>

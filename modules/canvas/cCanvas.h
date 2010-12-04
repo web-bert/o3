@@ -259,7 +259,7 @@ namespace o3
 			o3_trace_scrfun("Ensure32BitSurface");
 			if (m_mode_int != Image::MODE_ARGB)
 			{
-				m_mode_int == Image::MODE_ARGB;
+				m_mode_int = Image::MODE_ARGB;
 				SetupBuffer();
 				// TODO -- convert existing bitmap to 32 bit and remember old mode. 
 			};
