@@ -15,7 +15,7 @@ def configure(conf):
 def build(bld):
   obj = bld.new_task_gen('cxx', 'shlib', 'node_addon')  
   obj.target = 'o3'
-  obj.source = 'hosts/node-o3/sh_node.cc'
+  obj.source = 'hosts/node-o3/sh_node.cc hosts/node-o3/sh_node_libs.cc'
   
   obj.includes = """
     include
