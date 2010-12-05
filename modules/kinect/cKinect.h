@@ -21,20 +21,21 @@
 #include <libfreenect.h>
 
 #include "canvas/canvas.h"
+#include <vector>
 
 namespace o3 
 {
-	
+
 	freenect_context *gFreenectContext= NULL;
 	int gFreenectContextCount = 0;
 	void FreenectLog(freenect_context *dev, freenect_loglevel level, const char *msg, ...)
 	{
 		// nothing logged yet...
 	};
-	
+
 	void gDepthCallback(freenect_device *dev, freenect_depth *depth, uint32_t timestamp);
 	void gRGBCallback(freenect_device *dev, freenect_pixel *rgb, uint32_t timestamp);
-	
+
 
 
 	struct cKinect : cScr
@@ -46,7 +47,7 @@ namespace o3
 			cKinect* ret = o3_new(cKinect)(index);
 			return ret;		
 		}
-		
+
 		int mRGBFrameCount;
 		int mDepthFrameCount;
 		int mRGBFrame;
@@ -103,7 +104,7 @@ namespace o3
 			mRGBFrameCount++;
 			memcpy(mRGBFrameStore, rgb, 3*640*480);
 		};
-		
+
 		o3_fun bool newDepthAvailable()
 		{
 			if (mDepthFrameCount > mDepthFrame)
@@ -122,7 +123,272 @@ namespace o3
 				return true;
 			};
 			return false;
+		};		
+
+		o3_fun double depthToCM(size_t Depth)
+		{
+
+			double div= (Depth * -0.0030711016 + 3.3309495161);
+			if (div != 0)
+			{
+				return 100.0 / div;	
+			}
+			else
+			{
+				return 0;
+			}
 		};
+
+		o3_fun size_t CMToDepth(double CM)
+		{
+			if (CM == 0) return 0;
+			return ( (100.0 / CM) - 3.3309495161) / -0.0030711016;
+		};
+		struct BlobCoordinate
+		{
+			unsigned int x, y;
+			void * data;
+		};
+		struct Blob
+		{
+			//unsigned int blobId;
+			BlobCoordinate minc, maxc;
+			double centerx, centery;
+			double z;
+			int size;
+		};
+
+
+		std::vector<Blob> mBlobs;
+
+		o3_fun double blobX(size_t ID){if (ID<blobCount()) return mBlobs[ID].centerx;return 0;};
+		o3_fun double blobY(size_t ID){if (ID<blobCount()) return mBlobs[ID].centery;return 0;};;
+		o3_fun double blobZ(size_t ID){if (ID<blobCount()) return mBlobs[ID].z;return 0;};
+		o3_fun double blobSize(size_t ID){if (ID<blobCount()) return mBlobs[ID].size;return 0;};
+
+		o3_fun size_t blobCount()		
+		{
+			return mBlobs.size();
+		};
+
+
+
+		struct BlobLineBlob
+		{
+			unsigned int minc, maxc;
+			unsigned int blobId;
+
+			bool attached;
+		};
+
+
+		struct BlobFrame
+		{
+			int width, height;
+			unsigned short *imageData;
+		};
+
+		void DetectBlobs(BlobFrame *frame, std::vector<Blob> *OutBlobs, unsigned short minv, unsigned short maxv)
+		{
+
+			int blobCounter = 0;
+			std::map<unsigned int, Blob> blobs;
+
+			float threshold = 235;
+
+
+			std::vector< std::vector<BlobLineBlob> > imgData(frame->width);
+
+			for(int row = 0; row < frame->height; ++row)
+			{
+
+				for(int column = 0; column < frame->width; ++column)
+				{
+
+					//unsigned char byte = (unsigned char) imgStream.get();
+					float val = frame->imageData[(row*frame->width)+ column];
+#define inRange(x) (x>=minv && x<maxv)
+					if(inRange(val))
+					{
+						int start = column;
+
+						for(;inRange(val); val = frame->imageData[(row*frame->width)+ column], ++column);
+
+						int stop = column-1;
+						BlobLineBlob lineBlobData = {start, stop, blobCounter, false};
+
+						imgData[row].push_back(lineBlobData);
+						blobCounter++;
+					}
+				}
+			}
+
+			/* Check lineBlobs for a touching lineblob on the next row */
+
+			for(unsigned int row = 0; row < imgData.size(); ++row)
+			{
+
+				for(unsigned int entryLine1 = 0; entryLine1 < imgData[row].size(); ++entryLine1)
+				{
+
+					for(unsigned int entryLine2 = 0; entryLine2 < imgData[row+1].size(); ++entryLine2)
+					{
+
+						if(!((imgData[row][entryLine1].maxc < imgData[row+1][entryLine2].minc) || (imgData[row][entryLine1].minc > imgData[row+1][entryLine2].maxc)))
+						{
+
+							if(imgData[row+1][entryLine2].attached == false)
+							{
+
+								imgData[row+1][entryLine2].blobId = imgData[row][entryLine1].blobId;
+
+								imgData[row+1][entryLine2].attached = true;
+							}
+							else
+
+							{
+								imgData[row][entryLine1].blobId = imgData[row+1][entryLine2].blobId;
+
+								imgData[row][entryLine1].attached = true;
+							}
+						}
+					}
+				}
+			}
+
+			// Sort and group blobs
+
+			for(int row = 0; row < (int)imgData.size(); ++row)
+			{
+
+				for(int entry = 0; entry < (int)imgData[row].size(); ++entry)
+				{
+
+					if(blobs.find(imgData[row][entry].blobId) == blobs.end()) // Blob does not exist yet
+
+					{
+						Blob blobData = {{imgData[row][entry].minc, row}, {imgData[row][entry].maxc, row}, 0,0,0,0};
+
+						blobs[imgData[row][entry].blobId] = blobData;
+					}
+					else
+
+					{
+						if(imgData[row][entry].minc < blobs[imgData[row][entry].blobId].minc.x)
+
+							blobs[imgData[row][entry].blobId].minc.x = imgData[row][entry].minc;
+
+						else if(imgData[row][entry].maxc > blobs[imgData[row][entry].blobId].maxc.x)
+
+							blobs[imgData[row][entry].blobId].maxc.x = imgData[row][entry].maxc;
+
+						if(row < (int)blobs[imgData[row][entry].blobId].minc.y)
+
+							blobs[imgData[row][entry].blobId].minc.y = row;
+
+						else if(row > (int)blobs[imgData[row][entry].blobId].maxc.y)
+
+							blobs[imgData[row][entry].blobId].maxc.y = row;
+					}
+				}
+			}
+
+			// Calculate center
+			for(std::map<unsigned int, Blob>::iterator i = blobs.begin(); i != blobs.end(); ++i)
+			{
+				(*i).second.centerx = (*i).second.minc.x + ((*i).second.maxc.x - (*i).second.minc.x) / 2;
+				(*i).second.centery = (*i).second.minc.y + ((*i).second.maxc.y - (*i).second.minc.y) / 2;
+
+				(*i).second.size = ((*i).second.maxc.x - (*i).second.minc.x) * ((*i).second.maxc.y - (*i).second.minc.y);					
+				OutBlobs->push_back(i->second);
+			}
+		}
+
+
+		o3_fun size_t findBlobs(size_t lowerbound, size_t upperbound, size_t subdiv = 10)
+		{
+			if (subdiv < 1) subdiv = 1;
+			mBlobs.clear();
+			int div = subdiv;
+			BlobFrame BF;
+			BF.width = 640/div;
+			BF.height = 480/div;
+			BF.imageData = new unsigned short [BF.width*BF.height];
+			unsigned short *dst = BF.imageData;
+			for (unsigned int y = 0;y < 480;y += div)
+			{
+				unsigned short *src = mDepthFrameStore + (y*640);
+				for (unsigned int x = 0;x < 640;x += div)
+				{
+					*dst++ = *src;
+					src += div;					
+				}
+			}
+
+			DetectBlobs(&BF, &mBlobs, lowerbound, upperbound);
+			delete [] BF.imageData ;
+			return mBlobs.size();
+		};
+
+		o3_fun void depthThreshold(iScr *canvas, size_t lowerbound, size_t upperbound)
+		{
+			siImage img(canvas);
+			if (img)
+			{
+				switch (img->mode_int())					
+				{
+				case Image::MODE_ARGB:
+					{
+						int w = __min(img->width(), 640);
+						int h = __min(img->height(), 480);
+						unsigned short S;
+						for (int y =0;y<h;y++)
+						{							
+							unsigned char *dst = img->getrowptr(y);
+
+							for (int x = 0;x<w;x++)
+							{
+								S = dst[2] + (dst[1]<<8);
+								if (S>=lowerbound && S<=upperbound)
+								{
+									dst[0] = 255;
+									dst[1] = 255;
+									dst[2] = 255;
+								}
+								else
+								{
+									dst[0] = 0;
+									dst[1] = 0;
+									dst[2] = 0;
+								}
+								dst+=4;
+							};
+						}
+					};
+					break;
+				case Image::MODE_RGB:
+					{
+						int w = __min(img->width(), 640);
+						int h = __min(img->height(), 480);
+						for (int y =0;y<h;y++)
+						{
+							unsigned char *src = mRGBFrameStore + 640*y;
+							unsigned char *dst = img->getrowptr(y);
+							for (int x = 0;x<w;x++)
+							{
+								dst[2]  = *src++;
+								dst[1]  = *src++;
+								dst[0]  = *src++;
+								dst+=3;
+							};
+						}
+					};
+					break;
+				};					
+			};
+
+		}
+
 
 		o3_fun void RGBToCanvas(iScr *canvas)
 		{
@@ -174,7 +440,52 @@ namespace o3
 
 		o3_fun void DepthToCanvas(iScr *canvas)
 		{
-
+			siImage img(canvas);
+			if (img)
+			{
+				switch (img->mode_int())					
+				{
+				case Image::MODE_ARGB:
+					{
+						int w = __min(img->width(), 640);
+						int h = __min(img->height(), 480);
+						for (int y =0;y<h;y++)
+						{
+							unsigned short *src = mDepthFrameStore + (640*y);
+							unsigned char *dst = img->getrowptr(y);
+							for (int x = 0;x<w;x++)
+							{
+								unsigned short const S = *src++;
+								dst[2]  = S&0xff;
+								dst[1]  = S>>8;
+								dst[0]  = 0;
+								dst[3] = 255;
+								dst+=4;
+							};
+						}
+					};
+					break;
+				case Image::MODE_RGB:
+					{
+						int w = __min(img->width(), 640);
+						int h = __min(img->height(), 480);
+						for (int y =0;y<h;y++)
+						{
+							unsigned short *src = mDepthFrameStore + (640*y);
+							unsigned char *dst = img->getrowptr(y);
+							for (int x = 0;x<w;x++)
+							{
+								unsigned short const S = *src++;
+								dst[2]  = S&0xff;
+								dst[1]  = S>>8;
+								dst[0]  = 0;
+								dst+=3;
+							};
+						}
+					};
+					break;
+				};					
+			};
 		};
 
 		o3_fun void DepthToVBO(iScr *vbo)
@@ -197,9 +508,9 @@ namespace o3
 		}
 
 		o3_begin_class(cScr)
-		o3_end_class()
+			o3_end_class()
 
-		o3_glue_gen()
+			o3_glue_gen()
 	};
 
 	void gDepthCallback(freenect_device *dev, freenect_depth *depth, uint32_t timestamp)
@@ -210,7 +521,7 @@ namespace o3
 			K->DepthCallback(depth);
 		};
 	};
-	
+
 	void gRGBCallback(freenect_device *dev, freenect_pixel *rgb, uint32_t timestamp)
 	{
 		cKinect *K = (cKinect *)freenect_get_user(dev);

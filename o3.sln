@@ -43,7 +43,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "core", "core", "{475BCB3E-D
 		include\tools_axhost.h = include\tools_axhost.h
 		include\tools_chr.h = include\tools_chr.h
 		include\tools_glue.h = include\tools_glue.h
-		include\tools_glue_idispatch.h = include\tools_glue_idispatch.h
 		include\tools_math.h = include\tools_math.h
 		include\tools_mem.h = include\tools_mem.h
 		include\tools_str.h = include\tools_str.h

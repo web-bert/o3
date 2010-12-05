@@ -107,7 +107,7 @@ namespace o3
 			y = (float)yy;			
 		}
 
-		static o3_ext("cO3") o3_fun siVector3 vec2(double xx,double yy)
+		static o3_ext("cO3") o3_fun siVector2 vec2(double xx,double yy)
 		{              
 			cVector2* ret = o3_new(cVector2)(xx,yy);
 			return ret;		
@@ -814,7 +814,7 @@ namespace o3
 			glEnd();
 		};
 
-		o3_fun void Vertex2(double x, double y, double z)
+		o3_fun void Vertex2(double x, double y)
 		{
 			glVertex2d(x,y);
 		};
@@ -912,7 +912,7 @@ namespace o3
 			DWORD flags = getFlags(style);
 			if (parent)
 				flags |= WS_CHILD;
-			flags |= WS_THICKFRAME | WS_MAXIMIZE;
+			flags |= WS_THICKFRAME ;
 			// create the object and the window
 			ret->m_hwnd = CreateWindowExW(0,o3_wnd_class_name, 
 				WStr(caption).ptr(), flags, x, y, width, height, 
