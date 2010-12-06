@@ -584,7 +584,7 @@ o3_fun void clear(int signed_color)
 #pragma region JPG_load_and_save
 
 #pragma endregion JPG_load_and_save
-		oaaa3_set Buf srcJPG(const Buf &data)
+		o3_set Buf srcJPG(const Buf &data)
 		{
 
 			o3_trace_scrfun("srcJPG");
@@ -626,7 +626,7 @@ o3_fun void clear(int signed_color)
 
 		}
 
-		oaaa3_fun Buf jpgBuffer()
+		o3_fun Buf jpgBuffer()
 		{
 			o3_trace_scrfun("jpgBuffer");
 			Buf Output;
