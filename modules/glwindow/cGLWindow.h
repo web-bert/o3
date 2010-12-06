@@ -567,9 +567,12 @@ namespace o3
 			m_def_proc = NULL;
 			mGLContext = NULL;
 			mCurrentDC = NULL;
-		}
+		};
 
-		virtual ~cGLWindow(){}
+		virtual ~cGLWindow()
+		{
+
+		}
 
 		o3_begin_class(cWindow)
 			o3_add_iface(iWindow)
@@ -578,7 +581,7 @@ namespace o3
 
 		o3_glue_gen()
 
-		WNDPROC         m_def_proc;
+		WNDPROC m_def_proc;
 		HGLRC mGLContext ;
 		HDC mCurrentDC;
 
@@ -636,7 +639,7 @@ namespace o3
 			{
 				mCurrentDC  = GetDC(m_hwnd);
 				wglMakeCurrent ( mCurrentDC , mGLContext );
-			}
+			};
 		};
 
 		o3_fun void EndFrame()
@@ -645,7 +648,7 @@ namespace o3
 			{
 				ReleaseDC(m_hwnd, mCurrentDC );
 				mCurrentDC  = NULL;
-			}
+			};
 			invalidate();
 		};
 
@@ -686,8 +689,6 @@ namespace o3
 								glActiveTexture(GL_TEXTURE0);
 								break;
 							}
-							
-							
 							siMat44 Mat44(S);
 							if (Mat44)
 							{
@@ -714,17 +715,12 @@ namespace o3
 								float V[2] = {Vec2->x, Vec2->y};
 								::glUniform2f(uniform, V[0],V[1]);
 								break;
-							}
-
-							
-						
+							};
 						};
 						break;
 					};
 				};
-			}
-
-			
+			};
 		};
 
 		o3_fun void ClearColor(double r,double g, double b, double a)
@@ -866,9 +862,15 @@ namespace o3
 			}
 			
 		};
+
 		o3_fun void Perspective(double fov, double aspect, double nearplane, double farplane)
 		{
 			gluPerspective(fov, aspect,nearplane, farplane);
+		};
+
+		o3_fun void Ortho2D(double left, double right, double bottom, double top)
+		{
+			gluOrtho2D(left, right, bottom, top);
 		};
 
 		o3_fun void LookAt(double xeye, double yeye, double zeye, double xtarget, double ytarget, double ztarget, double xup, double yup, double zup)

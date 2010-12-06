@@ -36,10 +36,43 @@ namespace o3
 	void gDepthCallback(freenect_device *dev, freenect_depth *depth, uint32_t timestamp);
 	void gRGBCallback(freenect_device *dev, freenect_pixel *rgb, uint32_t timestamp);
 
+	struct cDepthBuffer: cScr
+	{
+		o3_begin_class(cScr)
+		o3_end_class()
+		
+		cDepthBuffer(unsigned int W, unsigned int H)
+		{
+			mData = NULL;
+			mWidth = W;
+			mHeight = H;
 
+			if (W*H == 0) return;
+			mData = new unsigned short[W*H];
+		};
+
+		virtual ~cDepthBuffer()
+		{
+			if (mData) delete [] mData;
+		};
+		unsigned short *getRowPtr(size_t y)
+		{
+			if (y<mHeight) return mData + (mWidth * y);
+			return NULL;
+		};
+		size_t mWidth, mHeight;
+		unsigned short *mData;
+
+		o3_glue_gen()
+	};
 
 	struct cKinect : cScr
 	{
+		o3_begin_class(cScr)
+		o3_end_class()
+
+		o3_glue_gen()
+
 		freenect_device *mDevice;
 
 		static o3_ext("cO3") o3_fun siScr kinect(size_t index= 0)
@@ -53,9 +86,10 @@ namespace o3
 		int mRGBFrame;
 		int mDepthFrame;
 		unsigned char mRGBFrameStore[640*480*3];
-		unsigned short mDepthFrameStore[640*480];
 
-		cKinect(size_t kinectnumber = 0)
+		cDepthBuffer mDepthFrameStore;
+
+		cKinect(size_t kinectnumber = 0): mDepthFrameStore(640,480)
 		{
 			mRGBFrameCount = 0;
 			mRGBFrame = 0;
@@ -96,7 +130,7 @@ namespace o3
 		void DepthCallback(unsigned short *depth)
 		{
 			mDepthFrameCount++;
-			memcpy(mDepthFrameStore, depth, sizeof(unsigned short)*640*480);
+			memcpy(mDepthFrameStore.mData, depth, sizeof(unsigned short)*640*480);
 		};
 
 		void RGBCallback(unsigned char *rgb)
@@ -207,7 +241,8 @@ namespace o3
 
 					//unsigned char byte = (unsigned char) imgStream.get();
 					float val = frame->imageData[(row*frame->width)+ column];
-#define inRange(x) (x>=minv && x<maxv)
+//#define inRange(x) (x>=minv && x<maxv)
+#define inRange(x) (x>0)
 					if(inRange(val))
 					{
 						int start = column;
@@ -305,7 +340,7 @@ namespace o3
 		}
 
 
-		o3_fun size_t findBlobs(size_t lowerbound, size_t upperbound, size_t subdiv = 10)
+		o3_fun size_t findBlobs(size_t lowerbound, size_t upperbound, size_t subdiv = 10, size_t dilate_iterations=2)
 		{
 			if (subdiv < 1) subdiv = 1;
 			mBlobs.clear();
@@ -315,15 +350,72 @@ namespace o3
 			BF.height = 480/div;
 			BF.imageData = new unsigned short [BF.width*BF.height];
 			unsigned short *dst = BF.imageData;
+			
 			for (unsigned int y = 0;y < 480;y += div)
 			{
-				unsigned short *src = mDepthFrameStore + (y*640);
+				unsigned short *src = mDepthFrameStore.getRowPtr(y);
 				for (unsigned int x = 0;x < 640;x += div)
 				{
-					*dst++ = *src;
+					unsigned short val = *src;
+					if (val>lowerbound && val <=upperbound) *dst++ = 255;else *dst++= 0;
 					src += div;					
 				}
 			}
+
+			if (dilate_iterations)
+			{
+				unsigned short *dilatetarget = new unsigned short [BF.width*BF.height];
+				
+				unsigned short *dst = dilatetarget;
+				unsigned short *src = BF.imageData;
+
+				for (size_t i = 0; i < dilate_iterations; i++)
+				{
+					unsigned short *toprow = dst;
+					unsigned short *bottomrow = dst + (BF.height-1)*BF.width;
+
+					for (unsigned int x = 0;x<(unsigned int)BF.width;x++)
+					{
+						*toprow++ = 0;
+						*bottomrow++ = 0;
+					};
+						
+					for (unsigned int y = 1;y<(unsigned int)BF.height-1;y++)
+					{
+						
+						unsigned short *dst1 = dst+(y*BF.width);
+						dst1[0] = 0;dst1[BF.width-1] = 0;
+						unsigned short *src1 = src+(y-1)*BF.width;
+						
+						for (unsigned int x = 1;x<(unsigned int)BF.width-1;x++)
+						{
+							if (src1[x-1]           || src1[x]           || src1[x+1]   ||
+								src1[x-1+BF.width]  || src1[x+1+BF.width]|| 
+								src1[x-1+BF.width*2]|| src1[x+BF.width*2]|| src1[x+1+BF.width*2])
+							{
+								*dst1++ = 255;
+							}
+							else 
+							{
+								*dst1++ = 0;
+							};
+
+						};
+					};
+
+					unsigned short *T = dst;
+					dst = src;
+					src = T;
+										
+				};
+				
+				if (dst != BF.imageData)
+				{
+					memcpy(BF.imageData, dst, BF.width*BF.height*sizeof(unsigned short));
+				};
+
+				delete [] dilatetarget;			
+			};
 
 			DetectBlobs(&BF, &mBlobs, lowerbound, upperbound);
 			delete [] BF.imageData ;
@@ -451,7 +543,7 @@ namespace o3
 						int h = __min(img->height(), 480);
 						for (int y =0;y<h;y++)
 						{
-							unsigned short *src = mDepthFrameStore + (640*y);
+							unsigned short *src = mDepthFrameStore.getRowPtr(y);
 							unsigned char *dst = img->getrowptr(y);
 							for (int x = 0;x<w;x++)
 							{
@@ -471,7 +563,7 @@ namespace o3
 						int h = __min(img->height(), 480);
 						for (int y =0;y<h;y++)
 						{
-							unsigned short *src = mDepthFrameStore + (640*y);
+							unsigned short *src = mDepthFrameStore.getRowPtr(y);
 							unsigned char *dst = img->getrowptr(y);
 							for (int x = 0;x<w;x++)
 							{
@@ -505,12 +597,7 @@ namespace o3
 				freenect_shutdown(gFreenectContext);
 				gFreenectContext = NULL;
 			};
-		}
-
-		o3_begin_class(cScr)
-			o3_end_class()
-
-			o3_glue_gen()
+		};
 	};
 
 	void gDepthCallback(freenect_device *dev, freenect_depth *depth, uint32_t timestamp)
