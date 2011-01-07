@@ -56,7 +56,7 @@
             *rval = pthis1->__enumerator__(argv[0].toInt32());
             break;
         case 3:
-            *rval = pthis1->__query__(argv[0].toInt32());
+            *rval = pthis1->__query__(ctx, argv[0].toInt32());
             break;
         case 4:
             *rval = pthis1->__getter__(ctx, argv[0].toInt32());

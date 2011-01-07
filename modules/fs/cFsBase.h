@@ -92,9 +92,10 @@ struct cFsBase : cScr, iFs {
         return name;
     }
 
-    virtual o3_set Str setName(const char* name, siEx*)
+    virtual o3_set Str setName(const char* name, siEx* ex)
     {
         o3_trace_scrfun("setName");
+		ex;
         Str path = this->path();;
 		size_t found=0,last=NOT_FOUND;
 

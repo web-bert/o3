@@ -21,6 +21,7 @@
 namespace o3 {
 
 class Var;
+struct iScr; 
 
 o3_iid(iEx, 0x622E3C0B,
             0x5F4D,
@@ -52,6 +53,10 @@ struct iCtx : iAlloc {
 	virtual void* appWindow() = 0;
 
 	virtual bool isIE() = 0;
+
+	virtual Handle<Value> toValue(const Var& val) = 0;
+	virtual Var toVar(Handle<Value> value) = 0;
+	virtual Handle<Object> createObject(iScr* scr) = 0;
 
 #ifdef O3_WITH_LIBEVENT 
 	virtual struct event_base* eventBase() = 0;

@@ -15,39 +15,38 @@
  * this library; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-//#define O3_COMPILE_LIBRARIES
-#define O3_V8
+#define CANVAS_USE_JPEG
 #include <js/js.h>
 //#include <test/proto_v1.h>
 #include "fastxml/fastxml.h"
 #include "xml/xml.h"
 //#include "socket/socket.h"
-#include "fs/fs.h"
+//#include "fs/fs.h"
 //#include "buffer/buffer.h"
 #include "console/console.h"
-#include "http/http.h"
-#include "process/process.h"
-#include "protocol/protocol.h"
-#include "resource/resource.h"
-#include "screen/screen.h"
-#include "window/window.h"
-#include "glwindow/glwindow.h"
-#include "tools/tools.h"
-#include "process/process.h"
+//#include "http/http.h"
+//#include "process/process.h"
+//#include "protocol/protocol.h"
+//#include "resource/resource.h"
+//#include "screen/screen.h"
+//#include "window/window.h"
+//#include "glwindow/glwindow.h"
+//#include "tools/tools.h"
+//#include "process/process.h"
 //#include "test/test.h" 
-#include "kinect/kinect.h"
+//#include "kinect/kinect.h"
 
 #include "canvas/canvas.h"
-#include "pdf/pdf.h"
+//#include "pdf/pdf.h"
 //#include "scanner/scan.h"
 //#include "barcode/barcode.h"
 
-#include "rsa/rsa.h"
-#include "sha1/sha1.h"
-#include "md5/md5.h"
+//#include "rsa/rsa.h"
+//#include "sha1/sha1.h"
+//#include "md5/md5.h"
 //#include "canvas/cCanvas1_win32.h"
 
-#include "zip/zip.h"
+//#include "zip/zip.h"
 //#include "socket/socket.h"
 
 //int WINAPI WinMain(HINSTANCE hi, HINSTANCE hp, LPSTR arg, int show){
@@ -60,49 +59,51 @@ int main(int argc, char **argv) {
     cSys sys;
 
     siMgr mgr = o3_new(cMgr)();
-    siCtx ctx = o3_new(cJs)(mgr, --argc, ++argv,0);
    
     
     //mgr->addExtTraits(cCanvas1::extTraits());
-    mgr->addExtTraits(cFs::extTraits());
-    mgr->addExtTraits(cHttp::extTraits());
+    //mgr->addExtTraits(cFs::extTraits());
+    //mgr->addExtTraits(cHttp::extTraits());
     //mgr->addExtTraits(cBuffer::extTraits());
-    mgr->addExtTraits(cConsole::extTraits());
-    mgr->addExtTraits(cFastXml::extTraits());
+    mgr->addV8ExtTraits(cConsole::v8ExtTraits());
+    //mgr->addExtTraits(cFastXml::extTraits());
     //mgr->addExtTraits(cJs1::extTraits());
     //mgr->addExtTraits(cSocket::extTraits());
-    mgr->addExtTraits(cResource::extTraits());
-    mgr->addExtTraits(cResourceBuilder::extTraits());
-    mgr->addExtTraits(cScreen::extTraits());
-	mgr->addExtTraits(cProcess::extTraits());
+ //   mgr->addExtTraits(cResource::extTraits());
+ //   mgr->addExtTraits(cResourceBuilder::extTraits());
+ //   mgr->addExtTraits(cScreen::extTraits());
+	//mgr->addExtTraits(cProcess::extTraits());
 	//mgr->addExtTraits(cTest::extTraits());
 
-	mgr->addExtTraits(cWindow::extTraits());
-	mgr->addExtTraits(cGLWindow::extTraits());
-	mgr->addExtTraits(cGLTexture::extTraits());
-	mgr->addExtTraits(cGLVertexArray::extTraits());
-	mgr->addExtTraits(cGLShaderProgram::extTraits());
+	//mgr->addExtTraits(cWindow::extTraits());
+	//mgr->addExtTraits(cGLWindow::extTraits());
+	//mgr->addExtTraits(cGLTexture::extTraits());
+	//mgr->addExtTraits(cGLVertexArray::extTraits());
+	//mgr->addExtTraits(cGLShaderProgram::extTraits());
 
-	mgr->addExtTraits(cVector2::extTraits());
-	mgr->addExtTraits(cVector3::extTraits());
-	mgr->addExtTraits(cVector4::extTraits());
-	mgr->addExtTraits(cMat44::extTraits());
-	mgr->addExtTraits(cKinect::extTraits());
+	//mgr->addExtTraits(cVector2::extTraits());
+	//mgr->addExtTraits(cVector3::extTraits());
+	//mgr->addExtTraits(cVector4::extTraits());
+	//mgr->addExtTraits(cMat44::extTraits());
+	//mgr->addExtTraits(cKinect::extTraits());
 
 
-	mgr->addExtTraits(cCanvas::extTraits());
+	mgr->addV8ExtTraits(cCanvas::v8ExtTraits());
+	mgr->addV8ExtTraits(cGlueTest::v8ExtTraits());
 	//mgr->addExtTraits(cBarcode::extTraits());
 	//mgr->addExtTraits(cScan::extTraits());
 
-	mgr->addExtTraits(cRSA::extTraits());
-	mgr->addExtTraits(cSHA1Hash::extTraits());
-	mgr->addExtTraits(cMD5Hash::extTraits());
-	mgr->addExtTraits(cZip::extTraits());
-	mgr->addExtTraits(cFastXml::extTraits());
-	mgr->addExtTraits(cXml::extTraits());
+	//mgr->addExtTraits(cRSA::extTraits());
+	//mgr->addExtTraits(cSHA1Hash::extTraits());
+	//mgr->addExtTraits(cMD5Hash::extTraits());
+	//mgr->addExtTraits(cZip::extTraits());
+	//mgr->addExtTraits(cFastXml::extTraits());
+	mgr->addV8ExtTraits(cXml::v8ExtTraits());
 
-	mgr->addFactory("fs", &cFs::rootDir);
-	mgr->addFactory("http", &cHttp::factory);
+	//mgr->addFactory("fs", &cFs::rootDir);
+	//mgr->addFactory("http", &cHttp::factory);
+
+    siCtx ctx = o3_new(cJs)(mgr, --argc, ++argv,0);
 
     WSADATA wsd;
     WSAStartup(MAKEWORD(2,2), &wsd);
@@ -157,12 +158,13 @@ int main(int argc, char **argv) {
 #ifndef O3_V8			
 		if (((cJs*)ctx.ptr())->scriptError())
 			ret = -1;
-#endif		
+	
 
 		siCtx1 ctx1;
 		if (ctx1){
 			ctx1->tear();
 		}
+#endif	
 	}
     
     //CoUninitialize(); 

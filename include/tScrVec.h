@@ -37,7 +37,7 @@ public:
 
 #include "tScrVec_scr.h"
 
-    o3_get size_t length()
+    o3_get int length()
     {
         o3_trace3 trace;
 
@@ -67,7 +67,7 @@ public:
         return NOT_FOUND;
     }
 
-    o3_fun bool __query__(size_t index)
+    o3_fun bool __query__(iCtx* ctx, size_t index)
     {
         o3_trace3 trace;
 

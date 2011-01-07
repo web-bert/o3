@@ -49,16 +49,16 @@ namespace o3 {
 			return false;
 		} 
 
-		o3_fun siXmlNode __getter__(int idx, siEx* ex = 0) {
+		o3_fun Var __getter__(int idx, siEx* ex = 0) {
 			o3_trace_scrfun("__getter__");
 			ex;
 			o3_trace3 trace;
 			if (idx >= length() || idx < 0) {                
 				//o3_set_ex(ex_invalid_value); 
 
-				return siXmlNode();
+				return Var();
 			}
-			return item(idx);
+			return Var(item(idx));
 		}
 
 		virtual o3_fun siXmlNode getNamedItem(const char* name) {

@@ -2557,7 +2557,7 @@ o3_fun void clear(int signed_color)
 			
 			o3_trace_scrfun("SetupRenderState");
 			
-			RenderState *RS = new RenderState();
+			RenderState *RS = /*new*/ o3_new(RenderState)();
 			
 			if (source)
 			{
@@ -2760,7 +2760,7 @@ o3_fun void clear(int signed_color)
 				if (m_currentrenderstate)
 				{
 					LastClipVertexCount = m_currentrenderstate->ClipPath.total_vertices();
-					delete m_currentrenderstate;
+					o3_delete(m_currentrenderstate);
 				};
 				m_renderstates.pop();
 				m_currentrenderstate = m_renderstates[m_renderstates.size()-1];

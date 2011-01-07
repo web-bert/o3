@@ -292,7 +292,7 @@ struct cO3 : cScr {
 		return Str(O3_UI_URL) + "/settings.html";
 	}
 
-	o3_fun void require(iCtx* /*ctx*/, const char* module)
+	o3_fun void require(iCtx* ctx, const char* module)
 	{
 		o3_trace_scrfun("require");
 		m_to_approve.pushBack(module);

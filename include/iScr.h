@@ -43,6 +43,10 @@ struct iScr : iUnk {
                         const Var* argv, Var* rval) = 0;
 
 	virtual Str className() = 0;
+
+#ifdef O3_V8_GLUE
+	virtual void init(Handle<Object> target) = 0;
+#endif
 };
 }
 

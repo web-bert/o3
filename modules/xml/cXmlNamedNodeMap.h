@@ -47,7 +47,7 @@ namespace o3 {
             return false;
         } 
         
-        o3_fun siXmlNode2 __getter__(iCtx* ctx, int idx, siEx* ex = 0) {
+        o3_fun Var __getter__(iCtx* ctx, int idx, siEx* ex = 0) {
             o3_trace_scrfun("__getter__");
             ex;
             o3_trace3 trace;
@@ -56,7 +56,7 @@ namespace o3 {
                 
                 return siXmlNode2();
             }
-            return item(ctx, idx);
+            return Var(item(ctx, idx));
         }
         
 		virtual o3_fun siXmlNode2 getNamedItem(iCtx* ctx, const char* name) {
@@ -64,7 +64,7 @@ namespace o3 {
 			return m_elem->getAttributeNode(ctx, name);
 		}
         
-		virtual o3_set siXmlNode2 setNamedItem(iCtx* ctx, iXmlNode2* arg) {
+		virtual o3_fun siXmlNode2 setNamedItem(iCtx* ctx, iXmlNode2* arg) {
             o3_trace_scrfun("setNamedItem");
 			return m_elem->setAttributeNode(ctx, siXmlAttr2(arg));
 		}

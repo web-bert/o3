@@ -95,10 +95,12 @@ struct cJs : cJsBase {
         }
 
 		virtual Str className(){
+			o3_trace_scrfun("className");
 			return "ScrObj";
 		}
 
 		virtual Handle<Object> unwrap(){
+			o3_trace_scrfun("unwrap");
 			HandleScope handle_scope;
 			return handle_scope.Close(m_object);
 		}
@@ -110,6 +112,98 @@ struct cJs : cJsBase {
         return Local<External>::Cast(value)->Value();
     }
 
+#ifdef O3_V8_GLUE	
+	static Handle<Value> indexedGetter(uint32_t index,
+		const AccessorInfo& info)
+	{
+		o3_trace_hostglue("indexedGetter");
+		HandleScope scope;
+		cJs* pthis = (cJs*) cast(info.Data());
+		cScr* scr = (cScr*)(iScr*) cast(info.Holder()->GetInternalField(1));
+		siEx ex;
+
+		Var rval = scr->__getter__(pthis, index, &ex);
+		if (ex)
+			ThrowException(String::New(ex->message()));
+
+		return scope.Close(pthis->toValue(rval));
+	}
+
+	static Handle<Value> indexedSetter(uint32_t index, Local<Value> value,
+		const AccessorInfo& info)
+	{
+		o3_trace_hostglue("indexedSetter");
+		HandleScope scope;
+		cJs* pthis = (cJs*) cast(info.Data());
+		cScr* scr = (cScr*)(iScr*) cast(info.Holder()->GetInternalField(1));
+		siEx ex;
+
+		Var arg = pthis->toVar(value);
+		Var rval = scr->__setter__(index, arg, &ex);
+		if (ex)
+			ThrowException(String::New(ex->message()));
+
+		return scope.Close(pthis->toValue(rval));
+	}
+
+	static Handle<Integer> indexedQuery(uint32_t index,
+		const AccessorInfo& info)
+	{
+		o3_trace_hostglue("indexedQuery");
+		HandleScope scope;
+		cJs* pthis = (cJs*) cast(info.Data());
+		cScr* scr = (cScr*)(iScr*) cast(info.Holder()->GetInternalField(1));
+
+		bool rval;
+		rval = scr->__query__(pthis, index);
+
+		return rval ? v8::Integer::New(v8::None)
+			: v8::Handle<v8::Integer>();
+	}
+
+	static Handle<Boolean> indexedDeleter(uint32_t index,
+		const AccessorInfo& info)
+	{
+		o3_trace_hostglue("indexedDeleter");
+		HandleScope scope;
+		cJs* pthis = (cJs*) cast(info.Data());
+		cScr* scr = (cScr*)(iScr*) cast(info.Holder()->GetInternalField(1));
+		siEx ex;
+		bool rval = scr->__deleter__(index, &ex);	
+		
+		if (ex) {
+			ThrowException(String::New(ex->message()));
+			return Handle<Boolean>();
+		}
+		return Boolean::New(rval);
+	}
+
+	static Handle<Array> indexedEnumerator(const AccessorInfo& info)
+	{
+		o3_trace_hostglue("indexedEnumerator");
+		cJs* pthis = (cJs*) cast(info.Data());
+		iScr* scr = (iScr*) cast(info.Holder()->GetInternalField(0));
+		siCtx ctx(pthis);
+		Var arg;
+		Var rval;
+		Handle<Array> names_out;
+		size_t length;
+		int key;
+		int next_id = -1;
+		tVec<Str> names;
+
+
+		length = names.size();
+		names_out = Array::New(length);
+		for (size_t i=0; i<length; i++) {
+			names_out->Set(Number::New(i),
+				String::New(names[i]));
+		}
+
+		return names_out;
+	}
+
+#else
     static Handle<Value> invocation(const Arguments& args)
     {
         o3_trace_hostglue("invocation");
@@ -347,6 +441,8 @@ struct cJs : cJsBase {
         return names_out;
     }
 
+#endif // O3_V8_GLUE
+
     static void finalize(Persistent<Value> value, void* parameter)
     {
 		o3_trace_hostglue("finalize");
@@ -357,8 +453,11 @@ struct cJs : cJsBase {
 
         cJs* pthis = (cJs*) parameter;
         Handle<Object> object = value->ToObject();
-        iScr* scr = (iScr*) cast(object->GetInternalField(0));
-
+#ifdef O3_V8_GLUE
+        iScr* scr = (iScr*) cast(object->GetInternalField(1));
+#else
+		iScr* scr = (iScr*) cast(object->GetInternalField(0));
+#endif
         if (scr) {
             scr->release();
 			pthis->m_wrappers[scr].Clear();
@@ -369,14 +468,13 @@ struct cJs : cJsBase {
 		value.Clear();
     }
 
-#ifdef O3_NODE
 	static void cleanup(Persistent<Value> value, void *parameter)
 	{
 		o3_trace_hostglue("cleanup");
 		cJs* pthis = (cJs*) parameter;
 		pthis->release();
 	}
-#else	    
+#ifndef O3_NODE
 	Persistent<Context> m_context;
 #endif
     Persistent<ObjectTemplate> m_template;
@@ -401,10 +499,14 @@ struct cJs : cJsBase {
         scr->addRef();
         object = Persistent<Object>::New(m_template->NewInstance());
         object.MakeWeak(this, finalize);
-        object->SetInternalField(0, External::New(scr));
-        //m_objects[*object] = *object;
-        m_wrappers[scr] = object;
-		//return object;
+#ifdef O3_V8_GLUE
+		object->SetInternalField(0, External::New(siCtx(this).ptr()));
+		object->SetInternalField(1, External::New(scr));
+		scr->init(object);
+#else
+		object->SetInternalField(0, External::New(scr));
+#endif
+		m_wrappers[scr] = object;
 		return handle_scope.Close(object);
     }
 
@@ -423,12 +525,18 @@ struct cJs : cJsBase {
             return Var(value->ToNumber()->Value(), this);
         else if (value->IsObject()) {
             Handle<Object> object = value->ToObject();
-
+#ifdef O3_V8_GLUE
+			if (object->InternalFieldCount() > 1) 
+				return Var((iScr*) cast(object->GetInternalField(1)),this);
+			else
+				return Var();
+#else
             if (object->InternalFieldCount() > 0) 
                 return (iScr*) cast(object->GetInternalField(0));
             else
                 return o3_new(cScrObj)(this, object);
-        } else if (value->IsString())
+#endif
+		} else if (value->IsString())
             return Var(*String::Utf8Value(value->ToString()), this);
         return Var((iAlloc*) this);
     }
@@ -481,12 +589,14 @@ public:
         m_template = Persistent<ObjectTemplate>::New(handle);
         m_mgr = mgr;
         m_loop = g_sys->createMessageLoop();
-        m_template->SetInternalFieldCount(1);
+        m_template->SetInternalFieldCount(2);
         data = External::New(this);
-        m_template->SetCallAsFunctionHandler(invocation, data);
+#ifndef O3_V8_GLUE 
+		m_template->SetCallAsFunctionHandler(invocation, data);
         m_template->SetNamedPropertyHandler(namedGetter, namedSetter,
                                             namedQuery, namedDeleter,
                                             namedEnumerator, data);
+#endif
         m_template->SetIndexedPropertyHandler(indexedGetter, indexedSetter,
                                               indexedQuery, indexedDeleter,
                                               indexedEnumerator, data);
@@ -508,12 +618,15 @@ public:
         m_template = Persistent<ObjectTemplate>::New(handle);
         m_mgr = mgr;
         m_loop = g_sys->createMessageLoop();
-        m_template->SetInternalFieldCount(1);
+        m_template->SetInternalFieldCount(2);
+
         data = External::New(this);
+#ifndef O3_V8_GLUE 
         m_template->SetCallAsFunctionHandler(invocation, data);
         m_template->SetNamedPropertyHandler(namedGetter, namedSetter,
                                             namedQuery, namedDeleter,
                                             namedEnumerator, data);
+#endif
         m_template->SetIndexedPropertyHandler(indexedGetter, indexedSetter,
                                               indexedQuery, indexedDeleter,
                                               indexedEnumerator, data);
@@ -525,6 +638,33 @@ public:
 #endif
 		target->Set(String::New("root"), object2);
 	}
+
+	cJs(Handle<Object> target, iMgr* mgr) 
+	{
+		o3_trace_scrfun("cJs");
+		HandleScope handle_scope;
+		Local<ObjectTemplate> handle;
+		Local<External> data;       
+		Handle<Object> object;
+		Persistent<Object> object2;
+		m_mgr = mgr;
+		handle = ObjectTemplate::New();
+		data = External::New(this);
+		m_template = Persistent<ObjectTemplate>::New(handle);
+		m_template->SetInternalFieldCount(2);
+		m_template->SetIndexedPropertyHandler(indexedGetter, indexedSetter,
+			indexedQuery, indexedDeleter,
+			indexedEnumerator, data);
+
+		siScr scr(o3_new(cO3)(this, 0, 0, 0));
+		//siScr scr = o3_new(cGlueTest)();
+		object = createObject(scr);	
+		object2 = Persistent<Object>::New(object);
+		object2.MakeWeak(this, cleanup);
+		target->Set(String::New("root"), object2);
+	}
+
+
     ~cJs()
     {
         o3_trace_hostglue("~cJs");
@@ -647,6 +787,7 @@ public:
 
 	virtual void* appWindow()
 	{
+		o3_trace_scrfun("appWindow");
 		return 0;
 	}
 
@@ -658,6 +799,7 @@ public:
 
 	Handle<Object> prototype(iScr* scr)
 	{
+		o3_trace_scrfun("prototype");
 		Var proto_var = value(scr->className());
 		if (proto_var.type() == Var::TYPE_SCR){
 			siScrObj proto = proto_var.toScr();

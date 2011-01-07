@@ -37,6 +37,9 @@ typedef siUnk (*factory_t)(iCtx*);
 class Delegate;
 class Buf;
 
+struct V8Trait;
+using namespace v8;
+
 o3_iid(iMgr, 0x184F9D2C,
              0xCC8D,
              0x41B9,
@@ -87,6 +90,15 @@ struct iMgr : iUnk {
 	virtual void settings() = 0;
 
 	virtual bool safeLocation() = 0;
+
+#ifdef O3_V8_GLUE
+
+	virtual void collectV8ExtTraits(const char* name, Handle<Object> target) = 0;
+
+	virtual void addV8ExtTraits(V8Trait* traits) = 0;
+
+#endif
+
 };
 
 }

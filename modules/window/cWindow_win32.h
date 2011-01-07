@@ -116,22 +116,22 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
     }
 
     static o3_ext("cO3") o3_fun siWindow createWindow(o3_tgt iScr* tgt, const char* caption, int x, int y, 
-        int width, int height, int style = 0)
+        int width, int height)
     {   
 		o3_trace_scrfun("createWindow");   
 		tgt = 0;
-        return create(0, caption, x, y, width, height, style);
+        return create(0, caption, x, y, width, height);
     }
 
     o3_fun siWindow createWindow(const char* caption, int x, int y, 
-        int width, int height, int style = 0)
+        int width, int height)
     {
         o3_trace_scrfun("createWindow");
-        return create(m_hwnd, caption, x, y, width, height, style);
+        return create(m_hwnd, caption, x, y, width, height);
     }
 
     static siWindow create(HWND parent, const char* caption, int x, int y, 
-        int width, int height, int style = 0)
+        int width, int height)
     {
         // register o3 default window class, if needed
         o3_trace_scrfun("create");
@@ -140,7 +140,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
         regWndClass(wnd_class);
 
         // convert o3 style flags to native flags
-        DWORD flags = getFlags(style);
+        DWORD flags = WS_SYSMENU | WS_TABSTOP | WS_EX_CONTROLPARENT | WS_VISIBLE; 
         if (parent)
             flags |= WS_CHILD;
 
@@ -151,15 +151,6 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
             parent, 0, GetModuleHandle(0), (LPVOID)(iWindowProc*)ret);  
         
         return ret;
-    }
-
-    static DWORD getFlags(int)
-    {
-        // TODO: implement
-        o3_trace_scrfun("getFlags");
-        // TODO: implement
-        DWORD flags = WS_SYSMENU | WS_TABSTOP | WS_EX_CONTROLPARENT | WS_VISIBLE; 
-        return flags;
     }
 
     virtual int x()
@@ -497,7 +488,7 @@ struct cWindow : cWindowBase, iWindow, iWindowProc
             );
             return (ret == IDRETRY ? 1 : 0); 
         }else{
-            o3_set_ex (ex_invalid_value);
+            o3_set_ex ("Invalid value");
             return -1;
         }
     }

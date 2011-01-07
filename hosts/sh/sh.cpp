@@ -15,7 +15,11 @@
  * this library; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
-#include "o3.h"
+#define O3_V8
+//#define O3_NODE
+#define O3_V8_GLUE
+#include <v8/v8.h>
+#include <o3.h>
 #ifdef O3_WIN32
 #include "sh_win32.h"
 #else

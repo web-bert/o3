@@ -31,7 +31,16 @@
 
 #define O3_WITH_GLUE
 
-#ifdef O3_WITH_GLUE
+#ifdef O3_V8_GLUE
+#define o3_glue_gen() \
+	void initInternal(Handle<Object> target);\
+	virtual void init(Handle<Object> target)\
+	{\
+	initInternal(target);\
+	}\
+	static V8Trait* v8ExtTraits();
+
+#elif defined O3_WITH_GLUE
 #define o3_glue_gen() \
     Trait* select(); \
     static Trait* clsTraits();\
@@ -294,7 +303,13 @@ struct cScr : cUnk, iScr {
 
 	virtual Str className()
 	{
+		o3_trace_comglue("className");
 		return select()->cls_name;
+	}
+
+	virtual void init(Handle<Object> target)
+	{
+
 	}
 
     virtual Trait* select()
@@ -313,6 +328,38 @@ struct cScr : cUnk, iScr {
 
         return TRAITS;
     }
+
+#ifdef O3_V8_GLUE
+	virtual bool __query__(iCtx* ctx, int idx)
+	{
+		o3_trace_scrfun("query");
+		return false;
+	} 
+
+	virtual bool __deleter__(int , siEx* ex = 0) 
+	{
+		o3_trace_scrfun("deleter"); ex;
+		return false;
+	} 
+
+	virtual Var __getter__(iCtx* ctx, int idx, siEx* ex = 0) 
+	{
+		o3_trace_scrfun("getter"); ex;
+		return Var();
+	}
+
+	virtual Var __setter__(size_t index, const Var& val, siEx* ex = 0)
+	{
+		o3_trace_scrfun("setter");
+		return Var();
+	}
+
+	virtual int length() 
+	{
+		o3_trace_scrfun("length");
+		return 0;
+	}
+#endif //O3_V8_GLUE
 
     siScr createFun(iScr* scr, Trait::invoke_t invoke, int index);
 

@@ -569,7 +569,8 @@ struct cSys : cSysBase {
 		m_overall = 0;
 #ifdef O3_LOGFILE
 		removeLogFile();
-		file = fopen("c:/log/o3log.txt", "a");
+		file = fopen("/usr/tmp/o3log.txt", "w");
+
 #endif
 //#ifndef O3_NODE	      
         //struct hostent *hp;

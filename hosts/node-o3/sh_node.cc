@@ -27,6 +27,12 @@
 //#include <socket/socket.h>
 #include <canvas/canvas.h>
 
+#ifdef O3_V8_GLUE
+#define o3_add_extraits(X)  mgr->addV8ExtTraits(X::v8ExtTraits())
+#else
+#define o3_add_extraits(X)  mgr->addExtTraits(X::extTraits())
+#endif
+
 using namespace o3;
 using namespace v8;
 
@@ -39,12 +45,13 @@ init (Handle<Object> target)
   
   g_sys = new cSys();
   siMgr mgr = o3_new(cMgr)(); // will be referenced by cJs1
-  mgr->addExtTraits(cFastXml::extTraits());
-  mgr->addExtTraits(cXml::extTraits());
-  mgr->addExtTraits(cCanvas::extTraits());	
-  //mgr->addExtTraits(cBuffer::extTraits());    
 
-  iCtx* ctx = o3_new(cJs)(target, mgr, 0, 0, 0);
+  o3_add_extraits(cFastXml);
+  o3_add_extraits(cXml);
+  o3_add_extraits(cCanvas);		
+  
+
+  iCtx* ctx = o3_new(cJs)(target, mgr,0 ,0 ,0);
   ctx->addRef(); // will be released by a clenup callback in the cJs1
   
 }

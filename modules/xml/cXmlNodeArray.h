@@ -43,15 +43,15 @@ namespace o3 {
             return (idx < length() && idx > 0);
         } 
         
-        o3_fun siXmlNode2 __getter__(iCtx* ctx, int idx, siEx* ex = 0) {
+        o3_fun Var __getter__(iCtx* ctx, int idx, siEx* ex = 0) {
             o3_trace_scrfun("__getter__");
             ex;
             o3_trace3 trace;
             if (idx >= length() || idx<0) {
                     //o3_set_ex(ex_invalid_value);
-                return siXmlNode2();
+                return Var();
             }
-            return item(ctx, idx);
+            return Var(item(ctx, idx));
         }
 
         virtual siXmlNode2 item(iCtx* ctx, int index) {

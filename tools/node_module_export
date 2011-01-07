@@ -12,11 +12,13 @@ fi
 echo "exporting $1 to ajaxorg/node-o3-$1 for platform $2 ...."
 
 # lets check out the module
+rm -rf export
 [ -d "export" ] || mkdir "export"
 cd "export"
-[ -d "node-o3-$1" ] || git clone "git@github.com:ajaxorg/node-o3-$1"
+mkdir node-o3-$1
+#[ -d "node-o3-$1" ] || git clone "git@github.com:ajaxorg/node-o3-$1"
 cd "node-o3-$1"
-git pull
+#git pull
 
 mkdir lib || true
 mkdir "lib/o3-$1" || true
@@ -30,8 +32,8 @@ cp "../../modules/o3.js" "lib/o3-$1/o3.js"
 #run unittest
 node test/test.js
 
-git add * || true
-git commit -m "Autobuild" || true
-git push
+#git add * || true
+#git commit -m "Autobuild" || true
+#git push
 
 echo "export done"

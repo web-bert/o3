@@ -509,6 +509,7 @@ namespace o3 {
         }
 
 		SIDispatchEx prototype(){
+			o3_trace_hostglue("prototype");
 			SIDispatchEx proto_ex;
 			Var proto = siCtx(m_ctx)->value(m_bridge->className());
 			if (proto.type() == Var::TYPE_SCR){

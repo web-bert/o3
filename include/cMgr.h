@@ -60,6 +60,22 @@ struct Trait {
     }
 };
 
+
+struct V8Trait {
+	enum Type {
+		TYPE_METHOD,
+		TYPE_GETTER,
+		TYPE_SETTER,
+		TYPE_END	
+	};
+
+	Type type;
+	const char* class_name;
+	const char* fun_name;
+	void* fun_ptr;
+};
+
+
 Str hostFromURL( const Str& url );
 
 o3_cls(cMgr);
@@ -69,6 +85,7 @@ struct cMgr : cUnk, iMgr {
     tMap<Str, siModule> m_modules;
 	tMap<Str, factory_t> m_factories;
     tMap<Str, tVec<Trait> > m_traits;
+	tMap<Str, tVec<V8Trait> > m_v8traits;
     siThreadPool m_pool;
     Str m_root;
 	Str m_current_url;
@@ -477,6 +494,44 @@ struct cMgr : cUnk, iMgr {
 		// stub implementation
 	}
 
+#ifdef O3_V8_GLUE
+	void collectV8ExtTraits(const char* name, Handle<Object> target)
+	{
+		o3_trace_comglue("collectV8ExtTraits");
+		tVec<V8Trait>& traits = m_v8traits[name];
+		for (size_t i=0; i<traits.size(); i++) {
+			V8Trait& t = traits[i];
+			switch(t.type){
+				case V8Trait::TYPE_METHOD:
+					target->Set(v8::String::NewSymbol(t.fun_name),                                   
+						v8::FunctionTemplate::New((InvocationCallback) t.fun_ptr)->GetFunction()); 
+				break;	
+				case V8Trait::TYPE_GETTER:
+					if (i+1 < traits.size() && traits[i+1].type == V8Trait::TYPE_SETTER)
+						target->SetAccessor(String::New(t.fun_name), 
+							(AccessorGetter)t.fun_ptr, (AccessorSetter) traits[i+1].fun_ptr);	
+					else
+						target->SetAccessor(String::New(t.fun_name), (AccessorGetter)t.fun_ptr);	
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	void addV8ExtTraits(V8Trait* traits)
+	{
+		o3_trace_comglue("addV8ExtTraits");
+
+		for (V8Trait* ptrait = traits; ptrait->type != V8Trait::TYPE_END;
+			++ptrait) {
+
+				Lock lock(m_mutex);
+				tVec<V8Trait>& traits = m_v8traits[ptrait->class_name];
+				traits.push(*ptrait);
+		}
+	}
+#endif
 
 };
 
