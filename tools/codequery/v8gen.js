@@ -152,7 +152,7 @@ function generate(file, classes) {
 		class = classes[c];
 		out.push(genFunctions(class.classname, class.properties),
 			genExtTraitTable(class.classname, class.properties),
-			genInit(class.classname, class.base, class.properties)
+			genInit(class.classname, class.base, class.properties, class.enums)
 		);
 
 	}
@@ -160,7 +160,7 @@ function generate(file, classes) {
 	fs.writeFileSync(file.name.replace('.h','_glue.h'), out.join(''));
 } 
 
-function genInit(className, baseClass, properties) {
+function genInit(className, baseClass, properties, enums) {
 	function setMethod(className, propName) {
 		var ret = []; 
 		ret.push('		target->Set(v8::String::NewSymbol("',propName,'"),\n\
@@ -196,6 +196,12 @@ function genInit(className, baseClass, properties) {
 			ret.push(setProp(className, p,getter,setter));
 		}
 	}
+
+	if (enums)
+		for (var i=0; i<enums.length; i++) {
+			ret.push('		target->Set(v8::String::NewSymbol("',enums[i].name,'"),\n\
+					v8::Integer::New(',enums[i].value,'));\n'); 
+		}
 
 	ret.push('}\n\n');
 	return ret.join('');
