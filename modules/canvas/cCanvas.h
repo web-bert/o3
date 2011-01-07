@@ -46,16 +46,16 @@ namespace o3
 
 		o3_glue_gen()
 
-		static o3_ext("cO3") o3_fun siScr canvas()
+		static siScr canvas()
 		{
 			o3_trace_scrfun("canvas");
 			return o3_new(cCanvas)();
 		}
 
-		static o3_ext("cO3") o3_fun siScr canvas(size_t w, size_t h/*, const char* mode = "argb" */)
+		static o3_ext("cO3") o3_fun siScr canvas(size_t w, size_t h, const char* mode = "argb")
 		{
 			o3_trace_scrfun("canvas");
-			return o3_new(cCanvas)(w,h,"argb");
+			return o3_new(cCanvas)(w,h,mode);
 		}
 
 #pragma endregion O3_SCR
