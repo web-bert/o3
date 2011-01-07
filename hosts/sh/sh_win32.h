@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
 
 
 	mgr->addV8ExtTraits(cCanvas::v8ExtTraits());
-	mgr->addV8ExtTraits(cGlueTest::v8ExtTraits());
+//	mgr->addV8ExtTraits(cGlueTest::v8ExtTraits());
 	//mgr->addExtTraits(cBarcode::extTraits());
 	//mgr->addExtTraits(cScan::extTraits());
 

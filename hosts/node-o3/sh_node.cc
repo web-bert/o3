@@ -17,6 +17,7 @@
  */
 #define CANVAS_USE_JPEG
 #define O3_NODE
+//#define O3_V8_GLUE
 #include <v8.h>
 #include <o3.h>
 #include <js/js.h>
@@ -50,9 +51,13 @@ init (Handle<Object> target)
   o3_add_extraits(cXml);
   o3_add_extraits(cCanvas);		
   
-
-  iCtx* ctx = o3_new(cJs)(target, mgr,0 ,0 ,0);
+// TODO: merge these two
+#ifdef O3_V8_GLUE
+  iCtx* ctx = o3_new(cJs)(target, mgr);
+#else
+  iCtx* ctx = o3_new(cJs)(target, mgr,0,0,0);
   ctx->addRef(); // will be released by a clenup callback in the cJs1
+#endif
   
 }
 

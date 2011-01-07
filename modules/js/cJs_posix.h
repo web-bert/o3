@@ -655,7 +655,7 @@ public:
 		m_template->SetIndexedPropertyHandler(indexedGetter, indexedSetter,
 			indexedQuery, indexedDeleter,
 			indexedEnumerator, data);
-
+addRef();
 		siScr scr(o3_new(cO3)(this, 0, 0, 0));
 		//siScr scr = o3_new(cGlueTest)();
 		object = createObject(scr);	

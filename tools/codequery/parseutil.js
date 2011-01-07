@@ -1,4 +1,4 @@
-var treec = require("./treec");
+var cq = require("./codequery");
 var fs = require('fs');
 var diff = require('./diff');
 
@@ -34,18 +34,18 @@ exports.loadFiles = function(path, filedo, filedont, lang){
 exports.loadFileList = function(list, lang){
     var opts = {};
     if(lang){
-        opts.keywords = treec[lang+"keywords"];   
+        opts.keywords = cq[lang+"keywords"];   
         if(lang == "c")
             opts.dontEatSemi = 1;
     }
    // lets now parse each file
     console.log("Loading...");
     for(var i = 0;i<list.length;i++){
-        console.log(list[i]);
+        //console.log(list[i]);
     	var f = list[i] = {name:list[i]};
     	//console.log(n.name)
     	f.data = fs.readFileSync(f.name).toString().replace(/\r?\n/g,"\n");
-    	f.root = treec.parse(f.data, opts);
+    	f.root = cq.parse(f.data, opts);
     	f.root.file = f;
     	f.check = f.root.toString();
         if(f.root.err)

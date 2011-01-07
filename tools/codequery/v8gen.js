@@ -3,7 +3,7 @@ require("./declare");
 var cq = require("./codequery");
 var pu = require('./parseutil');
 var fs = require('fs');
-var files = pu.loadFiles("../../", /\.h$/, /deps|\_glue/, "c");
+var files = pu.loadFiles("./", /\.h$/, /deps|\_glue/, "c");
 var OutputData = []
 var util = require('util');
 

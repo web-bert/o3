@@ -74,11 +74,11 @@ struct cScrBuf : cScr, iBuf {
 		}	
 	}
 
-    o3_get size_t length()
+    o3_get int length()
     {
         o3_trace_scrfun("length");
 
-        return m_buf.size();
+        return (int) m_buf.size();
     }
 
 	o3_fun size_t byteLength(const char* string, const char* encoding="utf8")
