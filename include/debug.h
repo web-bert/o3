@@ -94,6 +94,7 @@ inline void o3assert(const char* pred, const char* file, int line);
 
 inline void log(const char* format, ...);
 
+#ifdef O3_TRACE
 struct O3Trace {
 	O3Trace(const char* fun, const char* file, int line) 
 	{
@@ -105,7 +106,7 @@ struct O3Trace {
 		traceLeave();
 	}
 };
-
+#endif
 }
 
 #endif // O3_DEBUG_H
