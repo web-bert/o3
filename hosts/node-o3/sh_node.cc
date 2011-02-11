@@ -26,7 +26,7 @@
 #include <fastxml/fastxml.h>
 
 //#include <socket/socket.h>
-#include <canvas/canvas.h>
+//#include <canvas/canvas.h>
 
 #ifdef O3_V8_GLUE
 #define o3_add_extraits(X)  mgr->addV8ExtTraits(X::v8ExtTraits())
@@ -49,7 +49,7 @@ init (Handle<Object> target)
 
   o3_add_extraits(cFastXml);
   o3_add_extraits(cXml);
-  o3_add_extraits(cCanvas);		
+//  o3_add_extraits(cCanvas);		
   
 // TODO: merge these two
 #ifdef O3_V8_GLUE

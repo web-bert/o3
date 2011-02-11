@@ -84,6 +84,8 @@
 #define o3_log(...) ((void) 0)
 #endif // O3_LOG
 
+#ifdef O3_TRACE
+
 namespace o3 {
 
 inline void traceEnter(const char* fun, const char* file, int line);
@@ -94,7 +96,6 @@ inline void o3assert(const char* pred, const char* file, int line);
 
 inline void log(const char* format, ...);
 
-#ifdef O3_TRACE
 struct O3Trace {
 	O3Trace(const char* fun, const char* file, int line) 
 	{
@@ -106,7 +107,7 @@ struct O3Trace {
 		traceLeave();
 	}
 };
-#endif
 }
+#endif
 
 #endif // O3_DEBUG_H

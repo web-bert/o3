@@ -35,7 +35,7 @@ inline bool chrIsSpace(char c)
 {
     o3_trace_tools("chrIsSpace");
 
-    return ::isspace(c) ? true : false;
+    return isspace(c) ? true : false;
 }
 
 inline bool chrIsSpace(wchar_t c)
@@ -49,70 +49,70 @@ inline bool chrIsDigit(char c)
 {
 	o3_trace_tools("chrIsDigit");
 	
-    return ::isdigit(c) ? true : false;
+    return isdigit(c) ? true : false;
 }
 
 inline bool chrIsDigit(wchar_t c)
 {
 	o3_trace_tools("chrIsDigit");
 	
-    return ::iswdigit(c) ? true : false;
+    return iswdigit(c) ? true : false;
 }
 
 inline bool chrIsUpper(char c)
 {
     o3_trace_tools("chrIsUpper");
 
-    return ::isupper(c) ? true : false;
+    return isupper(c) ? true : false;
 }
 
 inline bool chrIsUpper(wchar_t c)
 {
     o3_trace_tools("chrIsUpper");
 
-    return ::iswupper(c) ? true : false;
+    return iswupper(c) ? true : false;
 }
 
 inline bool chrIsLower(char c)
 {
     o3_trace_tools("chrIsLower");
 
-    return ::islower(c) ? true : false;
+    return islower(c) ? true : false;
 }
 
 inline bool chrIsLower(wchar_t c)
 {
     o3_trace_tools("chrIsLower");
 
-    return ::iswlower(c) ? true : false;
+    return iswlower(c) ? true : false;
 }
 
 inline char chrToUpper(char c)
 {
     o3_trace_tools("chrToUpper");
 
-    return (char) ::toupper(c);
+    return (char) toupper(c);
 }
 
 inline wchar_t chrToUpper(wchar_t c)
 {
     o3_trace_tools("chrToUpper");
 
-    return ::towupper(c);
+    return towupper(c);
 }
 
 inline char chrToLower(char c)
 {
     o3_trace_tools("chrToLower");
 
-    return (char) ::tolower(c);
+    return (char) tolower(c);
 }
 
 inline wchar_t chrToLower(wchar_t c)
 {
     o3_trace_tools("chrToLower");
 
-    return ::towlower(c);
+    return towlower(c);
 }
 
 inline char chrFromHex(int x)

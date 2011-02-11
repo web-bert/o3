@@ -27,6 +27,10 @@
 #elif defined(_WIN32)
 #define O3_WIN32
 #elif defined(__CYGWIN__)
+#define O3_CYGWIN
+#define O3_LINUX
+#elif defined(sun)
+#define O3_SOLARIS
 #define O3_LINUX
 #endif
 
@@ -45,7 +49,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-#define O3_DEBUG
+//#define O3_DEBUG
 
 #if defined(O3_DEBUG)
 #define O3_TRACE    0

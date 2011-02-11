@@ -705,7 +705,7 @@ namespace o3 {
 
             c = (u4)crc;
             c = ~c;
-            while (len && ((ptrdiff_t)(int64_t)buf & 3)) {
+            while (len && ((ptrdiff_t)(uintptr_t)buf & 3)) {
                 c = crc_table[0][(c ^ *buf++) & 0xff] ^ (c >> 8);
                 len--;
             }
