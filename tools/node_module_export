@@ -1,6 +1,7 @@
 #!/bin/bash -e
 cd `dirname $0`
 cd ..
+POST='-v4'
 
 #lets copy some stuff
 if [ $# -ne 2 ]
@@ -15,9 +16,9 @@ echo "exporting $1 to ajaxorg/node-o3-$1 for platform $2 ...."
 #rm -rf export
 [ -d "export" ] || mkdir "export"
 cd "export"
-#mkdir node-o3-$1
-[ -d "node-o3-$1" ] || git clone "git@github.com:ajaxorg/node-o3-$1"
-cd "node-o3-$1"
+#mkdir node-o3-$1$POST
+[ -d "node-o3-$1$POST" ] || git clone "git@github.com:ajaxorg/node-o3-$1$POST"
+cd "node-o3-$1$POST"
 git pull
 
 mkdir lib || true
