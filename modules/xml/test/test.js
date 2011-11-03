@@ -1,6 +1,6 @@
 var fs = require('fs');
 var sys = require('sys');
-var xml = require("../lib/o3-xml");
+var xml = require("libxml");
 
 function diff(node, node1) {
     if (node.nodeType != node1.nodeType)
@@ -521,6 +521,6 @@ for (var i in test) {
         console.log("test " + i + " succeeded\n");
     else {
         console.log("test " + i + " failed\n");
-        break;
+        process.exit(1);
     }
 }
