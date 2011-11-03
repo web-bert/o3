@@ -20,6 +20,8 @@
 
 namespace o3 {
 
+    static void XML_ErrorFunc(void *ctx, const char *msg, ...) {}
+    
 	xmlFreeFunc xmlfree;
 	xmlMallocFunc xmlmalloc;
 	xmlReallocFunc xmlrealloc;
@@ -77,6 +79,8 @@ namespace o3 {
 
         static o3_ext("cO3") o3_get siXml2 xml(iCtx* ctx)
         {
+            xmlSetGenericErrorFunc(NULL, &XML_ErrorFunc);
+
             o3_trace_scrfun("xml");
             Var val = ctx->value("xml");
             siXml2 xml = val.toScr();
