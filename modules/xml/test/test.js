@@ -42,35 +42,35 @@ function diff(node, node1) {
 }
 
 function check(expected,actual) {
-	var l = expected.length;	
-	if (l != actual.length) {
-		console.log('expected no: ' + expected.length
-			+ '\n\nactual no: ' + actual.length);	
-		return false;
-	}
-	
-	for (var i=0; i<l; i++) {
-		if (expected[i] != actual[i]) {
-			console.log('expected: ' + expected.toString()
-				+ '\n\nactual: ' + actual.toString());	
+    var l = expected.length;    
+    if (l != actual.length) {
+        console.log('expected no: ' + expected.length
+            + '\n\nactual no: ' + actual.length);   
+        return false;
+    }
+    
+    for (var i=0; i<l; i++) {
+        if (expected[i] != actual[i]) {
+            console.log('expected: ' + expected.toString()
+                + '\n\nactual: ' + actual.toString());  
 
-			return false;
-		}
-	}
-	
-	return true;		
+            return false;
+        }
+    }
+    
+    return true;        
 }
 
 function readFile(file) {
     file = __dirname + "/" + file;
-	var size = fs.statSync(file).size,
-		buf = new Buffer(size),
-		fd = fs.openSync(file, 'r');
-	if (!size)
-		return "";
-	fs.readSync(fd, buf, 0, size, 0);
-	fs.closeSync(fd);
-	return buf.toString();
+    var size = fs.statSync(file).size,
+        buf = new Buffer(size),
+        fd = fs.openSync(file, 'r');
+    if (!size)
+        return "";
+    fs.readSync(fd, buf, 0, size, 0);
+    fs.closeSync(fd);
+    return buf.toString();
 } 
 
 var test = {
@@ -235,7 +235,7 @@ test13 : function() {
 },
 
 test14 : function() {
-	return true; // turned off
+    return true; // turned off
     var doc         = xml.parseFromString(readFile("test.xml")),
         elem        = doc.documentElement,
         ref_parent  = elem.childNodes[3];
@@ -315,7 +315,7 @@ test21 : function() {
 },
 
 test22 : function() {
-	return true; // turned off
+    return true; // turned off
     var doc     = xml.parseFromString(readFile("test.xml")),
         elem    = doc.documentElement.childNodes[3];
 
@@ -348,7 +348,7 @@ test24 : function() {
 },
 
 test25 : function() {
-	return true; // turned off
+    return true; // turned off
     var doc     = xml.parseFromString(readFile("test.xml")),
         elem    = doc.documentElement.childNodes[3];
 
@@ -436,80 +436,80 @@ test31 : function() {
 },
 
 test32 : function() {
-	var elem = xml.parseFromString(
-			readFile('xpath.xml')).documentElement,
-	expected = ['Everyday Italian','Harry Potter',
-		'XQuery Kick Start','Learning XML'],
-	actual = [],
-	xpath = '/bookstore/book/title';
+    var elem = xml.parseFromString(
+            readFile('xpath.xml')).documentElement,
+    expected = ['Everyday Italian','Harry Potter',
+        'XQuery Kick Start','Learning XML'],
+    actual = [],
+    xpath = '/bookstore/book/title';
 
-	
-	var selected = elem.selectNodes(xpath);
-	for (var i=0; i<selected.length; i++) 
-		actual.push(selected[i].nodeValue);
-	
-	return check(expected, actual);
+    
+    var selected = elem.selectNodes(xpath);
+    for (var i=0; i<selected.length; i++) 
+        actual.push(selected[i].nodeValue);
+    
+    return check(expected, actual);
 },
 
 test33 : function() {
-	var elem = xml.parseFromString(
-			readFile('xpath.xml')).documentElement,
-	expected = ['Everyday Italian'],
-	actual = [],
-	xpath = '/bookstore/book[1]/title';
+    var elem = xml.parseFromString(
+            readFile('xpath.xml')).documentElement,
+    expected = ['Everyday Italian'],
+    actual = [],
+    xpath = '/bookstore/book[1]/title';
 
-	
-	var selected = elem.selectNodes(xpath);
-	for (var i=0; i<selected.length; i++) 
-		actual.push(selected[i].nodeValue);
-	
-	return check(expected, actual);
+    
+    var selected = elem.selectNodes(xpath);
+    for (var i=0; i<selected.length; i++) 
+        actual.push(selected[i].nodeValue);
+    
+    return check(expected, actual);
 },
 
 test34 : function() {
-	var elem = xml.parseFromString(
-			readFile('xpath.xml')).documentElement,
-	expected = [30.00,29.99,49.99,39.95],
-	actual = [],
-	xpath = '/bookstore/book/price/text()';
+    var elem = xml.parseFromString(
+            readFile('xpath.xml')).documentElement,
+    expected = [30.00,29.99,49.99,39.95],
+    actual = [],
+    xpath = '/bookstore/book/price/text()';
 
-	
-	var selected = elem.selectNodes(xpath);
-	for (var i=0; i<selected.length; i++) 
-		actual.push(selected[i].nodeValue);
-	
-	return check(expected, actual);
+    
+    var selected = elem.selectNodes(xpath);
+    for (var i=0; i<selected.length; i++) 
+        actual.push(selected[i].nodeValue);
+    
+    return check(expected, actual);
 },
 
 test35 : function() {
-	var elem = xml.parseFromString(
-			readFile('xpath.xml')).documentElement,
-	expected = [49.99,39.95],
-	actual = [],
-	xpath = '/bookstore/book[price>35]/price ';
+    var elem = xml.parseFromString(
+            readFile('xpath.xml')).documentElement,
+    expected = [49.99,39.95],
+    actual = [],
+    xpath = '/bookstore/book[price>35]/price ';
 
-	
-	var selected = elem.selectNodes(xpath);
-	for (var i=0; i<selected.length; i++) 
-		actual.push(selected[i].nodeValue);
-	
-	return check(expected, actual);
+    
+    var selected = elem.selectNodes(xpath);
+    for (var i=0; i<selected.length; i++) 
+        actual.push(selected[i].nodeValue);
+    
+    return check(expected, actual);
 },
 
 test36 : function() {
-	var elem = xml.parseFromString(
-			readFile('xpath.xml')).documentElement,
-	expected = ['Everyday Italian','Harry Potter',
-		'XQuery Kick Start','Learning XML'],
-	actual = [],
-	xpath = "descendant-or-self::node()[@lang='en']";
+    var elem = xml.parseFromString(
+            readFile('xpath.xml')).documentElement,
+    expected = ['Everyday Italian','Harry Potter',
+        'XQuery Kick Start','Learning XML'],
+    actual = [],
+    xpath = "descendant-or-self::node()[@lang='en']";
 
-	
-	var selected = elem.selectNodes(xpath);
-	for (var i=0; i<selected.length; i++) 
-		actual.push(selected[i].nodeValue);
-	
-	return check(expected, actual);
+    
+    var selected = elem.selectNodes(xpath);
+    for (var i=0; i<selected.length; i++) 
+        actual.push(selected[i].nodeValue);
+    
+    return check(expected, actual);
 }
 
 };
