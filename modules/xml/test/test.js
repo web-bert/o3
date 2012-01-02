@@ -1,6 +1,11 @@
 var fs = require('fs');
 var sys = require('sys');
-var xml = require("libxml");
+
+try {
+    var xml = require("libxml");
+} catch (e) {
+    var xml = require("../../../../../lib/libxml");
+}
 
 function diff(node, node1) {
     if (node.nodeType != node1.nodeType)
