@@ -5,47 +5,47 @@ var sys = require('sys');
 var includeTrace = false, 
     immLog = false, log = false;
     logFileName = 'codegenLog.txt',
-    errFileName = 'codegenErr.txt';	
+    errFileName = 'codegenErr.txt'; 
 var i,l,files = [], arguments = process.argv, arg;
 
 for (i=2, l=arguments.length; i<l; i++) {
-	arg = arguments[i];
-	switch(arg) {
-		case '-h':
-			// TODO:
-			break;
-		case '-l':
-			log = true;
-			break;
-		case '-v':
-			immLog = true;
-			break;
-		case '-trace':
-			includeTrace = true;
-			break;
-		default:
-			files.push(arg);			
-	}	
-}	
+    arg = arguments[i];
+    switch(arg) {
+        case '-h':
+            // TODO:
+            break;
+        case '-l':
+            log = true;
+            break;
+        case '-v':
+            immLog = true;
+            break;
+        case '-trace':
+            includeTrace = true;
+            break;
+        default:
+            files.push(arg);            
+    }   
+}   
 
 function readFile(file) {
     var size = fs.statSync(file).size,
-		buf = new Buffer(size),
-		fd = fs.openSync(file, 'r');
-	if (!size)
-		return "";
-	fs.readSync(fd, buf, 0, size, 0);
-	fs.closeSync(fd);
-	return buf.toString();
+        buf = new Buffer(size),
+        fd = fs.openSync(file, 'r');
+    if (!size)
+        return "";
+    fs.readSync(fd, buf, 0, size, 0);
+    fs.closeSync(fd);
+    return buf.toString();
 }
 
 function writeFile(file, data) {
     var size = data.length,
-		buf = new Buffer(data),
-		fd = fs.openSync(file, 'w');
-		
-	fs.writeSync(fd, buf, 0, size, 0);
-	fs.closeSync(fd);
+        buf = new Buffer(data),
+        fd = fs.openSync(file, 'w');
+        
+    fs.writeSync(fd, buf, 0, size, 0);
+    fs.closeSync(fd);
 }
 
 
@@ -105,12 +105,12 @@ var Reporter = {
             var i,l;
             if (immediate)
                     //o3.stdOut.write(currentFile + ': ');
-					logWriter(currentFile + ': ');
+                    logWriter(currentFile + ': ');
             for (i=0,l=arguments.length; i<l; i++) {
                 logs[currentFile].push(arguments[i]);
                 if (immediate)
                     //o3.stdOut.write(arguments[i]);
-					logWriter(arguments[i]);
+                    logWriter(arguments[i]);
             }    
         }
     },
@@ -140,28 +140,28 @@ var Reporter = {
 //include("tools/o3_FileHandler.js");
 var FileHandler = {
    scanFiles : function(topNode) {
-		function checkFile(file) {			
-			var name = file.substring(file.lastIndexOf('/')+1),
+        function checkFile(file) {          
+            var name = file.substring(file.lastIndexOf('/')+1),
                 glueName,
                 glueFile,            
                 data = readFile(file);
 
             if (data.indexOf('o3_glue_gen()') == -1 || name == 'cScr.h' 
-				|| name.indexOf('.h') == -1) {
-				//Reporter.log('no need to gen glue for: ',name,'\n');
-				return false;
+                || name.indexOf('.h') == -1) {
+                //Reporter.log('no need to gen glue for: ',name,'\n');
+                return false;
             }
             
             glueName = name.substring(0,name.lastIndexOf('.h'))
-				+ '_glue.h';
+                + '_glue.h';
             glueFile = file.substring(0,file.lastIndexOf('/')+1) + glueName;
-			var stat,fd;
-			try {
-				stat = fs.statSync(glueFile)
-			} catch (e) {	
+            var stat,fd;
+            try {
+                stat = fs.statSync(glueFile)
+            } catch (e) {   
                 if (fd = fs.openSync(glueFile, 'w')) {
                     fs.closeSync(fd);
-					Reporter.log('created glue file: ',glueName,'\n');
+                    Reporter.log('created glue file: ',glueName,'\n');
                     return glueFile;
                 }
                 else {
@@ -188,7 +188,7 @@ var FileHandler = {
                 topNode.name, '\n');
             return;
         }*/
-		var stat = fs.statSync(topNode)
+        var stat = fs.statSync(topNode)
         if (stat.isFile()) {
             Reporter.newFile(topNode);
             if (glueFile = checkFile(topNode))
@@ -196,8 +196,8 @@ var FileHandler = {
 
         }
         else if (stat.isDirectory()){
-			var i,l,children = fs.readdirSync(topNode);
-			for (i=0, l=children.length; i<l; i++) {
+            var i,l,children = fs.readdirSync(topNode);
+            for (i=0, l=children.length; i<l; i++) {
                 this.scanFiles(topNode + '/' + children[i]);
             }
         }
@@ -213,7 +213,7 @@ var FileHandler = {
         
         for (i=0, l=classes.length; i<l; i++) {
             if (classes[i].gen)
-				result.push(Generator.run(classes[i].struct, classes[i].traits));
+                result.push(Generator.run(classes[i].struct, classes[i].traits));
         }
         try{    
             writeFile(glueFile,result.join(''));   
@@ -236,7 +236,7 @@ var Lexer = {
             lines = []          // array of linepositions
             
         data.replace(TokRegexp, function(token, rx_lut, rx_ws, rx_word, rx_misc, pos) {
-			// check the type
+            // check the type
             if (rx_lut)
                 type = TokenType[rx_lut];
             else if (rx_ws)
@@ -272,8 +272,8 @@ var Lexer = {
                         if (tree[0].token != TokClose[token])  {                            
                           // report error: brackets dont match
                           Reporter.error("lexer: closure token did not match, ' opened: '", 
-						  tree[0].token, "' closed: '", token, "' position : ", 
-							position(lines, pos).toString(),"\n");						  
+                          tree[0].token, "' closed: '", token, "' position : ", 
+                            position(lines, pos).toString(),"\n");                        
                         }
                         else {
                             tree[tree.length] = {type: type, pos: pos, token: token};
@@ -335,64 +335,64 @@ var Lexer = {
 }; // lexer
 
 var Parser = {
-	readName : function(tree, i, traits) {
+    readName : function(tree, i, traits) {
         Reporter.log("readName: ", tree[i].token, '\n');
          traits.___name = tree[i+1].subtree[1].plain_text;
-		return 0;
+        return 0;
     },
     readExt : function(tree, i, traits) {
         Reporter.log("readExt: ", tree[i].token, '\n');
         traits.___ext = tree[i+1].subtree[1].plain_text;
         return 0;
     },
-	readProp : function(tree, i, traits) {
-		var index = i,
-			t;
-			
-		while ( (t = tree[index].token) != ';' && t != '(')
-			index++;
-			
-		if (t == ';')
-			return this.readImmProp(tree, i, traits);
-		else
-			return this.readFunLike(tree, i, traits);	
-		
-	},
+    readProp : function(tree, i, traits) {
+        var index = i,
+            t;
+            
+        while ( (t = tree[index].token) != ';' && t != '(')
+            index++;
+            
+        if (t == ';')
+            return this.readImmProp(tree, i, traits);
+        else
+            return this.readFunLike(tree, i, traits);   
+        
+    },
     readImmProp : function(tree, i, traits){
         Reporter.log("readImmProp: ",tree[i].token,'\n');
         var name,
-			index=i,
-			type = tree[i].token,
-			getter = (type != 'o3_set'),
-			setter = (type != 'o3_get');		
-		
-		while ( (t = tree[index].token) != ';')
-			index++;
-		
-		if (!(name = this.checkName(traits))) {					
-			name = tree[index-1].token.replace(/^m?\_+/, "");
-			name = name.replace(/_[a-z]/g, function(m,a) {
-				return m.slice(1).toUpperCase();                    
-			});		
-		}		
-			
-		if (getter)
-			traits.add(name , {
-				imm: true,
-				type:'get',
-				ret: tree[i+1].token,
-				toString:0,
-				member: tree[index-1].token
-			});
-		
-		if (setter)
-			traits.add(name, {
-				imm: true,
-				type:'set',
-				ret: tree[i+1].token,
-				toString:0,
-				member: tree[index-1].token    
-			});
+            index=i,
+            type = tree[i].token,
+            getter = (type != 'o3_set'),
+            setter = (type != 'o3_get');        
+        
+        while ( (t = tree[index].token) != ';')
+            index++;
+        
+        if (!(name = this.checkName(traits))) {                 
+            name = tree[index-1].token.replace(/^m?\_+/, "");
+            name = name.replace(/_[a-z]/g, function(m,a) {
+                return m.slice(1).toUpperCase();                    
+            });     
+        }       
+            
+        if (getter)
+            traits.add(name , {
+                imm: true,
+                type:'get',
+                ret: tree[i+1].token,
+                toString:0,
+                member: tree[index-1].token
+            });
+        
+        if (setter)
+            traits.add(name, {
+                imm: true,
+                type:'set',
+                ret: tree[i+1].token,
+                toString:0,
+                member: tree[index-1].token    
+            });
 
         return 1;
     },
@@ -400,7 +400,7 @@ var Parser = {
         Reporter.log("readFunLike: ",tree[index].token,'\n');
         var br, // position of the '(' 
             subtree,
-			name,
+            name,
             ret = [],
             r,i,j,l,t,tl,coma,tgt=0,
             op_count, name_pos, arg_type, arg_name, arg_def, args = [],
@@ -451,17 +451,17 @@ var Parser = {
             
             if (eq) {
                 name_pos = eq - 1;                
-				if (subtree[eq+1].plain_text)
+                if (subtree[eq+1].plain_text)
                     def = subtree[eq+1].plain_text;
                 else {
                     def = subtree[eq+1].token;
-					if (def == '-')
-						def += subtree[eq+2].token;
-					else if(def == 'Str')
-						def += subtree[eq+2].token + 
-							   subtree[eq+2].subtree[1].plain_text +
-							   subtree[eq+3].token;
-				}	
+                    if (def == '-')
+                        def += subtree[eq+2].token;
+                    else if(def == 'Str')
+                        def += subtree[eq+2].token + 
+                               subtree[eq+2].subtree[1].plain_text +
+                               subtree[eq+3].token;
+                }   
             } 
             else if (op_count + mod_count + 1 == j-i ) {
                 // no name for the arg
@@ -486,17 +486,17 @@ var Parser = {
         }
         
         var ext = this.checkExt(traits);        
-		if (!(name = this.checkName(traits)))
-			name = tree[br-1].token;
-		
-		traits.add(name, {
+        if (!(name = this.checkName(traits)))
+            name = tree[br-1].token;
+        
+        traits.add(name, {
             type:tree[index].token.replace('o3_', ''),
             ret:ret.join(''),
             args:args,            
             ftype:0,
             ext: ext,
             name: tree[br-1].token,
-			toString:0            
+            toString:0            
         });
         return 1;
     },
@@ -509,7 +509,7 @@ var Parser = {
         }
         return 0;    
     },
-	checkName : function(traits) {
+    checkName : function(traits) {
         if (traits.___name) {            
             var ret = traits.___name;
             traits.___name = null;
@@ -518,7 +518,7 @@ var Parser = {
         }
         return 0;    
     },
-    readEnum : function(tree, index, traits) {	
+    readEnum : function(tree, index, traits) {  
         var subtree = tree[index+1].subtree,i,j,l,enumName,value=-1;
         
         enumName = subtree[1].plain_text.replace(/\"/g, '');
@@ -623,14 +623,14 @@ var Parser = {
                             case 'o3_name': 
                                 i += this.readName(tree, i, traits);                        
                                 break;
-							case 'o3_prop': 
+                            case 'o3_prop': 
                                 i += this.readImmProp(tree, i, traits);                        
                                 break;
                             case 'o3_ext':
                                 i += this.readExt(tree, i, traits);
                                 break;        
                             case 'o3_fun':
-								i += this.readFunLike(tree, i, traits);                        
+                                i += this.readFunLike(tree, i, traits);                        
                                 break;
                             case 'o3_get':
                             case 'o3_set':                             
@@ -650,8 +650,8 @@ var Parser = {
                                 // macro was not in a comment block...
                                 break
                             default : 
-								if (typename[0].indexOf("o3_trace") == 0)
-									break;
+                                if (typename[0].indexOf("o3_trace") == 0)
+                                    break;
                                 // report error
                                 Reporter.error("tokenizer: found unknown o3_tag : ",typename[0],"\n");
                         }
@@ -691,12 +691,12 @@ var TokClose = {'}': '{', ']': '[', ')': '('};
 var TokRegexp = /(["'{(\[\])}\]]|\r?[\n]|\/[\/*]|\*\/)|([ \t]+)|([\w._])+|(\\?[\w._?,:;!=+-\\\/^&|*"'[\]{}()%$#@~`<>])/g;
  
 function posToString(){
-	return 'Ln : ' + this.line + ', Col : ' + this.col;
+    return 'Ln : ' + this.line + ', Col : ' + this.col;
 }
 
 function position(lines,pos) {
-	for (var i = 0, j = lines.length; i < j && lines[i] < pos; i++);
-	return {line: i+1, col: pos - lines[i - 1], toString: posToString};
+    for (var i = 0, j = lines.length; i < j && lines[i] < pos; i++);
+    return {line: i+1, col: pos - lines[i - 1], toString: posToString};
 };
 
 //include("tools/o3_Generator.js");
@@ -920,9 +920,9 @@ var Generator = {
                 return {call: 'pthis1->' + trait.member};
             
             return genArgsForCall({args: [{type:trait.ret.replace(/si[A-Z][\w]+/, function(m,a){
-											return m.slice(1)+' *';
-									}
-								)}]});     
+                                            return m.slice(1)+' *';
+                                    }
+                                )}]});     
         };
         function genEnumCall(trait) {            
             return trait.value;
@@ -972,45 +972,45 @@ var Generator = {
                 if (!(info = ArgInfo[args[i].type]))
                     info = ArgInfo.si(args[i].type)
                  
-				if (info.arglist) {
-					arglist=true;
-					call.push(info.fetch);					
-					call.push(',');
-					if (!args[i+1] || args[i+1].type != 'int')
-						Reporter.error('generator: genArgsForCall failed: Var* as '
-							+'function argument must be followed by an int argument (argc)');
-					i++; 
-					continue;
-				}
-				 
+                if (info.arglist) {
+                    arglist=true;
+                    call.push(info.fetch);                  
+                    call.push(',');
+                    if (!args[i+1] || args[i+1].type != 'int')
+                        Reporter.error('generator: genArgsForCall failed: Var* as '
+                            +'function argument must be followed by an int argument (argc)');
+                    i++; 
+                    continue;
+                }
+                 
                 fetch = args[i].tgt ? 'pthis' : info.fetch;
                 wrap_start = info.wrap ? info.wrap + '(' : '';
                 wrap_close = info.wrap ? ')' : '';
 
-				// second wrapper for the Buf...
+                // second wrapper for the Buf...
                 if (info.wrap2) {
                     wrap_start = info.wrap2 + '(' + wrap_start;
                     wrap_close += ')';
                 }     
 
-				// not real script argument like siEx*, iCtx*, o3_tgt, etc.
+                // not real script argument like siEx*, iCtx*, o3_tgt, etc.
                 spec_arg = info.type ? (args[i].tgt ? true : false) : true;
                 
                 if (args[i].def && !spec_arg) {
                     if (min<0)
                         min = max;
                     // if it was an siEx* param for example we dont want to check the arg count
-					def_start = spec_arg ? '' : ('argc > ' + max + ' ? ');
+                    def_start = spec_arg ? '' : ('argc > ' + max + ' ? ');
                     def_close = ' : ' + args[i].def;
                 }
                     
                 call.push(wrap_start, def_start);
                 if (!spec_arg) {
                     call.push('argv[',max++,']');
-					if (!info.direct)	
-						call.push('.');
-				}	
-				
+                    if (!info.direct)   
+                        call.push('.');
+                }   
+                
                 call.push(fetch,def_close,wrap_close, ',');            
                                     
                 iSg=fetch=def_start=def_close=wrap_start=wrap_close='';
@@ -1018,7 +1018,7 @@ var Generator = {
             }
             if (args.length > 0)
                 call.pop(); // remove last ',' 
-            			
+                        
             if (min>0)
                 argc_check.push('argc < ', min, ' && ');
             if (min==-1)
@@ -1027,10 +1027,10 @@ var Generator = {
                 argc_check.push('argc > ', max );
             
             return {
-					call: call.join(''), 
-					argc_check: arglist ? null : argc_check.join('')
-				};
-					
+                    call: call.join(''), 
+                    argc_check: arglist ? null : argc_check.join('')
+                };
+                    
             // like: {call: 'ctx, argv[0].toInt(), &ex', argc_check: 'argc!=1'}
         };    
         
@@ -1093,9 +1093,9 @@ var Generator = {
                         diff = true;
                         break;        
                     }
-			}		
-			else 
-				diff = true;		
+            }       
+            else 
+                diff = true;        
             return !diff;        
         };
         // grouping overloads based on their possible argument counts
@@ -1239,11 +1239,11 @@ var Generator = {
                     
                     t.push(ws,'}\n');                        
                 }
-				
-				if (blocks.length)
-					t.push(ws,'else{\n',ws,'   return o3_new(cEx)(', 
-						level ? '"Invalid argument type."' : '"Invalid argument count."',
-						');\n', ws,  '}\n');
+                
+                if (blocks.length)
+                    t.push(ws,'else{\n',ws,'   return o3_new(cEx)(', 
+                        level ? '"Invalid argument type."' : '"Invalid argument count."',
+                        ');\n', ws,  '}\n');
             }    
         };
         
@@ -1264,10 +1264,10 @@ var ArgInfo = {
     'const char *'       : {fetch:'toStr()',     type:'STR'},
     'const Str &'       : {fetch:'toStr()',     type:'STR'},
     'const wchar_t *'   : {fetch:'toWStr()',    type:'WSTR'},
-	'const Var &'		: {fetch:'', 			type:'VAR', 
-		direct: true},
-    'Var *'				: {fetch:'argv,argc',	arglist: true},
-	'const WStr &'      : {fetch:'toWStr()',    type:'WSTR'},
+    'const Var &'       : {fetch:'',            type:'VAR', 
+        direct: true},
+    'Var *'             : {fetch:'argv,argc',   arglist: true},
+    'const WStr &'      : {fetch:'toWStr()',    type:'WSTR'},
     'const Buf &'       : {fetch:'toScr()',     type:'SCR', 
         wrap : 'siBuf', wrap2 : 'Buf'},
     'iScr *'            : {fetch:'toScr()',     type:'SCR'},
@@ -1307,14 +1307,14 @@ Reporter.errorWriter = console.log;
 
 // by default it generates all glue in ./include
 if (files.length == 0) {
-	FileHandler.scanFiles('include');
-	FileHandler.scanFiles('modules');	
+    FileHandler.scanFiles('include');
+    FileHandler.scanFiles('modules');   
 }
 
 // if there were files/folders specified, let's traverse them
 
 for (i=0; i<files.length; i++) {    
-	FileHandler.scanFiles(files[i]);
+    FileHandler.scanFiles(files[i]);
 } 
 
 // if -l was specified let's log to stdout 

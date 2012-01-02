@@ -1,5 +1,5 @@
 var fs = require('fs'),
-	sys = require('sys');
+    sys = require('sys');
 
 
 var BUILDMODE = 'Release',
@@ -66,47 +66,47 @@ RegexpMap = [
 ],
 
 files = [
-	'hosts/installer/installer.js',
-	'hosts/plugin/Info.plist',
-	'hosts/plugin/plugin.r',
-	'hosts/plugin/plugin.rc',
-	'include/guid.h',
-	'include/app_data.h',	
-	'hosts/installer/osx/distribution.dist',
-	'tools/osx/build_installer',
-	'tools/osx/build_plugin',
-	'tools/osx/generate_version',
-	'tools/osx/update_installer'
+    'hosts/installer/installer.js',
+    'hosts/plugin/Info.plist',
+    'hosts/plugin/plugin.r',
+    'hosts/plugin/plugin.rc',
+    'include/guid.h',
+    'include/app_data.h',   
+    'hosts/installer/osx/distribution.dist',
+    'tools/osx/build_installer',
+    'tools/osx/build_plugin',
+    'tools/osx/generate_version',
+    'tools/osx/update_installer'
 ];
 
 function readFile(file) {
     var size = fs.statSync(file).size,
-		buf = new Buffer(size),
-		fd = fs.openSync(file, 'r');
-	if (!size)
-		return "";
-	fs.readSync(fd, buf, 0, size, 0);
-	fs.closeSync(fd);
-	return buf.toString();
+        buf = new Buffer(size),
+        fd = fs.openSync(file, 'r');
+    if (!size)
+        return "";
+    fs.readSync(fd, buf, 0, size, 0);
+    fs.closeSync(fd);
+    return buf.toString();
 }
 
 function writeFile(file, data) {
     var size = data.length,
-		buf = new Buffer(data),
-		fd = fs.openSync(file, 'w');
-		
-	fs.writeSync(fd, buf, 0, size, 0);
-	fs.closeSync(fd);
+        buf = new Buffer(data),
+        fd = fs.openSync(file, 'w');
+        
+    fs.writeSync(fd, buf, 0, size, 0);
+    fs.closeSync(fd);
 }
 
 function patchFile(file) {
-	var data = readFile(file + '.template');
-	for (var v=0; v < RegexpMap.length; v++) 
-		data = data.replace(RegexpMap[v][0],RegexpMap[v][1]);
+    var data = readFile(file + '.template');
+    for (var v=0; v < RegexpMap.length; v++) 
+        data = data.replace(RegexpMap[v][0],RegexpMap[v][1]);
 
-	writeFile(file, data);	
+    writeFile(file, data);  
 }
 
 for (var f=0; f < files.length; f++) 
-	patchFile(files[f]);
-	
+    patchFile(files[f]);
+    
