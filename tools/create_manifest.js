@@ -1,6 +1,4 @@
 var fs = require('fs'),
-    sys = require('sys');
-
 
 var BUILDMODE = 'Release',
 GUID = '8a66ecac-63fd-4afa-9d42-3034d18c88f4',  

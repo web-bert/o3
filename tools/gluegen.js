@@ -1,6 +1,5 @@
 #!/bin/node
 var fs = require('fs');
-var sys = require('sys');
 
 var includeTrace = false, 
     immLog = false, log = false;
