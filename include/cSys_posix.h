@@ -559,7 +559,9 @@ o3_cls(cSys);
 struct cSys : cSysBase {
     int fd;
 	size_t m_overall;
+#if !defined(__FreeBSD__)
 	struct sockaddr_in addr;
+#endif
 	FILE* file;
 
     cSys()

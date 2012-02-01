@@ -32,6 +32,8 @@
 #elif defined(sun)
 #define O3_SOLARIS
 #define O3_LINUX
+#elif defined(__FreeBSD__)
+#define O3_LINUX
 #endif
 
 #define O3_AUTO_CAPACITY    11
