@@ -19,6 +19,7 @@
 #define O3_C_SYS_WIN32_H
 
 #include <stdlib.h>
+#include <errno.h>
 #include <dlfcn.h>
 #include <pthread.h>
 #include <fcntl.h>
@@ -411,7 +412,16 @@ struct cMessageLoop : cUnk, iMessageLoop {
         uint8_t msg[sizeof(Message)];
 
         new (msg) Message(m_seq, fun, src);
-        write(m_out, msg, sizeof(Message));
+
+        for (size_t i = 0; i < sizeof(msg); /* empty */) {
+            ssize_t r = write(m_out, msg + i, sizeof(msg) - i);
+            if (r >= 0)
+                i += static_cast<size_t>(r);
+            else if (errno == EINTR)
+                ; /* ignore */
+            else
+                return;
+        }
     }
 
     void wait(int timeout)
