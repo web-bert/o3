@@ -146,13 +146,13 @@ files.forEach(function(f){
 });
 
 function generate(file, classes) {
-	var class,out=[];
+	var clazz,out=[];
 	out.push('namespace o3 {\n\n');	
-	for (var c=0; c<classes.length; c++) {			
-		class = classes[c];
-		out.push(genFunctions(class.classname, class.properties),
-			genExtTraitTable(class.classname, class.properties),
-			genInit(class.classname, class.base, class.properties, class.enums)
+	for (var c=0; c<clazzes.length; c++) {
+		clazz = clazzes[c];
+		out.push(genFunctions(clazz.clazzname, clazz.properties),
+			genExtTraitTable(clazz.clazzname, clazz.properties),
+			genInit(clazz.clazzname, clazz.base, clazz.properties, clazz.enums)
 		);
 
 	}
