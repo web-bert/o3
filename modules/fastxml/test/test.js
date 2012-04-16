@@ -1,5 +1,4 @@
 var fs = require('fs');
-var sys = require('sys');
 var fastxml = require("../lib/o3-fastxml");
 
 function diff(node, node1) {

@@ -37,7 +37,7 @@ args.push(
 var tgt = mode ? "../../build/" + mode + "/installer/o3plugin.exe" 
 	: "o3plugin.exe";
 	
-var sys   = require('sys'),
+var util = require('util'),
 	fs = require('fs'),
 	s = require('child_process'),
     child;	
@@ -45,12 +45,12 @@ var sys   = require('sys'),
 var p = s.spawn("../../tools/win32/zip", args);
 
 p.stdout.on('data',function(data){
-	sys.puts(data);
+	util.puts(data);
 })	
 	
 	
 p.stderr.on('data',function(data){
-	sys.puts(data);
+	util.puts(data);
 })	
 	
 
@@ -82,10 +82,3 @@ p.on('exit', function (code) {
 	fs.closeSync(fd_tgt);
 	fs.closeSync(fd_data);
 });
-
-	
-	
-	
-	
-	
-	

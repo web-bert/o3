@@ -1,5 +1,4 @@
 var fs = require('fs');
-var sys = require('sys');
 
 try {
     var xml = require("libxml");
