@@ -137,15 +137,6 @@ inline wchar_t* strCopy(wchar_t* dst, const wchar_t* src)
 	return ::wcscpy(dst, src);
 }
 
-template<typename C>
-inline bool strToBool(const C* str)
-{
-    o3_trace_tools("strToBool");
-    const C STR_TRUE[] = { 't', 'r', 'u', 'e', '\0' };
-
-    return strEquals(str, STR_TRUE) || strToInt32(str);
-}
-
 inline int32_t strToInt32(const char* str)
 {
     o3_trace_tools("strToInt32");
@@ -194,6 +185,15 @@ inline double strToDouble(const wchar_t* str)
     o3_trace_tools("strToDouble");
 
     return ::wcstod(str, 0);
+}
+
+template<typename C>
+inline bool strToBool(const C* str)
+{
+    o3_trace_tools("strToBool");
+    const C STR_TRUE[] = { 't', 'r', 'u', 'e', '\0' };
+
+    return strEquals(str, STR_TRUE) || strToInt32(str);
 }
 
 inline size_t strPrintfv(char* str, const char* format, va_list ap)

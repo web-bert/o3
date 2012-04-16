@@ -83,6 +83,13 @@ inline void* memSet(void* dst, uint8_t b, size_t n)
     return ::memset(dst, b, n);
 }
 
+inline void* memCopy(void* dst, const void* src, size_t n)
+{
+    o3_trace_tools("memCopy");
+
+    return ::memcpy(dst, src, n);
+}
+
 template<typename T>
 inline void* memSet(void* dst, const T& x, size_t n)
 {
@@ -93,13 +100,6 @@ inline void* memSet(void* dst, const T& x, size_t n)
         memCopy((void*) dst1++, &x, sizeof(T));
     memCopy((void*) dst1, &x, n);
     return dst;
-}
-
-inline void* memCopy(void* dst, const void* src, size_t n)
-{
-    o3_trace_tools("memCopy");
-
-    return ::memcpy(dst, src, n);
 }
 
 inline void* memMove(void* dst, const void* src, size_t n)
