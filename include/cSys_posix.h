@@ -568,7 +568,6 @@ o3_cls(cSys);
 
 struct cSys : cSysBase {
     int fd;
-	size_t m_overall;
 #if !defined(__FreeBSD__)
 	struct sockaddr_in addr;
 #endif
@@ -578,7 +577,6 @@ struct cSys : cSysBase {
     {
 		o3_trace_no_trace;
 		file = 0;
-		m_overall = 0;
 #ifdef O3_LOGFILE
 		removeLogFile();
 		file = fopen("/usr/tmp/o3log.txt", "w");
@@ -614,29 +612,15 @@ struct cSys : cSysBase {
 
     void* alloc(size_t size)
     {
-	o3_trace_sys("alloc");
-	#ifdef O3_NODE
-		size += sizeof (size_t);
-		void *ptr = ::malloc(size);
-		*(size_t *) ptr = size;
-		m_overall+=size;
-		v8::V8::AdjustAmountOfExternalAllocatedMemory(size);
-		return ((size_t *) ptr) + 1;		
-    #else    
-		return ::malloc(size);
-	#endif			
+        o3_trace_sys("alloc");
+        return ::malloc(size);
     }
 
     void free(void* ptr)
     {
-	o3_trace_sys("free");
-	#ifdef O3_NODE
-		v8::V8::AdjustAmountOfExternalAllocatedMemory(- * (((size_t *) ptr) - 1));		
-		m_overall-= *(((size_t *) ptr)-1);
-		ptr = (void *) (((size_t *) ptr) - 1);
-	#endif
-		::free(ptr);			
- 	}
+        o3_trace_sys("free");
+        ::free(ptr);
+    }
 
     void o3assert(const char* pred, const char* file, int line)
     {
