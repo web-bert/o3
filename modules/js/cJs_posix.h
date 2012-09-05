@@ -452,7 +452,7 @@ struct cJs : cJsBase {
 			return;
 
         cJs* pthis = (cJs*) parameter;
-        Handle<Object> object = value->ToObject();
+        Local<Object> object = value->ToObject();
 #ifdef O3_V8_GLUE
         iScr* scr = (iScr*) cast(object->GetInternalField(1));
 #else
@@ -488,7 +488,6 @@ struct cJs : cJsBase {
     { 
         o3_trace_hostglue("createObject"); 
 		HandleScope handle_scope;
-        Persistent<Object> object;
 
 		tMap<iScr*, Handle<Object> >::Iter it = 
 			m_wrappers.find(scr);
@@ -497,8 +496,9 @@ struct cJs : cJsBase {
 			return it->val;
 		}	
         scr->addRef();
-        object = Persistent<Object>::New(m_template->NewInstance());
-        object.MakeWeak(this, finalize);
+        Local<Object> object = m_template->NewInstance();
+        Persistent<Object> handle = Persistent<Object>::New(object);
+        handle.MakeWeak(this, finalize);
 #ifdef O3_V8_GLUE
 		object->SetInternalField(0, External::New(siCtx(this).ptr()));
 		object->SetInternalField(1, External::New(scr));
@@ -506,7 +506,7 @@ struct cJs : cJsBase {
 #else
 		object->SetInternalField(0, External::New(scr));
 #endif
-		m_wrappers[scr] = object;
+		m_wrappers[scr] = handle;
 		return handle_scope.Close(object);
     }
 
