@@ -403,8 +403,7 @@ public:
         o3_trace_containers("resize");
 
         buf().resize((new_size + 1) * sizeof(C));
-        if (((const tStr*) this)->ptr()[size()])
-            ptr()[size()] = 0;
+        ptr()[size()] = 0;
     }
 
     C* ptr()
