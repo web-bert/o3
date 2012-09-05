@@ -620,7 +620,6 @@ struct cSys : cSysBase {
 		void *ptr = ::malloc(size);
 		*(size_t *) ptr = size;
 		m_overall+=size;
-		v8::V8::AdjustAmountOfExternalAllocatedMemory(size);
 		return ((size_t *) ptr) + 1;		
     #else    
 		return ::malloc(size);
@@ -631,7 +630,6 @@ struct cSys : cSysBase {
     {
 	o3_trace_sys("free");
 	#ifdef O3_NODE
-		v8::V8::AdjustAmountOfExternalAllocatedMemory(- * (((size_t *) ptr) - 1));		
 		m_overall-= *(((size_t *) ptr)-1);
 		ptr = (void *) (((size_t *) ptr) - 1);
 	#endif
