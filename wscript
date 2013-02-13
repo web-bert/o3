@@ -22,6 +22,7 @@ def build(bld):
     hosts
     modules
     deps
+    deps/v8
   """
   
   obj.lib = 'xml2'
